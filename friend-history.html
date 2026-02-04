@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Friend History - Trackify</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <img src="assets/logo.png" alt="Trackify Logo" class="nav-logo">
+                <span class="brand-name">Trackify</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="dashboard.html">Home</a></li>
+                <li><a href="profile.html">Profile</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="history-container">
+        <div class="page-header">
+            <div>
+                <a href="friends.html" class="back-link">← Back to Friends</a>
+                <h1>Exchange History with Sarah Johnson</h1>
+            </div>
+            <button class="btn btn-primary" onclick="openAddExpenseModal()">Add Expense</button>
+        </div>
+
+        <!-- Balance Summary -->
+        <div class="balance-card">
+            <div class="balance-info">
+                <h2>Current Balance</h2>
+                <p class="balance-amount negative">You owe ₹500</p>
+            </div>
+            <button class="btn btn-primary">Settle Up</button>
+        </div>
+
+        <!-- Transaction History -->
+        <div class="history-list">
+            <h2>Transaction History</h2>
+
+            <div class="history-item">
+                <div class="history-date">Jan 28, 2026</div>
+                <div class="history-details">
+                    <div class="history-icon">🍕</div>
+                    <div class="history-info">
+                        <h3>Pizza Dinner</h3>
+                        <p>Sarah paid for dinner</p>
+                    </div>
+                    <div class="history-amount negative">You owe ₹500</div>
+                </div>
+            </div>
+
+            <div class="history-item">
+                <div class="history-date">Jan 20, 2026</div>
+                <div class="history-details">
+                    <div class="history-icon">🎬</div>
+                    <div class="history-info">
+                        <h3>Movie Tickets</h3>
+                        <p>You paid for tickets</p>
+                    </div>
+                    <div class="history-amount positive">Sarah owes ₹600</div>
+                </div>
+            </div>
+
+            <div class="history-item settled">
+                <div class="history-date">Jan 21, 2026</div>
+                <div class="history-details">
+                    <div class="history-icon">💰</div>
+                    <div class="history-info">
+                        <h3>Settlement</h3>
+                        <p>Sarah paid you via UPI</p>
+                    </div>
+                    <div class="history-amount settled">Settled ₹600</div>
+                </div>
+            </div>
+
+            <div class="history-item">
+                <div class="history-date">Jan 15, 2026</div>
+                <div class="history-details">
+                    <div class="history-icon">🛒</div>
+                    <div class="history-info">
+                        <h3>Grocery Shopping</h3>
+                        <p>Split expense equally</p>
+                    </div>
+                    <div class="history-amount negative">You owe ₹800</div>
+                </div>
+            </div>
+
+            <div class="history-item settled">
+                <div class="history-date">Jan 16, 2026</div>
+                <div class="history-details">
+                    <div class="history-icon">💰</div>
+                    <div class="history-info">
+                        <h3>Settlement</h3>
+                        <p>You paid via Cash</p>
+                    </div>
+                    <div class="history-amount settled">Settled ₹800</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Expense Modal -->
+    <div id="addExpenseModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAddExpenseModal()">&times;</span>
+            <h2>Add Expense with Sarah Johnson</h2>
+            <form class="modal-form">
+                <div class="form-group">
+                    <label>Description</label>
+                    <input type="text" placeholder="e.g., Lunch, Movie, etc." required>
+                </div>
+                <div class="form-group">
+                    <label>Amount</label>
+                    <input type="number" placeholder="Enter total amount" required>
+                </div>
+                <div class="form-group">
+                    <label>Who Paid?</label>
+                    <select required>
+                        <option>You paid</option>
+                        <option>Sarah paid</option>
+                        <option>Split equally</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" required>
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <select required>
+                        <option>Food & Dining</option>
+                        <option>Entertainment</option>
+                        <option>Shopping</option>
+                        <option>Transportation</option>
+                        <option>Other</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Add Expense</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openAddExpenseModal() {
+            document.getElementById('addExpenseModal').style.display = 'block';
+        }
+
+        function closeAddExpenseModal() {
+            document.getElementById('addExpenseModal').style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('addExpenseModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

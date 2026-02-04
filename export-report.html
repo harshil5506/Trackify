@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Export Report - Trackify</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <img src="assets/logo.png" alt="Trackify Logo" class="nav-logo">
+                <span class="brand-name">Trackify</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="dashboard.html">Home</a></li>
+                <li><a href="profile.html">Profile</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="export-container">
+        <div class="page-header">
+            <h1>Export Report</h1>
+        </div>
+
+        <div class="export-content">
+            <div class="export-card">
+                <h2>📊 Generate Financial Report</h2>
+                <p class="export-description">Export your financial data in various formats for record keeping, tax purposes, or analysis.</p>
+
+                <form class="export-form">
+                    <div class="form-section">
+                        <h3>Report Type</h3>
+                        <div class="report-types">
+                            <label class="report-type-option">
+                                <input type="radio" name="reportType" value="summary" checked>
+                                <div class="option-card">
+                                    <span class="option-icon">📋</span>
+                                    <h4>Summary Report</h4>
+                                    <p>Overview of income, expenses, and savings</p>
+                                </div>
+                            </label>
+                            <label class="report-type-option">
+                                <input type="radio" name="reportType" value="detailed">
+                                <div class="option-card">
+                                    <span class="option-icon">📝</span>
+                                    <h4>Detailed Report</h4>
+                                    <p>Complete transaction history with categories</p>
+                                </div>
+                            </label>
+                            <label class="report-type-option">
+                                <input type="radio" name="reportType" value="category">
+                                <div class="option-card">
+                                    <span class="option-icon">📊</span>
+                                    <h4>Category Report</h4>
+                                    <p>Breakdown by spending categories</p>
+                                </div>
+                            </label>
+                            <label class="report-type-option">
+                                <input type="radio" name="reportType" value="tax">
+                                <div class="option-card">
+                                    <span class="option-icon">💼</span>
+                                    <h4>Tax Report</h4>
+                                    <p>Tax-relevant income and expense summary</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Date Range</h3>
+                        <div class="form-group">
+                            <label>Select Period</label>
+                            <select id="periodSelect" onchange="toggleCustomDates()">
+                                <option value="current-month">Current Month</option>
+                                <option value="last-month">Last Month</option>
+                                <option value="last-3-months">Last 3 Months</option>
+                                <option value="last-6-months">Last 6 Months</option>
+                                <option value="current-year">Current Year</option>
+                                <option value="last-year">Last Year</option>
+                                <option value="custom">Custom Date Range</option>
+                            </select>
+                        </div>
+                        <div class="custom-dates" id="customDates" style="display: none;">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>From Date</label>
+                                    <input type="date">
+                                </div>
+                                <div class="form-group">
+                                    <label>To Date</label>
+                                    <input type="date">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Export Format</h3>
+                        <div class="format-options">
+                            <label class="format-option">
+                                <input type="radio" name="format" value="pdf" checked>
+                                <div class="format-card">
+                                    <span class="format-icon">📄</span>
+                                    <span>PDF</span>
+                                </div>
+                            </label>
+                            <label class="format-option">
+                                <input type="radio" name="format" value="excel">
+                                <div class="format-card">
+                                    <span class="format-icon">📊</span>
+                                    <span>Excel</span>
+                                </div>
+                            </label>
+                            <label class="format-option">
+                                <input type="radio" name="format" value="csv">
+                                <div class="format-card">
+                                    <span class="format-icon">📋</span>
+                                    <span>CSV</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Additional Options</h3>
+                        <div class="checkbox-group">
+                            <label class="checkbox-option">
+                                <input type="checkbox" checked>
+                                <span>Include charts and graphs</span>
+                            </label>
+                            <label class="checkbox-option">
+                                <input type="checkbox" checked>
+                                <span>Include category breakdown</span>
+                            </label>
+                            <label class="checkbox-option">
+                                <input type="checkbox">
+                                <span>Include budget comparison</span>
+                            </label>
+                            <label class="checkbox-option">
+                                <input type="checkbox">
+                                <span>Include notes and descriptions</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="previewReport()">👁️ Preview</button>
+                        <button type="submit" class="btn btn-primary">⬇️ Generate & Download</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Recent Exports -->
+            <div class="recent-exports">
+                <h2>Recent Exports</h2>
+                <div class="exports-list">
+                    <div class="export-item">
+                        <div class="export-icon">📄</div>
+                        <div class="export-info">
+                            <h4>January 2026 Summary Report</h4>
+                            <p>PDF • Generated on Jan 30, 2026</p>
+                        </div>
+                        <button class="btn btn-secondary">Download</button>
+                    </div>
+                    <div class="export-item">
+                        <div class="export-icon">📊</div>
+                        <div class="export-info">
+                            <h4>Q4 2025 Detailed Report</h4>
+                            <p>Excel • Generated on Jan 5, 2026</p>
+                        </div>
+                        <button class="btn btn-secondary">Download</button>
+                    </div>
+                    <div class="export-item">
+                        <div class="export-icon">💼</div>
+                        <div class="export-info">
+                            <h4>2025 Tax Report</h4>
+                            <p>PDF • Generated on Jan 1, 2026</p>
+                        </div>
+                        <button class="btn btn-secondary">Download</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleCustomDates() {
+            const select = document.getElementById('periodSelect');
+            const customDates = document.getElementById('customDates');
+            if (select.value === 'custom') {
+                customDates.style.display = 'block';
+            } else {
+                customDates.style.display = 'none';
+            }
+        }
+
+        function previewReport() {
+            alert('Preview functionality - Show report preview modal');
+        }
+    </script>
+</body>
+</html>

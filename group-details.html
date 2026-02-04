@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group Details - Trackify</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <img src="assets/logo.png" alt="Trackify Logo" class="nav-logo">
+                <span class="brand-name">Trackify</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="dashboard.html">Home</a></li>
+                <li><a href="profile.html">Profile</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="group-details-container">
+        <div class="page-header">
+            <div>
+                <a href="groups.html" class="back-link">← Back to Groups</a>
+                <div class="group-title">
+                    <span class="group-icon-large">🏠</span>
+                    <h1>Roommates</h1>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-secondary" onclick="openManageMembersModal()">Manage Members</button>
+                <button class="btn btn-primary" onclick="openAddExpenseModal()">Add Expense</button>
+            </div>
+        </div>
+
+        <!-- Group Summary -->
+        <div class="group-summary">
+            <div class="summary-card">
+                <h3>Total Group Spending</h3>
+                <p class="summary-amount">₹15,000</p>
+            </div>
+            <div class="summary-card">
+                <h3>Your Share</h3>
+                <p class="summary-amount">₹3,750</p>
+            </div>
+            <div class="summary-card">
+                <h3>You Owe</h3>
+                <p class="summary-amount negative">₹1,200</p>
+            </div>
+        </div>
+
+        <!-- Members List -->
+        <div class="members-section">
+            <h2>Group Members</h2>
+            <div class="members-grid">
+                <div class="member-card">
+                    <div class="member-avatar">👤</div>
+                    <div class="member-info">
+                        <h3>You</h3>
+                        <p>@yourname</p>
+                    </div>
+                    <div class="member-balance negative">Owes ₹1,200</div>
+                </div>
+                <div class="member-card">
+                    <div class="member-avatar">👤</div>
+                    <div class="member-info">
+                        <h3>Sarah Johnson</h3>
+                        <p>@sarahj</p>
+                    </div>
+                    <div class="member-balance positive">Gets ₹800</div>
+                </div>
+                <div class="member-card">
+                    <div class="member-avatar">👤</div>
+                    <div class="member-info">
+                        <h3>Mike Chen</h3>
+                        <p>@mikechen</p>
+                    </div>
+                    <div class="member-balance neutral">Settled</div>
+                </div>
+                <div class="member-card">
+                    <div class="member-avatar">👤</div>
+                    <div class="member-info">
+                        <h3>Emma Davis</h3>
+                        <p>@emmad</p>
+                    </div>
+                    <div class="member-balance positive">Gets ₹400</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Expense History -->
+        <div class="group-expenses">
+            <h2>Expense History</h2>
+
+            <div class="expense-item">
+                <div class="expense-date">Jan 30, 2026</div>
+                <div class="expense-details">
+                    <div class="expense-icon">💡</div>
+                    <div class="expense-info">
+                        <h3>Electricity Bill</h3>
+                        <p>Paid by Sarah Johnson • Split 4 ways</p>
+                    </div>
+                    <div class="expense-amount">₹2,400</div>
+                </div>
+                <div class="expense-split">
+                    <p>Your share: ₹600</p>
+                </div>
+            </div>
+
+            <div class="expense-item">
+                <div class="expense-date">Jan 25, 2026</div>
+                <div class="expense-details">
+                    <div class="expense-icon">🛒</div>
+                    <div class="expense-info">
+                        <h3>Grocery Shopping</h3>
+                        <p>Paid by You • Split 4 ways</p>
+                    </div>
+                    <div class="expense-amount">₹3,200</div>
+                </div>
+                <div class="expense-split">
+                    <p>Your share: ₹800</p>
+                </div>
+            </div>
+
+            <div class="expense-item">
+                <div class="expense-date">Jan 20, 2026</div>
+                <div class="expense-details">
+                    <div class="expense-icon">🌐</div>
+                    <div class="expense-info">
+                        <h3>Internet Bill</h3>
+                        <p>Paid by Mike Chen • Split 4 ways</p>
+                    </div>
+                    <div class="expense-amount">₹1,600</div>
+                </div>
+                <div class="expense-split">
+                    <p>Your share: ₹400</p>
+                </div>
+            </div>
+
+            <div class="expense-item">
+                <div class="expense-date">Jan 15, 2026</div>
+                <div class="expense-details">
+                    <div class="expense-icon">🧹</div>
+                    <div class="expense-info">
+                        <h3>Cleaning Supplies</h3>
+                        <p>Paid by Emma Davis • Split 4 ways</p>
+                    </div>
+                    <div class="expense-amount">₹800</div>
+                </div>
+                <div class="expense-split">
+                    <p>Your share: ₹200</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settlement Section -->
+        <div class="settlement-section">
+            <h2>Suggested Settlements</h2>
+            <div class="settlement-card">
+                <p>💰 You owe <strong>Sarah Johnson ₹800</strong></p>
+                <button class="btn btn-primary">Settle Up</button>
+            </div>
+            <div class="settlement-card">
+                <p>💰 You owe <strong>Emma Davis ₹400</strong></p>
+                <button class="btn btn-primary">Settle Up</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Expense Modal -->
+    <div id="addExpenseModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAddExpenseModal()">&times;</span>
+            <h2>Add Group Expense</h2>
+            <form class="modal-form">
+                <div class="form-group">
+                    <label>Description</label>
+                    <input type="text" placeholder="e.g., Rent, Utilities, Groceries" required>
+                </div>
+                <div class="form-group">
+                    <label>Amount</label>
+                    <input type="number" placeholder="Enter total amount" required>
+                </div>
+                <div class="form-group">
+                    <label>Paid By</label>
+                    <select required>
+                        <option>You</option>
+                        <option>Sarah Johnson</option>
+                        <option>Mike Chen</option>
+                        <option>Emma Davis</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Split Type</label>
+                    <select required>
+                        <option>Split Equally</option>
+                        <option>Split by Amount</option>
+                        <option>Split by Percentage</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Add Expense</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Manage Members Modal -->
+    <div id="manageMembersModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeManageMembersModal()">&times;</span>
+            <h2>Manage Group Members</h2>
+            <div class="modal-form">
+                <div class="form-group">
+                    <label>Add New Member</label>
+                    <input type="text" placeholder="Search friends to add...">
+                </div>
+                <div class="current-members">
+                    <h3>Current Members</h3>
+                    <div class="member-list-item">
+                        <span>Sarah Johnson</span>
+                        <button class="btn-remove">Remove</button>
+                    </div>
+                    <div class="member-list-item">
+                        <span>Mike Chen</span>
+                        <button class="btn-remove">Remove</button>
+                    </div>
+                    <div class="member-list-item">
+                        <span>Emma Davis</span>
+                        <button class="btn-remove">Remove</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openAddExpenseModal() {
+            document.getElementById('addExpenseModal').style.display = 'block';
+        }
+
+        function closeAddExpenseModal() {
+            document.getElementById('addExpenseModal').style.display = 'none';
+        }
+
+        function openManageMembersModal() {
+            document.getElementById('manageMembersModal').style.display = 'block';
+        }
+
+        function closeManageMembersModal() {
+            document.getElementById('manageMembersModal').style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            const expenseModal = document.getElementById('addExpenseModal');
+            const membersModal = document.getElementById('manageMembersModal');
+            if (event.target == expenseModal) {
+                expenseModal.style.display = 'none';
+            }
+            if (event.target == membersModal) {
+                membersModal.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

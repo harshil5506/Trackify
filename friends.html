@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Friends - Trackify</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <img src="assets/logo.png" alt="Trackify Logo" class="nav-logo">
+                <span class="brand-name">Trackify</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="dashboard.html">Home</a></li>
+                <li><a href="profile.html">Profile</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="friends-container">
+        <div class="page-header">
+            <h1>Friends & Exchanges</h1>
+            <button class="btn btn-primary" onclick="openSearchModal()">
+                ➕ Add Friend
+            </button>
+        </div>
+
+        <!-- Search Friends Section -->
+        <div class="search-section">
+            <div class="search-box">
+                <input type="text" placeholder="🔍 Search your friends..." id="friendSearch">
+            </div>
+        </div>
+
+        <!-- Friends List -->
+        <div class="friends-list">
+            <h2>Your Friends</h2>
+            
+            <div class="friend-card">
+                <div class="friend-info">
+                    <div class="friend-avatar">👤</div>
+                    <div class="friend-details">
+                        <h3>Sarah Johnson</h3>
+                        <p>@sarahj</p>
+                    </div>
+                </div>
+                <div class="friend-balance">
+                    <span class="balance-label">You owe</span>
+                    <span class="balance-amount negative">₹500</span>
+                </div>
+                <div class="friend-actions">
+                    <a href="friend-history.html?friend=sarah" class="btn btn-secondary">View History</a>
+                    <button class="btn btn-primary" onclick="openSettleModal('Sarah Johnson', 500)">Settle</button>
+                </div>
+            </div>
+
+            <div class="friend-card">
+                <div class="friend-info">
+                    <div class="friend-avatar">👤</div>
+                    <div class="friend-details">
+                        <h3>Mike Chen</h3>
+                        <p>@mikechen</p>
+                    </div>
+                </div>
+                <div class="friend-balance">
+                    <span class="balance-label">Owes you</span>
+                    <span class="balance-amount positive">₹1,200</span>
+                </div>
+                <div class="friend-actions">
+                    <a href="friend-history.html?friend=mike" class="btn btn-secondary">View History</a>
+                    <button class="btn btn-primary" onclick="openSettleModal('Mike Chen', -1200)">Settle</button>
+                </div>
+            </div>
+
+            <div class="friend-card">
+                <div class="friend-info">
+                    <div class="friend-avatar">👤</div>
+                    <div class="friend-details">
+                        <h3>Emma Davis</h3>
+                        <p>@emmad</p>
+                    </div>
+                </div>
+                <div class="friend-balance">
+                    <span class="balance-label">Settled</span>
+                    <span class="balance-amount neutral">₹0</span>
+                </div>
+                <div class="friend-actions">
+                    <a href="friend-history.html?friend=emma" class="btn btn-secondary">View History</a>
+                    <button class="btn btn-primary" onclick="openExpenseModal('Emma Davis')">Add Expense</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Section -->
+        <div class="exchange-summary">
+            <h2>Summary</h2>
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <h3>Total You Owe</h3>
+                    <p class="summary-amount negative">₹500</p>
+                </div>
+                <div class="summary-item">
+                    <h3>Total Owed to You</h3>
+                    <p class="summary-amount positive">₹1,200</p>
+                </div>
+                <div class="summary-item">
+                    <h3>Net Balance</h3>
+                    <p class="summary-amount positive">₹700</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Friends Modal -->
+    <div id="searchModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeSearchModal()">&times;</span>
+            <h2>Add Friend</h2>
+            <form class="modal-form">
+                <div class="form-group">
+                    <label>Search by username or email</label>
+                    <input type="text" placeholder="Enter username or email" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Search</button>
+            </form>
+            
+            <div class="search-results">
+                <h3>Search Results</h3>
+                <div class="search-result-item">
+                    <div class="friend-avatar">👤</div>
+                    <div class="friend-details">
+                        <h4>Alex Turner</h4>
+                        <p>@alexturner</p>
+                    </div>
+                    <button class="btn btn-primary">Add Friend</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settle Modal -->
+    <div id="settleModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeSettleModal()">&times;</span>
+            <h2>Settle Payment</h2>
+            <form class="modal-form">
+                <div class="form-group">
+                    <label>Amount</label>
+                    <input type="number" id="settleAmount" placeholder="Enter amount" required>
+                </div>
+                <div class="form-group">
+                    <label>Payment Method</label>
+                    <select required>
+                        <option>Cash</option>
+                        <option>UPI</option>
+                        <option>Bank Transfer</option>
+                        <option>Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Note</label>
+                    <textarea placeholder="Add a note (optional)"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Confirm Settlement</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openSearchModal() {
+            document.getElementById('searchModal').style.display = 'block';
+        }
+
+        function closeSearchModal() {
+            document.getElementById('searchModal').style.display = 'none';
+        }
+
+        function openSettleModal(name, amount) {
+            document.getElementById('settleModal').style.display = 'block';
+            document.getElementById('settleAmount').value = Math.abs(amount);
+        }
+
+        function closeSettleModal() {
+            document.getElementById('settleModal').style.display = 'none';
+        }
+
+        function openExpenseModal(name) {
+            alert('Add expense functionality for ' + name);
+        }
+
+        window.onclick = function(event) {
+            const searchModal = document.getElementById('searchModal');
+            const settleModal = document.getElementById('settleModal');
+            if (event.target == searchModal) {
+                searchModal.style.display = 'none';
+            }
+            if (event.target == settleModal) {
+                settleModal.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
