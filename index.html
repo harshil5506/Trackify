@@ -1,29 +1,213 @@
-<!DOCTYPE html>
+<DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trackify - Track Your Expenses Easily</title>
-    <link rel="stylesheet" href="css/styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Trackify - Track Smart Spend Better</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/footer.css" />
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500&display=swap" rel="stylesheet"/>
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 </head>
 <body>
-    <div class="landing-container">
-        <div class="wave-decoration"></div>
-        
-        <div class="content-center">
-            <div class="logo-container">
-                <img src="assets/logo.png" alt="Trackify Logo" class="wallet-icon">
-            </div>
-            
-            <h1 class="main-heading">Track Your Expenses Easily</h1>
-            
-            <div class="button-group">
-                <a href="login.html" class="btn btn-primary">Get Started</a>
-                <div class="dots">• • •</div>
-            </div>
-        </div>
-        
-        <div class="wave-bottom"></div>
+
+  <!-- ========== NAVBAR ========== -->
+  <nav class="navbar">
+    <div class="nav-brand">
+      <div class="logo-placeholder">
+        <img src="assets/logo.png" alt="Trackify Logo" class="logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"/>
+      </div>
+      <span class="brand-name">Trackify</span>
     </div>
+    <ul class="nav-links">
+      <li><a href="#home">Home</a></li>
+      <li><a href="#features">Features</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#contact">Contact</a></li>
+      <li><a href="signup.html">Sign up</a></li>
+    </ul>
+  </nav>
+
+  <!-- ========== HERO SECTION ========== -->
+  <section class="hero" id="home">
+    <div class="hero-content">
+      <h1 class="hero-title">Track &nbsp; Smart &nbsp; Spend &nbsp; Better</h1>
+      <p class="hero-subtitle">
+        Powerful project tracking and analytics platform designed to help
+        teams collaborate efficiently and achieve their goals faster
+      </p>
+      <div class="hero-buttons">
+        <a href="#" class="btn btn-white">Get Started Free</a>
+        <a href="#" class="btn btn-outline">Watch Demo</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== STATS SECTION ========== -->
+  <section class="stats">
+    <div class="stats-grid">
+      <div class="stat-item">
+        <h2>50K+</h2>
+        <p>Active Users</p>
+      </div>
+      <div class="stat-item">
+        <h2>99.9%</h2>
+        <p>Uptime</p>
+      </div>
+      <div class="stat-item">
+        <h2>24/7</h2>
+        <p>Support</p>
+      </div>
+      <div class="stat-item">
+        <h2>150+</h2>
+        <p>Countries</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== FEATURES SECTION ========== -->
+  <section class="features" id="features">
+    <div class="section-header">
+      <h2>Powerful Features</h2>
+      <p>Everything you need to track, manage, and optimize your projects in one comprehensive platform</p>
+    </div>
+    <div class="features-grid">
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i data-lucide="check-circle"></i>
+        </div>
+        <h3>Real-Time Tracking</h3>
+        <p>Monitor your projects in real-time with live updates and instant notifications. Stay informed about every change as it happens.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i data-lucide="bar-chart-2"></i>
+        </div>
+        <h3>Advanced Analytics</h3>
+        <p>Gain deep insights with comprehensive analytics and customizable reports. Make data-driven decisions with confidence.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i data-lucide="users"></i>
+        </div>
+        <h3>Team Collaboration</h3>
+        <p>Work together seamlessly with built-in collaboration tools. Share updates, assign tasks, and communicate effectively.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i data-lucide="shield"></i>
+        </div>
+        <h3>Enterprise Security</h3>
+        <p>Bank-level encryption and security protocols to keep your data safe. Compliant with industry standards and regulations.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i data-lucide="trending-up"></i>
+        </div>
+        <h3>Performance Metrics</h3>
+        <p>Track KPIs and performance metrics with customizable dashboards. Visualize progress and identify areas for improvement.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i data-lucide="message-square"></i>
+        </div>
+        <h3>24/7 Support</h3>
+        <p>Get help whenever you need it with our dedicated support team. Live chat, email, and phone support available around the clock.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========== TESTIMONIALS SECTION ========== -->
+  <section class="testimonials" id="testimonials">
+    <div class="section-header">
+      <h2>What Our Customers Say</h2>
+      <p>Join thousands of satisfied customers who have transformed their workflow with Trackify</p>
+    </div>
+
+    <div class="testimonial-slider">
+      <button class="slider-btn prev" onclick="changeSlide(-1)">&#8249;</button>
+
+      <div class="testimonial-track">
+
+        <div class="testimonial-card active">
+          <div class="avatar">SJ</div>
+          <blockquote>
+            "Trackify has revolutionized how we manage our projects. The real-time tracking and analytics have improved our team productivity by 40%."
+          </blockquote>
+          <div class="customer-info">
+            <strong>Sarah Johnson</strong>
+            <span>Product Manager at TechCorp</span>
+          </div>
+        </div>
+
+        <div class="testimonial-card">
+          <div class="avatar">MR</div>
+          <blockquote>
+            "The analytics dashboard alone is worth it. We finally have visibility into every aspect of our projects and can make smarter decisions daily."
+          </blockquote>
+          <div class="customer-info">
+            <strong>Mark Rivera</strong>
+            <span>CTO at StartupHub</span>
+          </div>
+        </div>
+
+        <div class="testimonial-card">
+          <div class="avatar">AL</div>
+          <blockquote>
+            "Our remote team collaboration has never been this smooth. Trackify keeps everyone aligned no matter where they are in the world."
+          </blockquote>
+          <div class="customer-info">
+            <strong>Aisha Lee</strong>
+            <span>Operations Lead at RemoteWorks</span>
+          </div>
+        </div>
+
+      </div>
+
+      <button class="slider-btn next" onclick="changeSlide(1)">&#8250;</button>
+    </div>
+
+    <div class="slider-dots">
+      <span class="dot active" onclick="goToSlide(0)"></span>
+      <span class="dot" onclick="goToSlide(1)"></span>
+      <span class="dot" onclick="goToSlide(2)"></span>
+    </div>
+  </section>
+
+  <!-- ========== FOOTER (auto-injected by footer.js) ========== -->
+  <script src="js/footer.js"></script>
+
+  <!-- Icons Init + Slider Script -->
+  <script>
+    lucide.createIcons();
+
+    let current = 0;
+    const cards = document.querySelectorAll('.testimonial-card');
+    const dots = document.querySelectorAll('.dot');
+
+    function goToSlide(index) {
+      cards[current].classList.remove('active');
+      dots[current].classList.remove('active');
+      current = index;
+      cards[current].classList.add('active');
+      dots[current].classList.add('active');
+    }
+
+    function changeSlide(dir) {
+      let next = (current + dir + cards.length) % cards.length;
+      goToSlide(next);
+    }
+  </script>
+
 </body>
 </html>

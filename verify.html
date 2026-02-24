@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Trackify - Verify Code</title>
+  
+  <link rel="stylesheet" href="css/auth.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500&display=swap" rel="stylesheet"/>
+</head>
+<body class="auth-page">
+
+  <div class="auth-wrapper">
+    <div class="auth-card">
+
+      <!-- Logo + Brand at top of card -->
+      <div class="card-logo">
+        <img src="assets/logo.png" alt="Trackify Logo" class="logo-img" />
+        <span class="brand-name">Trackify</span>
+      </div>
+
+      <!-- Subtitle under logo -->
+      <p class="verify-secure-label">Secure Account Recovery</p>
+
+      <h2 class="auth-title">Enter Verification Code</h2>
+      <p class="auth-subtitle">We've sent a 6-digit code to your email. Please enter it below.</p>
+
+      <form class="auth-form" id="verifyForm">
+
+        <!-- 6 OTP boxes -->
+        <div class="form-group">
+          <label>Verification Code</label>
+          <div class="otp-boxes">
+            <input class="otp-input" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+            <input class="otp-input" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+            <input class="otp-input" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+            <input class="otp-input" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+            <input class="otp-input" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+            <input class="otp-input" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+          </div>
+          <span class="field-error" id="otp-error"></span>
+        </div>
+
+        <button type="submit" class="btn-primary">Verify Code</button>
+
+      </form>
+
+      <!-- Resend link -->
+      <div class="verify-resend">
+        <a href="#" id="resendBtn">&#8249; Resend Code</a>
+      </div>
+
+      <!-- Support link -->
+      <p class="verify-support">Need help? <a href="#">Contact Support</a></p>
+
+    </div>
+  </div>
+
+  <script src="js/auth.js"></script>
+  <script src="js/verify.js"></script>
+</body>
+</html>

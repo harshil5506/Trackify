@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Trackify - Create Account</title>
+  <title>Trackify - Sign In</title>
   
   <link rel="stylesheet" href="css/auth.css" />
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500&display=swap" rel="stylesheet"/>
@@ -21,31 +21,25 @@
 
       <!-- Tab Switch -->
       <div class="auth-tabs">
-        <a href="signup.html" class="tab active">Sign Up</a>
-        <a href="signin.html" class="tab">Sign In</a>
+        <a href="signup.html" class="tab">Sign Up</a>
+        <a href="signin.html" class="tab active">Sign In</a>
       </div>
 
-      <h2 class="auth-title">Create account</h2>
-      <p class="auth-subtitle">Sign up for a new account to start tracking</p>
+      <h2 class="auth-title">Welcome back</h2>
+      <p class="auth-subtitle">Sign in to your account to continue</p>
 
-      <form class="auth-form" id="signupForm">
-
-        <div class="form-group">
-          <label for="fullname">FULL NAME</label>
-          <input type="text" id="fullname" name="fullname" placeholder="Enter your full name" />
-          <span class="field-error" id="fullname-error"></span>
-        </div>
+      <form class="auth-form" id="signinForm">
 
         <div class="form-group">
-          <label for="email">EMAIL ADDRESS</label>
-          <input type="email" id="email" name="email" placeholder="Enter your email" />
+          <label for="email">USER NAME</label>
+          <input type="text" id="email" name="email" placeholder="Enter your user name" />
           <span class="field-error" id="email-error"></span>
         </div>
 
         <div class="form-group">
           <label for="password">PASSWORD</label>
           <div class="input-wrap">
-            <input type="password" id="password" name="password" placeholder="Create a password" />
+            <input type="password" id="password" name="password" placeholder="Enter your password" />
             <button type="button" class="eye-btn" data-target="password">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
             </button>
@@ -53,23 +47,15 @@
           <span class="field-error" id="password-error"></span>
         </div>
 
-        <div class="form-group">
-          <label for="confirm-password">CONFIRM PASSWORD</label>
-          <div class="input-wrap">
-            <input type="password" id="confirm-password" name="confirm-password" placeholder="Confirm your password" />
-            <button type="button" class="eye-btn" data-target="confirm-password">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-            </button>
+        <div class="form-row">
+          <div class="form-checkbox">
+            <input type="checkbox" id="remember" name="remember" />
+            <label for="remember">Remember me</label>
           </div>
-          <span class="field-error" id="confirm-error"></span>
+          <a href="forgot-password.html" class="forgot-link">Forgot password?</a>
         </div>
 
-        <div class="form-checkbox">
-          <input type="checkbox" id="terms" name="terms" />
-          <label for="terms">I agree to the <a href="#">Terms &amp; Conditions</a></label>
-        </div>
-
-        <button type="submit" class="btn-primary">Create Account</button>
+        <button type="submit" class="btn-primary">Sign In</button>
 
       </form>
 
@@ -86,7 +72,7 @@
         </button>
       </div>
 
-      <p class="auth-switch">Already have an account? <a href="signin.html">Sign in</a></p>
+      <p class="auth-switch">Don't have an account? <a href="signup.html">Sign up</a></p>
 
     </div>
   </div>
