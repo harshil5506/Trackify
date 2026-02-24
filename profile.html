@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Trackify</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Profile Page -->
+    <div class="profile-page">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="logo-section">
+                <img src="assets/Logo.png" alt="Trackify Logo" class="logo-small">
+            </div>
+            <nav class="main-nav">
+                <a href="#" class="nav-link">Home</a>
+                <a href="#" class="nav-link active">Profile</a>
+                <a href="#" class="nav-link">About</a>
+                <a href="contact.html" class="nav-link">Contact</a>
+            </nav>
+        </div>
+
+        <div class="profile-container">
+            <!-- Left Sidebar -->
+            <aside class="profile-sidebar">
+                <h2 class="profile-title">User Profile</h2>
+                
+                <div class="profile-card">
+                    <div class="profile-header-bg"></div>
+                    <div class="profile-avatar">
+                        <svg viewBox="0 0 100 100" class="avatar-icon">
+                            <circle cx="50" cy="35" r="18" fill="#2C3E50"/>
+                            <path d="M 25 75 Q 25 55 50 55 Q 75 55 75 75" fill="#2C3E50"/>
+                        </svg>
+                    </div>
+                    <button class="edit-profile-btn-small">Edit Profile</button>
+                </div>
+
+                <div class="account-settings">
+                    <h3 class="settings-title">Account Settings</h3>
+                    <div class="settings-item">
+                        <span class="settings-icon">👤</span>
+                        <span class="settings-label">User Id:</span>
+                    </div>
+                    <div class="settings-item">
+                        <span class="settings-icon">⚫</span>
+                        <span class="settings-label">Joined On:</span>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="profile-main">
+                <button class="edit-profile-btn">
+                    ✏️ Edit Profile
+                </button>
+
+                <div class="info-card">
+                    <h3 class="info-title">Personal Information</h3>
+                    <hr class="info-divider">
+
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-icon">👤</span>
+                            <span class="info-label">Full Name</span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-icon">✉️</span>
+                            <span class="info-label">Email</span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-icon">👤</span>
+                            <span class="info-label">Username</span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-icon">📞</span>
+                            <span class="info-label">Phone</span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-icon">📍</span>
+                            <span class="info-label">Address</span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-icon">📅</span>
+                            <span class="info-label">DOB</span>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+</body>
+</html>
