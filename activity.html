@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Trackify – Activity</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/styles.css"/>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body class="app-body">
+<nav class="app-nav">
+  <div class="app-nav-brand">
+    <img src="assets/logo1.jpeg" alt="Trackify" class="app-logo"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+    <div class="app-logo-fallback" style="display:none;">T</div>
+    <span class="app-brand-name">Trackify</span>
+  </div>
+  <ul class="app-nav-links">
+    <li><a href="dashboard.html">Dashboard</a></li>
+    <li><a href="#">Add Expense</a></li>
+    <li><a href="#">Transactions</a></li>
+    <li><a href="#">Reports</a></li>
+    <li><a href="#">Budget</a></li>
+  </ul>
+  <div class="app-nav-right">
+    <button class="notif-btn"><i data-lucide="bell"></i><span class="notif-badge">2</span></button>
+    <div class="app-user-chip">
+      <div class="app-avatar">JD</div>
+      <span class="app-username">John<br>Doe</span>
+      <i data-lucide="chevron-down" class="app-chevron"></i>
+    </div>
+  </div>
+</nav>
+<main class="dash-main">
+  <div class="page-heading">
+    <h1 class="page-title">Activity Summary</h1>
+    <p class="page-sub">Your financial overview at a glance</p>
+  </div>
+
+  <div class="activity-stats">
+    <div class="act-stat-card">
+      <div class="act-stat-top">
+        <div class="act-stat-icon act-green"><i data-lucide="arrow-up"></i></div>
+        <span class="act-change positive-tag">+12.5%</span>
+      </div>
+      <p class="act-stat-label">Total Income</p>
+      <p class="act-stat-amount">$6,200.00</p>
+    </div>
+    <div class="act-stat-card">
+      <div class="act-stat-top">
+        <div class="act-stat-icon act-red"><i data-lucide="arrow-down"></i></div>
+        <span class="act-change negative-tag">-8.3%</span>
+      </div>
+      <p class="act-stat-label">Total Expense</p>
+      <p class="act-stat-amount">$2,455.00</p>
+    </div>
+    <div class="act-stat-card">
+      <div class="act-stat-top">
+        <div class="act-stat-icon act-blue"><i data-lucide="refresh-cw"></i></div>
+        <span class="act-change active-tag">Active</span>
+      </div>
+      <p class="act-stat-label">Current Balance</p>
+      <p class="act-stat-amount">$3,745.00</p>
+    </div>
+    <div class="act-stat-card">
+      <div class="act-stat-top">
+        <div class="act-stat-icon act-purple"><i data-lucide="bar-chart-2"></i></div>
+        <span class="act-change neutral-tag">49%</span>
+      </div>
+      <p class="act-stat-label">Budget Remaining</p>
+      <p class="act-stat-amount">$2,545.00</p>
+      <div class="budget-bar-wrap">
+        <div class="budget-bar"><div class="budget-bar-fill" style="width:49%"></div></div>
+        <p class="budget-bar-label">$2,455.00 / $5,000.00 used</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="dash-card">
+    <div class="friends-card-header">
+      <div>
+        <h3 class="dash-card-title">Recent Transactions</h3>
+        <p class="page-sub" style="margin-top:2px;">Your last 5 financial activities</p>
+      </div>
+      <button class="view-all-btn">View All</button>
+    </div>
+    <div class="act-txn-list">
+      <div class="act-txn-row">
+        <div class="act-txn-arrow up"><i data-lucide="arrow-up"></i></div>
+        <div class="act-txn-info">
+          <p class="txn-name">Monthly Salary</p>
+          <p class="txn-meta-plain">Salary • Jan 15, 2024</p>
+        </div>
+        <div class="act-txn-right">
+          <span class="txn-amount positive">+$5,000.00</span>
+          <span class="act-tag income-tag">Income</span>
+        </div>
+      </div>
+      <div class="act-txn-row">
+        <div class="act-txn-arrow down"><i data-lucide="arrow-down"></i></div>
+        <div class="act-txn-info">
+          <p class="txn-name">Whole Foods Market</p>
+          <p class="txn-meta-plain">Groceries • Jan 14, 2024</p>
+        </div>
+        <div class="act-txn-right">
+          <span class="txn-amount negative">-$250.00</span>
+          <span class="act-tag expense-tag">Expense</span>
+        </div>
+      </div>
+      <div class="act-txn-row">
+        <div class="act-txn-arrow down"><i data-lucide="arrow-down"></i></div>
+        <div class="act-txn-info">
+          <p class="txn-name">Uber Rides</p>
+          <p class="txn-meta-plain">Transport • Jan 13, 2024</p>
+        </div>
+        <div class="act-txn-right">
+          <span class="txn-amount negative">-$85.00</span>
+          <span class="act-tag expense-tag">Expense</span>
+        </div>
+      </div>
+      <div class="act-txn-row">
+        <div class="act-txn-arrow up"><i data-lucide="arrow-up"></i></div>
+        <div class="act-txn-info">
+          <p class="txn-name">Web Design Project</p>
+          <p class="txn-meta-plain">Freelance • Jan 12, 2024</p>
+        </div>
+        <div class="act-txn-right">
+          <span class="txn-amount positive">+$1,200.00</span>
+          <span class="act-tag income-tag">Income</span>
+        </div>
+      </div>
+      <div class="act-txn-row">
+        <div class="act-txn-arrow down"><i data-lucide="arrow-down"></i></div>
+        <div class="act-txn-info">
+          <p class="txn-name">Netflix &amp; Spotify</p>
+          <p class="txn-meta-plain">Entertainment • Jan 11, 2024</p>
+        </div>
+        <div class="act-txn-right">
+          <span class="txn-amount negative">-$120.00</span>
+          <span class="act-tag expense-tag">Expense</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+<script>lucide.createIcons();</script>
+</body>
+</html>

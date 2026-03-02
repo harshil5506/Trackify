@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Trackify – Security</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/styles.css"/>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body class="app-body">
+<nav class="app-nav">
+  <div class="app-nav-brand">
+    <img src="assets/logo1.jpeg" alt="Trackify" class="app-logo"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+    <div class="app-logo-fallback" style="display:none;">T</div>
+    <span class="app-brand-name">Trackify</span>
+  </div>
+  <ul class="app-nav-links">
+    <li><a href="dashboard.html">Dashboard</a></li>
+    <li><a href="#">Add Expense</a></li>
+    <li><a href="#">Transactions</a></li>
+    <li><a href="#">Reports</a></li>
+    <li><a href="#">Budget</a></li>
+  </ul>
+  <div class="app-nav-right">
+    <button class="notif-btn"><i data-lucide="bell"></i><span class="notif-badge">2</span></button>
+    <div class="app-user-chip">
+      <div class="app-avatar">JD</div>
+      <span class="app-username">John<br>Doe</span>
+      <i data-lucide="chevron-down" class="app-chevron"></i>
+    </div>
+  </div>
+</nav>
+<main class="dash-main">
+  <div class="page-heading">
+    <h1 class="page-title">Security &amp; Account Control</h1>
+    <p class="page-sub">Manage your account security, active sessions, and privacy settings</p>
+  </div>
+
+  <div class="sec-tabs">
+    <button class="sec-tab active">Overview</button>
+    <button class="sec-tab">Active Devices</button>
+    <button class="sec-tab">Login History</button>
+    <button class="sec-tab">Security Settings</button>
+    <button class="sec-tab sec-tab-danger">Danger Zone</button>
+  </div>
+
+  <div class="sec-overview-cards">
+    <div class="sec-ov-card">
+      <div class="sec-ov-top">
+        <div class="sec-ov-icon sec-icon-green"><i data-lucide="shield-check"></i></div>
+        <span class="sec-ov-badge badge-excellent">Excellent</span>
+      </div>
+      <p class="sec-ov-label">Security Score</p>
+      <p class="sec-ov-num">85/100</p>
+      <div class="score-bar"><div class="score-bar-fill" style="width:85%"></div></div>
+      <p class="sec-ov-note">Your account security is strong, keep it up!</p>
+    </div>
+    <div class="sec-ov-card">
+      <div class="sec-ov-top">
+        <div class="sec-ov-icon sec-icon-blue"><i data-lucide="lock"></i></div>
+        <span class="sec-ov-badge badge-enabled">Enabled</span>
+      </div>
+      <p class="sec-ov-label">Two-Factor Authentication</p>
+      <p class="sec-ov-sub">Extra layer of security</p>
+      <p class="sec-ov-note">Protect your account with an additional verification step</p>
+      <button class="disable-2fa-btn">Disable 2FA</button>
+    </div>
+    <div class="sec-ov-card">
+      <div class="sec-ov-top">
+        <div class="sec-ov-icon sec-icon-orange"><i data-lucide="monitor"></i></div>
+        <span class="sec-ov-badge badge-count">4</span>
+      </div>
+      <p class="sec-ov-label">Active Sessions</p>
+      <p class="sec-ov-sub">Devices logged in</p>
+      <p class="sec-ov-note">Monitor and manage all active sessions across devices</p>
+      <button class="view-devices-btn">View All Devices</button>
+    </div>
+  </div>
+
+  <div class="dash-card">
+    <div class="friends-card-header">
+      <div>
+        <h3 class="dash-card-title">Recent Security Activity</h3>
+        <p class="page-sub" style="margin-top:2px;">Latest login attempts and security events</p>
+      </div>
+      <button class="view-all-btn">View Full History</button>
+    </div>
+    <div class="sec-activity-list">
+      <div class="sec-act-row">
+        <div class="sec-act-icon success-icon"><i data-lucide="check"></i></div>
+        <div class="sec-act-info">
+          <p class="txn-name">MacBook Pro 16-inch</p>
+          <p class="txn-meta-plain">Chrome 120.0 • New York, USA • Jan 15, 2024 at 2:30 PM</p>
+        </div>
+        <div class="sec-act-right">
+          <span class="sec-status success-status">Success</span>
+          <span class="sec-ip">192.168.11</span>
+        </div>
+      </div>
+      <div class="sec-act-row">
+        <div class="sec-act-icon success-icon"><i data-lucide="check"></i></div>
+        <div class="sec-act-info">
+          <p class="txn-name">iPhone 14 Pro</p>
+          <p class="txn-meta-plain">Safari Mobile • New York, USA • Jan 15, 2024 at 1:15 PM</p>
+        </div>
+        <div class="sec-act-right">
+          <span class="sec-status success-status">Success</span>
+          <span class="sec-ip">192.168.1.45</span>
+        </div>
+      </div>
+      <div class="sec-act-row">
+        <div class="sec-act-icon success-icon"><i data-lucide="check"></i></div>
+        <div class="sec-act-info">
+          <p class="txn-name">iPad Air</p>
+          <p class="txn-meta-plain">Safari 17.2 • Boston, USA • Jan 15, 2024 at 11:00 AM</p>
+        </div>
+        <div class="sec-act-right">
+          <span class="sec-status success-status">Success</span>
+          <span class="sec-ip">195.0.23</span>
+        </div>
+      </div>
+      <div class="sec-act-row">
+        <div class="sec-act-icon fail-icon"><i data-lucide="x"></i></div>
+        <div class="sec-act-info">
+          <p class="txn-name">Unknown Device</p>
+          <p class="txn-meta-plain">Chrome 119.0 • London, UK • Jan 14, 2024 at 3:20 PM</p>
+        </div>
+        <div class="sec-act-right">
+          <span class="sec-status fail-status">Failed</span>
+          <span class="sec-ip">203.0.113.42</span>
+        </div>
+      </div>
+      <div class="sec-act-row">
+        <div class="sec-act-icon success-icon"><i data-lucide="check"></i></div>
+        <div class="sec-act-info">
+          <p class="txn-name">Windows Desktop</p>
+          <p class="txn-meta-plain">Edge 120.0 • Chicago, USA • Jan 14, 2024 at 9:45 AM</p>
+        </div>
+        <div class="sec-act-right">
+          <span class="sec-status success-status">Success</span>
+          <span class="sec-ip">172.16.0.5</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec-bottom-grid">
+    <div class="dash-card">
+      <h3 class="dash-card-title" style="margin-bottom:16px;">Security Recommendations</h3>
+      <div class="sec-rec-list">
+        <div class="sec-rec-row rec-green">
+          <i data-lucide="check-circle" class="rec-icon"></i>
+          <div><p class="rec-title">Two-Factor Authentication Active</p><p class="rec-sub">Your account has an extra layer of security</p></div>
+        </div>
+        <div class="sec-rec-row rec-green">
+          <i data-lucide="check-circle" class="rec-icon"></i>
+          <div><p class="rec-title">Strong Password Detected</p><p class="rec-sub">Your password meets all security requirements</p></div>
+        </div>
+        <div class="sec-rec-row rec-yellow">
+          <i data-lucide="alert-triangle" class="rec-icon"></i>
+          <div><p class="rec-title">Review Unrecognized Logins</p><p class="rec-sub">Check your login history for suspicious activity</p></div>
+        </div>
+      </div>
+    </div>
+    <div class="dash-card">
+      <h3 class="dash-card-title" style="margin-bottom:16px;">Quick Actions</h3>
+      <div class="quick-actions">
+        <div class="quick-action-row">
+          <div class="qa-icon"><i data-lucide="key"></i></div>
+          <div class="qa-text"><p class="qa-name">Change Password</p><p class="qa-sub">Update your account password</p></div>
+        </div>
+        <div class="quick-action-row">
+          <div class="qa-icon"><i data-lucide="smartphone"></i></div>
+          <div class="qa-text"><p class="qa-name">Manage Devices</p><p class="qa-sub">View and remove active sessions</p></div>
+        </div>
+        <div class="quick-action-row">
+          <div class="qa-icon"><i data-lucide="download"></i></div>
+          <div class="qa-text"><p class="qa-name">Download Data</p><p class="qa-sub">Export your account data</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+<script>lucide.createIcons();</script>
+</body>
+</html>

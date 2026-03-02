@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Trackify – Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/styles.css"/>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body class="app-body">
+<nav class="app-nav">
+  <div class="app-nav-brand">
+    <img src="assets/logo1.jpeg" alt="Trackify" class="app-logo"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+    <div class="app-logo-fallback" style="display:none;">T</div>
+    <span class="app-brand-name">Trackify</span>
+  </div>
+  <ul class="app-nav-links">
+    <li><a href="dashboard.html" class="app-nav-active">Dashboard</a></li>
+    <li><a href="#">Add Expense</a></li>
+    <li><a href="#">Transactions</a></li>
+    <li><a href="#">Reports</a></li>
+    <li><a href="#">Budget</a></li>
+  </ul>
+  <div class="app-nav-right">
+    <button class="notif-btn"><i data-lucide="bell"></i><span class="notif-badge">2</span></button>
+    <div class="app-user-chip">
+      <div class="app-avatar">JD</div>
+      <span class="app-username">John<br>Doe</span>
+      <i data-lucide="chevron-down" class="app-chevron"></i>
+    </div>
+  </div>
+</nav>
+<main class="dash-main">
+  <div class="dash-stats">
+    <div class="stat-card stat-blue">
+      <div class="stat-icon"><i data-lucide="trending-up"></i></div>
+      <div class="stat-info"><p class="stat-label">Total Income</p><p class="stat-amount">₹2500.00</p></div>
+    </div>
+    <div class="stat-card stat-blue-mid">
+      <div class="stat-icon"><i data-lucide="trending-down"></i></div>
+      <div class="stat-info"><p class="stat-label">Total Expense</p><p class="stat-amount">₹280.50</p></div>
+    </div>
+    <div class="stat-card stat-blue-light">
+      <div class="stat-icon"><i data-lucide="wallet"></i></div>
+      <div class="stat-info"><p class="stat-label">Net Balance</p><p class="stat-amount stat-green">₹2219.50</p></div>
+    </div>
+  </div>
+  <div class="dash-card">
+    <h3 class="dash-card-title">Add New Transaction</h3>
+    <div class="input-methods">
+      <div class="input-method input-blue">
+        <div class="input-method-icon im-dark"><i data-lucide="mic"></i></div>
+        <p class="im-label">Voice Input</p><p class="im-sub">Speak to add transaction</p>
+      </div>
+      <div class="input-method input-green">
+        <div class="input-method-icon im-teal"><i data-lucide="file-text"></i></div>
+        <p class="im-label">Text Input</p><p class="im-sub">Type transaction details</p>
+      </div>
+      <div class="input-method input-yellow">
+        <div class="input-method-icon im-orange"><i data-lucide="scan"></i></div>
+        <p class="im-label">Scan Receipt</p><p class="im-sub">Upload or scan receipt</p>
+      </div>
+    </div>
+  </div>
+  <div class="dash-card">
+    <h3 class="dash-card-title">Recent Transactions <span class="dash-count">(5)</span></h3>
+    <div class="txn-list">
+      <div class="txn-row">
+        <div class="txn-left"><p class="txn-name">Movie tickets</p>
+          <div class="txn-meta"><span class="txn-badge badge-expense">Expense</span><span class="txn-date"><i data-lucide="calendar" class="txn-icon"></i> 2024-01-22</span><span class="txn-cat">Entertainment</span></div>
+        </div>
+        <div class="txn-right"><span class="txn-amount negative">-₹35.00</span><button class="txn-del"><i data-lucide="trash-2"></i></button></div>
+      </div>
+      <div class="txn-row">
+        <div class="txn-left"><p class="txn-name">Gas station</p>
+          <div class="txn-meta"><span class="txn-badge badge-expense">Expense</span><span class="txn-date"><i data-lucide="calendar" class="txn-icon"></i> 2024-01-21</span><span class="txn-cat">Transportation</span></div>
+        </div>
+        <div class="txn-right"><span class="txn-amount negative">-₹80.00</span><button class="txn-del"><i data-lucide="trash-2"></i></button></div>
+      </div>
+      <div class="txn-row">
+        <div class="txn-left"><p class="txn-name">Grocery shopping</p>
+          <div class="txn-meta"><span class="txn-badge badge-expense">Expense</span><span class="txn-date"><i data-lucide="calendar" class="txn-icon"></i> 2024-01-20</span><span class="txn-cat">Food &amp; Dining</span></div>
+        </div>
+        <div class="txn-right"><span class="txn-amount negative">-₹45.50</span><button class="txn-del"><i data-lucide="trash-2"></i></button></div>
+      </div>
+      <div class="txn-row">
+        <div class="txn-left"><p class="txn-name">Electric bill</p>
+          <div class="txn-meta"><span class="txn-badge badge-expense">Expense</span><span class="txn-date"><i data-lucide="calendar" class="txn-icon"></i> 2024-01-18</span><span class="txn-cat">Bills &amp; Utilities</span></div>
+        </div>
+        <div class="txn-right"><span class="txn-amount negative">-₹120.00</span><button class="txn-del"><i data-lucide="trash-2"></i></button></div>
+      </div>
+      <div class="txn-row">
+        <div class="txn-left"><p class="txn-name">Monthly salary</p>
+          <div class="txn-meta"><span class="txn-badge badge-income">Income</span><span class="txn-date"><i data-lucide="calendar" class="txn-icon"></i> 2024-01-15</span><span class="txn-cat">Other</span></div>
+        </div>
+        <div class="txn-right"><span class="txn-amount positive">+₹2500.00</span><button class="txn-del"><i data-lucide="trash-2"></i></button></div>
+      </div>
+    </div>
+  </div>
+</main>
+<script>lucide.createIcons();</script>
+</body>
+</html>
