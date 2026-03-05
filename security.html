@@ -9,6 +9,7 @@
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 </head>
 <body class="app-body">
+
 <nav class="app-nav">
   <div class="app-nav-brand">
     <img src="assets/logo1.jpeg" alt="Trackify" class="app-logo"
@@ -18,9 +19,9 @@
   </div>
   <ul class="app-nav-links">
     <li><a href="dashboard.html">Dashboard</a></li>
-    <li><a href="#">Add Expense</a></li>
-    <li><a href="#">Transactions</a></li>
-    <li><a href="#">Reports</a></li>
+    <li><a href="add-expense.html">Add Expense</a></li>
+    <li><a href="transactions.html">Transactions</a></li>
+    <li><a href="reports.html">Reports</a></li>
     <li><a href="#">Budget</a></li>
   </ul>
   <div class="app-nav-right">
@@ -32,18 +33,20 @@
     </div>
   </div>
 </nav>
+
 <main class="dash-main">
-  <div class="page-heading">
+
+  <div>
     <h1 class="page-title">Security &amp; Account Control</h1>
     <p class="page-sub">Manage your account security, active sessions, and privacy settings</p>
   </div>
 
   <div class="sec-tabs">
-    <button class="sec-tab active">Overview</button>
-    <button class="sec-tab">Active Devices</button>
-    <button class="sec-tab">Login History</button>
-    <button class="sec-tab">Security Settings</button>
-    <button class="sec-tab sec-tab-danger">Danger Zone</button>
+    <button class="sec-tab active" onclick="setTab(this)">Overview</button>
+    <button class="sec-tab" onclick="setTab(this)">Active Devices</button>
+    <button class="sec-tab" onclick="setTab(this)">Login History</button>
+    <button class="sec-tab" onclick="setTab(this)">Security Settings</button>
+    <button class="sec-tab sec-tab-danger" onclick="setTab(this)">Danger Zone</button>
   </div>
 
   <div class="sec-overview-cards">
@@ -80,10 +83,10 @@
   </div>
 
   <div class="dash-card">
-    <div class="friends-card-header">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;">
       <div>
         <h3 class="dash-card-title">Recent Security Activity</h3>
-        <p class="page-sub" style="margin-top:2px;">Latest login attempts and security events</p>
+        <p class="page-sub" style="margin-top:3px;">Latest login attempts and security events</p>
       </div>
       <button class="view-all-btn">View Full History</button>
     </div>
@@ -91,8 +94,8 @@
       <div class="sec-act-row">
         <div class="sec-act-icon success-icon"><i data-lucide="check"></i></div>
         <div class="sec-act-info">
-          <p class="txn-name">MacBook Pro 16-inch</p>
-          <p class="txn-meta-plain">Chrome 120.0 • New York, USA • Jan 15, 2024 at 2:30 PM</p>
+          <p class="sec-act-device">MacBook Pro 16-inch</p>
+          <p class="sec-act-detail">Chrome 120.0 &nbsp;•&nbsp; New York, USA &nbsp;•&nbsp; Jan 15, 2024 at 2:30 PM</p>
         </div>
         <div class="sec-act-right">
           <span class="sec-status success-status">Success</span>
@@ -102,8 +105,8 @@
       <div class="sec-act-row">
         <div class="sec-act-icon success-icon"><i data-lucide="check"></i></div>
         <div class="sec-act-info">
-          <p class="txn-name">iPhone 14 Pro</p>
-          <p class="txn-meta-plain">Safari Mobile • New York, USA • Jan 15, 2024 at 1:15 PM</p>
+          <p class="sec-act-device">iPhone 14 Pro</p>
+          <p class="sec-act-detail">Safari Mobile &nbsp;•&nbsp; New York, USA &nbsp;•&nbsp; Jan 15, 2024 at 1:15 PM</p>
         </div>
         <div class="sec-act-right">
           <span class="sec-status success-status">Success</span>
@@ -113,19 +116,19 @@
       <div class="sec-act-row">
         <div class="sec-act-icon success-icon"><i data-lucide="check"></i></div>
         <div class="sec-act-info">
-          <p class="txn-name">iPad Air</p>
-          <p class="txn-meta-plain">Safari 17.2 • Boston, USA • Jan 15, 2024 at 11:00 AM</p>
+          <p class="sec-act-device">iPad Air</p>
+          <p class="sec-act-detail">Safari 17.2 &nbsp;•&nbsp; Boston, USA &nbsp;•&nbsp; Jan 15, 2024 at 11:00 AM</p>
         </div>
         <div class="sec-act-right">
           <span class="sec-status success-status">Success</span>
-          <span class="sec-ip">195.0.23</span>
+          <span class="sec-ip">10.0.0.23</span>
         </div>
       </div>
       <div class="sec-act-row">
         <div class="sec-act-icon fail-icon"><i data-lucide="x"></i></div>
         <div class="sec-act-info">
-          <p class="txn-name">Unknown Device</p>
-          <p class="txn-meta-plain">Chrome 119.0 • London, UK • Jan 14, 2024 at 3:20 PM</p>
+          <p class="sec-act-device">Unknown Device</p>
+          <p class="sec-act-detail">Chrome 119.0 &nbsp;•&nbsp; London, UK &nbsp;•&nbsp; Jan 14, 2024 at 3:20 PM</p>
         </div>
         <div class="sec-act-right">
           <span class="sec-status fail-status">Failed</span>
@@ -135,8 +138,8 @@
       <div class="sec-act-row">
         <div class="sec-act-icon success-icon"><i data-lucide="check"></i></div>
         <div class="sec-act-info">
-          <p class="txn-name">Windows Desktop</p>
-          <p class="txn-meta-plain">Edge 120.0 • Chicago, USA • Jan 14, 2024 at 9:45 AM</p>
+          <p class="sec-act-device">Windows Desktop</p>
+          <p class="sec-act-detail">Edge 120.0 &nbsp;•&nbsp; Chicago, USA &nbsp;•&nbsp; Jan 14, 2024 at 9:45 AM</p>
         </div>
         <div class="sec-act-right">
           <span class="sec-status success-status">Success</span>
@@ -182,7 +185,15 @@
       </div>
     </div>
   </div>
+
 </main>
-<script>lucide.createIcons();</script>
+
+<script>
+lucide.createIcons();
+function setTab(el) {
+  document.querySelectorAll('.sec-tab').forEach(t => t.classList.remove('active'));
+  if (!el.classList.contains('sec-tab-danger')) el.classList.add('active');
+}
+</script>
 </body>
 </html>

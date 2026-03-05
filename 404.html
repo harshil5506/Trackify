@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Trackify – Page Not Found</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/styles.css"/>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body class="app-body">
+
+<nav class="app-nav">
+  <div class="app-nav-brand">
+    <img src="assets/logo1.jpeg" alt="Trackify" class="app-logo"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+    <div class="app-logo-fallback" style="display:none;">T</div>
+    <span class="app-brand-name">Trackify</span>
+  </div>
+  <ul class="app-nav-links">
+    <li><a href="dashboard.html">Dashboard</a></li>
+    <li><a href="add-expense.html">Add Expense</a></li>
+    <li><a href="transactions.html">Transactions</a></li>
+    <li><a href="reports.html">Reports</a></li>
+    <li><a href="#">Budget</a></li>
+  </ul>
+  <div class="app-nav-right">
+    <button class="notif-btn">
+      <i data-lucide="bell"></i>
+      <span class="notif-badge">2</span>
+    </button>
+    <div class="app-user-chip">
+      <div class="app-avatar">JD</div>
+      <span class="app-username">John<br>Doe</span>
+      <i data-lucide="chevron-down" class="app-chevron"></i>
+    </div>
+  </div>
+</nav>
+
+<main class="notfound-main">
+
+  <div class="notfound-wrap">
+
+    <div class="notfound-icon-wrap">
+      <div class="notfound-icon-bg">
+        <i data-lucide="file-x"></i>
+      </div>
+      <div class="notfound-float-icon">
+        <i data-lucide="settings"></i>
+      </div>
+    </div>
+
+    <h1 class="notfound-code">404</h1>
+    <h2 class="notfound-title">Page Not Found</h2>
+    <p class="notfound-desc">Sorry, we couldn't find the page you're looking for. The page might have been removed or the URL might be incorrect</p>
+
+    <div class="notfound-btns">
+      <button class="notfound-btn-back" onclick="history.back()">Go Back</button>
+      <a href="dashboard.html" class="notfound-btn-home">Go Home</a>
+    </div>
+
+    <div class="quicklinks-card">
+      <h3 class="quicklinks-title">Quick Links</h3>
+      <p class="quicklinks-sub">Here are some helpful links to get you back on track</p>
+      <div class="quicklinks-grid">
+        <a href="dashboard.html" class="ql-item">
+          <div class="ql-icon"><i data-lucide="home"></i></div>
+          <div class="ql-text">
+            <p class="ql-name">Home</p>
+            <p class="ql-sub">Return to homepage</p>
+          </div>
+        </a>
+        <a href="profile.html" class="ql-item">
+          <div class="ql-icon"><i data-lucide="user"></i></div>
+          <div class="ql-text">
+            <p class="ql-name">Profile</p>
+            <p class="ql-sub">View your profile</p>
+          </div>
+        </a>
+        <a href="about.html" class="ql-item">
+          <div class="ql-icon"><i data-lucide="info"></i></div>
+          <div class="ql-text">
+            <p class="ql-name">About</p>
+            <p class="ql-sub">Learn more about us</p>
+          </div>
+        </a>
+        <a href="contact.html" class="ql-item">
+          <div class="ql-icon"><i data-lucide="message-square"></i></div>
+          <div class="ql-text">
+            <p class="ql-name">Contact</p>
+            <p class="ql-sub">Get in touch with us</p>
+          </div>
+        </a>
+      </div>
+
+      <p class="notfound-help">
+        Need help? Our team is here to help.
+        <a href="contact.html" class="notfound-contact-link">Contact us</a>
+      </p>
+      <p class="notfound-contact-info">support@trackify.com &nbsp;|&nbsp; 1-800-TRACKIFY</p>
+    </div>
+
+  </div>
+
+</main>
+
+<script>lucide.createIcons();</script>
+</body>
+</html>
