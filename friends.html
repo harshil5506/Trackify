@@ -3,12 +3,13 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Trackify – Friends</title>
+  <title>Trackify – Friends & Social</title>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="css/styles.css"/>
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 </head>
 <body class="app-body">
+
 <nav class="app-nav">
   <div class="app-nav-brand">
     <img src="assets/logo1.jpeg" alt="Trackify" class="app-logo"
@@ -18,9 +19,9 @@
   </div>
   <ul class="app-nav-links">
     <li><a href="dashboard.html">Dashboard</a></li>
-    <li><a href="#">Add Expense</a></li>
-    <li><a href="#">Transactions</a></li>
-    <li><a href="#">Reports</a></li>
+    <li><a href="add-expense.html">Add Expense</a></li>
+    <li><a href="transactions.html">Transactions</a></li>
+    <li><a href="reports.html">Reports</a></li>
     <li><a href="#">Budget</a></li>
   </ul>
   <div class="app-nav-right">
@@ -32,24 +33,26 @@
     </div>
   </div>
 </nav>
+
 <main class="dash-main">
-  <div class="page-heading">
+
+  <div>
     <h1 class="page-title">Friends &amp; Social</h1>
     <p class="page-sub">Manage your connections and expand your network</p>
   </div>
 
   <div class="friends-stats">
-    <div class="fstat-card fstat-blue">
+    <div class="fstat-card">
       <div class="fstat-top"><i data-lucide="users"></i><span class="fstat-tag">+12 this week</span></div>
       <p class="fstat-label">Total Friends</p>
       <p class="fstat-num">247</p>
     </div>
-    <div class="fstat-card fstat-blue">
+    <div class="fstat-card">
       <div class="fstat-top"><i data-lucide="clock"></i><span class="fstat-tag warn">Action needed</span></div>
       <p class="fstat-label">Pending Requests</p>
       <p class="fstat-num">12</p>
     </div>
-    <div class="fstat-card fstat-blue">
+    <div class="fstat-card">
       <div class="fstat-top"><i data-lucide="layout-grid"></i><span class="fstat-tag success">Active</span></div>
       <p class="fstat-label">Groups Joined</p>
       <p class="fstat-num">8</p>
@@ -72,7 +75,7 @@
           <div class="friend-avatar-sm">AT</div>
           <div class="friend-req-info">
             <p class="friend-name">Alex Thompson</p>
-            <p class="friend-meta"><i data-lucide="users" class="txn-icon"></i> 5 mutual friends • 2 hours ago</p>
+            <p class="friend-meta"><i data-lucide="users"></i> 5 mutual friends &nbsp;•&nbsp; 2 hours ago</p>
           </div>
           <button class="friend-accept-btn">Accept</button>
           <button class="friend-decline-btn">Decline</button>
@@ -81,7 +84,7 @@
           <div class="friend-avatar-sm">JL</div>
           <div class="friend-req-info">
             <p class="friend-name">Jessica Lee</p>
-            <p class="friend-meta"><i data-lucide="users" class="txn-icon"></i> 12 mutual friends • 5 hours ago</p>
+            <p class="friend-meta"><i data-lucide="users"></i> 12 mutual friends &nbsp;•&nbsp; 5 hours ago</p>
           </div>
           <button class="friend-accept-btn">Accept</button>
           <button class="friend-decline-btn">Decline</button>
@@ -90,7 +93,7 @@
           <div class="friend-avatar-sm">RC</div>
           <div class="friend-req-info">
             <p class="friend-name">Ryan Cooper</p>
-            <p class="friend-meta"><i data-lucide="users" class="txn-icon"></i> 8 mutual friends • 1 day ago</p>
+            <p class="friend-meta"><i data-lucide="users"></i> 8 mutual friends &nbsp;•&nbsp; 1 day ago</p>
           </div>
           <button class="friend-accept-btn">Accept</button>
           <button class="friend-decline-btn">Decline</button>
@@ -106,30 +109,30 @@
       <div class="groups-list">
         <div class="group-row">
           <div class="group-avatar">PE</div>
-          <div class="group-info">
+          <div>
             <p class="group-name">Photography Enthusiasts</p>
-            <p class="group-meta"><span class="group-tag">Hobbies</span> 1,243 members</p>
+            <div class="group-meta"><span class="group-tag">Hobbies</span> 1,243 members</div>
           </div>
         </div>
         <div class="group-row">
           <div class="group-avatar">TI</div>
-          <div class="group-info">
+          <div>
             <p class="group-name">Tech Innovators</p>
-            <p class="group-meta"><span class="group-tag">Technology</span> 3,691 members</p>
+            <div class="group-meta"><span class="group-tag">Technology</span> 3,691 members</div>
           </div>
         </div>
         <div class="group-row">
           <div class="group-avatar">FW</div>
-          <div class="group-info">
+          <div>
             <p class="group-name">Fitness Warriors</p>
-            <p class="group-meta"><span class="group-tag">Health</span> 692 members</p>
+            <div class="group-meta"><span class="group-tag">Health</span> 892 members</div>
           </div>
         </div>
         <div class="group-row">
           <div class="group-avatar">BC</div>
-          <div class="group-info">
+          <div>
             <p class="group-name">Book Club</p>
-            <p class="group-meta"><span class="group-tag">Literature</span> 435 members</p>
+            <div class="group-meta"><span class="group-tag">Literature</span> 456 members</div>
           </div>
         </div>
       </div>
@@ -144,7 +147,7 @@
       </div>
       <div class="recent-friends-list">
         <div class="recent-friend-row">
-          <div class="friend-avatar-sm">SJ</div>
+          <div class="friend-avatar-sm friend-online"><div class="online-dot"></div>SJ</div>
           <div class="friend-req-info"><p class="friend-name">Sarah Johnson</p><p class="friend-meta">23 mutual friends</p></div>
           <button class="msg-btn">Message</button>
         </div>
@@ -164,12 +167,12 @@
           <button class="msg-btn">Message</button>
         </div>
         <div class="recent-friend-row">
-          <div class="friend-avatar-sm">OM</div>
+          <div class="friend-avatar-sm friend-online"><div class="online-dot"></div>OM</div>
           <div class="friend-req-info"><p class="friend-name">Olivia Martinez</p><p class="friend-meta">19 mutual friends</p></div>
           <button class="msg-btn">Message</button>
         </div>
         <div class="recent-friend-row">
-          <div class="friend-avatar-sm">DK</div>
+          <div class="friend-avatar-sm friend-online"><div class="online-dot"></div>DK</div>
           <div class="friend-req-info"><p class="friend-name">David Kim</p><p class="friend-meta">42 mutual friends</p></div>
           <button class="msg-btn">Message</button>
         </div>
@@ -194,6 +197,7 @@
       </div>
     </div>
   </div>
+
 </main>
 <script>lucide.createIcons();</script>
 </body>

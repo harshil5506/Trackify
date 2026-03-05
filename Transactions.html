@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Trackify – Transactions</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/styles.css"/>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body class="app-body">
+
+<nav class="app-nav">
+  <div class="app-nav-brand">
+    <img src="assets/logo1.jpeg" alt="Trackify" class="app-logo"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+    <div class="app-logo-fallback" style="display:none;">T</div>
+    <span class="app-brand-name">Trackify</span>
+  </div>
+  <ul class="app-nav-links">
+    <li><a href="dashboard.html">Dashboard</a></li>
+    <li><a href="add-expense.html">Add Expense</a></li>
+    <li><a href="transactions.html" class="app-nav-active">Transactions</a></li>
+    <li><a href="reports.html">Reports</a></li>
+    <li><a href="#">Budget</a></li>
+  </ul>
+  <div class="app-nav-right">
+    <button class="notif-btn">
+      <i data-lucide="bell"></i>
+      <span class="notif-badge">2</span>
+    </button>
+    <div class="app-user-chip">
+      <div class="app-avatar">JD</div>
+      <span class="app-username">John<br>Doe</span>
+      <i data-lucide="chevron-down" class="app-chevron"></i>
+    </div>
+  </div>
+</nav>
+
+<main class="dash-main">
+
+  <!-- page header with actions -->
+  <div class="txn-page-header">
+    <div>
+      <h1 class="page-title">Transaction History</h1>
+      <p class="page-sub">Track and manage all your financial transactions</p>
+    </div>
+    <div class="txn-header-actions">
+      <button class="txn-filter-btn"><i data-lucide="sliders-horizontal"></i> Filters</button>
+      <button class="txn-export-btn"><i data-lucide="upload"></i> Export</button>
+    </div>
+  </div>
+
+  <!-- summary stat cards -->
+  <div class="txn-summary-cards">
+    <div class="txn-sum-card txn-sum-dark">
+      <p class="txn-sum-label">Total Income</p>
+      <div class="txn-sum-icon"><i data-lucide="coins"></i></div>
+      <p class="txn-sum-amount">$7,895.49</p>
+    </div>
+    <div class="txn-sum-card txn-sum-dark">
+      <p class="txn-sum-label">Total Expenses</p>
+      <div class="txn-sum-icon"><i data-lucide="receipt"></i></div>
+      <p class="txn-sum-amount">$853.09</p>
+    </div>
+    <div class="txn-sum-card txn-sum-dark">
+      <p class="txn-sum-label">Net Balance</p>
+      <div class="txn-sum-icon"><i data-lucide="wallet"></i></div>
+      <p class="txn-sum-amount txn-sum-green">$7,042.40</p>
+    </div>
+  </div>
+
+  <!-- transactions table -->
+  <div class="dash-card">
+    <div class="txn-table-header">
+      <h3 class="dash-card-title">All Transactions</h3>
+      <div class="txn-sort-row">
+        <span class="txn-sort-label">Sort by:</span>
+        <button class="txn-sort-btn txn-sort-active">Date <i data-lucide="arrow-down" class="sort-arrow"></i></button>
+        <button class="txn-sort-btn">Amount</button>
+        <button class="txn-sort-btn">Merchant</button>
+      </div>
+    </div>
+
+    <div class="txn-full-list">
+
+      <div class="txn-full-row">
+        <div class="txn-merchant-icon tmi-gray"><i data-lucide="coffee"></i></div>
+        <div class="txn-full-info">
+          <div class="txn-name-row">
+            <p class="txn-name">Starbucks Coffee</p>
+            <span class="txn-inline-badge badge-expense">EXPENSE</span>
+          </div>
+          <p class="txn-meta-plain">Food &amp; Dining &nbsp;•&nbsp; Jan 15, 2024 • 09:30 AM</p>
+        </div>
+        <div class="txn-full-right">
+          <div>
+            <p class="txn-amount negative">-$24.50</p>
+            <p class="txn-pay-method">Credit Card</p>
+          </div>
+          <button class="txn-chevron-btn"><i data-lucide="chevron-down"></i></button>
+        </div>
+      </div>
+
+      <div class="txn-full-row">
+        <div class="txn-merchant-icon tmi-blue"><i data-lucide="building-2"></i></div>
+        <div class="txn-full-info">
+          <div class="txn-name-row">
+            <p class="txn-name">Tech Corp Inc.</p>
+            <span class="txn-inline-badge badge-income">INCOME</span>
+          </div>
+          <p class="txn-meta-plain">Salary &nbsp;•&nbsp; Jan 15, 2024 • 08:00 AM</p>
+        </div>
+        <div class="txn-full-right">
+          <div>
+            <p class="txn-amount positive">+$5,420.00</p>
+            <p class="txn-pay-method">Direct Deposit</p>
+          </div>
+          <button class="txn-chevron-btn"><i data-lucide="chevron-down"></i></button>
+        </div>
+      </div>
+
+      <div class="txn-full-row">
+        <div class="txn-merchant-icon tmi-red"><i data-lucide="car"></i></div>
+        <div class="txn-full-info">
+          <div class="txn-name-row">
+            <p class="txn-name">Uber</p>
+            <span class="txn-inline-badge badge-expense">EXPENSE</span>
+          </div>
+          <p class="txn-meta-plain">Transportation &nbsp;•&nbsp; Jan 14, 2024 • 06:45 PM</p>
+        </div>
+        <div class="txn-full-right">
+          <div>
+            <p class="txn-amount negative">-$18.75</p>
+            <p class="txn-pay-method">Debit Card</p>
+          </div>
+          <button class="txn-chevron-btn"><i data-lucide="chevron-down"></i></button>
+        </div>
+      </div>
+
+      <div class="txn-full-row">
+        <div class="txn-merchant-icon tmi-orange"><i data-lucide="shopping-bag"></i></div>
+        <div class="txn-full-info">
+          <div class="txn-name-row">
+            <p class="txn-name">Amazon</p>
+            <span class="txn-inline-badge badge-expense">EXPENSE</span>
+          </div>
+          <p class="txn-meta-plain">Shopping &nbsp;•&nbsp; Jan 14, 2024 • 02:15 PM</p>
+        </div>
+        <div class="txn-full-right">
+          <div>
+            <p class="txn-amount negative">-$156.99</p>
+            <p class="txn-pay-method">Credit Card</p>
+          </div>
+          <button class="txn-chevron-btn"><i data-lucide="chevron-down"></i></button>
+        </div>
+      </div>
+
+      <div class="txn-full-row">
+        <div class="txn-merchant-icon tmi-dark"><i data-lucide="monitor"></i></div>
+        <div class="txn-full-info">
+          <div class="txn-name-row">
+            <p class="txn-name">Design Studio</p>
+            <span class="txn-inline-badge badge-income">INCOME</span>
+          </div>
+          <p class="txn-meta-plain">Freelance &nbsp;•&nbsp; Jan 13, 2024 • 11:20 AM</p>
+        </div>
+        <div class="txn-full-right">
+          <div>
+            <p class="txn-amount positive">+$850.00</p>
+            <p class="txn-pay-method">Bank Transfer</p>
+          </div>
+          <button class="txn-chevron-btn"><i data-lucide="chevron-down"></i></button>
+        </div>
+      </div>
+
+      <div class="txn-full-row">
+        <div class="txn-merchant-icon tmi-yellow"><i data-lucide="zap"></i></div>
+        <div class="txn-full-info">
+          <div class="txn-name-row">
+            <p class="txn-name">Electric Company</p>
+            <span class="txn-inline-badge badge-expense">EXPENSE</span>
+          </div>
+          <p class="txn-meta-plain">Utilities &nbsp;•&nbsp; Jan 13, 2024 • 09:00 AM</p>
+        </div>
+        <div class="txn-full-right">
+          <div>
+            <p class="txn-amount negative">-$89.32</p>
+            <p class="txn-pay-method">Auto-pay</p>
+          </div>
+          <button class="txn-chevron-btn"><i data-lucide="chevron-down"></i></button>
+        </div>
+      </div>
+
+      <div class="txn-full-row">
+        <div class="txn-merchant-icon tmi-gray"><i data-lucide="pizza"></i></div>
+        <div class="txn-full-info">
+          <div class="txn-name-row">
+            <p class="txn-name">Pizza Palace</p>
+            <span class="txn-inline-badge badge-expense">EXPENSE</span>
+          </div>
+          <p class="txn-meta-plain">Food &amp; Dining &nbsp;•&nbsp; Jan 12, 2024 • 07:30 PM</p>
+        </div>
+        <div class="txn-full-right">
+          <div>
+            <p class="txn-amount negative">-$42.80</p>
+            <p class="txn-pay-method">Credit Card</p>
+          </div>
+          <button class="txn-chevron-btn"><i data-lucide="chevron-down"></i></button>
+        </div>
+      </div>
+
+      <div class="txn-full-row">
+        <div class="txn-merchant-icon tmi-green"><i data-lucide="pill"></i></div>
+        <div class="txn-full-info">
+          <div class="txn-name-row">
+            <p class="txn-name">City Pharmacy</p>
+            <span class="txn-inline-badge badge-expense">EXPENSE</span>
+          </div>
+          <p class="txn-meta-plain">Healthcare &nbsp;•&nbsp; Jan 12, 2024 • 03:45 PM</p>
+        </div>
+        <div class="txn-full-right">
+          <div>
+            <p class="txn-amount negative">-$67.45</p>
+            <p class="txn-pay-method">Debit Card</p>
+          </div>
+          <button class="txn-chevron-btn"><i data-lucide="chevron-down"></i></button>
+        </div>
+      </div>
+
+      <div class="txn-full-row">
+        <div class="txn-merchant-icon tmi-dark"><i data-lucide="film"></i></div>
+        <div class="txn-full-info">
+          <div class="txn-name-row">
+            <p class="txn-name">Cinema Plus</p>
+            <span class="txn-inline-badge badge-expense">EXPENSE</span>
+          </div>
+          <p class="txn-meta-plain">Entertainment &nbsp;•&nbsp; Jan 11, 2024 • 08:15 PM</p>
+        </div>
+        <div class="txn-full-right">
+          <div>
+            <p class="txn-amount negative">-$35.00</p>
+            <p class="txn-pay-method">Credit Card</p>
+          </div>
+          <button class="txn-chevron-btn"><i data-lucide="chevron-down"></i></button>
+        </div>
+      </div>
+
+      <div class="txn-full-row">
+        <div class="txn-merchant-icon tmi-green"><i data-lucide="trending-up"></i></div>
+        <div class="txn-full-info">
+          <div class="txn-name-row">
+            <p class="txn-name">Stock Dividend</p>
+            <span class="txn-inline-badge badge-income">INCOME</span>
+          </div>
+          <p class="txn-meta-plain">Investment &nbsp;•&nbsp; Jan 11, 2024 • 10:00 AM</p>
+        </div>
+        <div class="txn-full-right">
+          <div>
+            <p class="txn-amount positive">+$125.50</p>
+            <p class="txn-pay-method">Investment Account</p>
+          </div>
+          <button class="txn-chevron-btn"><i data-lucide="chevron-down"></i></button>
+        </div>
+      </div>
+
+      <div class="txn-full-row">
+        <div class="txn-merchant-icon tmi-red"><i data-lucide="fuel"></i></div>
+        <div class="txn-full-info">
+          <div class="txn-name-row">
+            <p class="txn-name">Shell Gas Station</p>
+            <span class="txn-inline-badge badge-expense">EXPENSE</span>
+          </div>
+          <p class="txn-meta-plain">Transportation &nbsp;•&nbsp; Jan 10, 2024 • 05:10 PM</p>
+        </div>
+        <div class="txn-full-right">
+          <div>
+            <p class="txn-amount negative">-$52.30</p>
+            <p class="txn-pay-method">Debit Card</p>
+          </div>
+          <button class="txn-chevron-btn"><i data-lucide="chevron-down"></i></button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</main>
+
+<script>
+lucide.createIcons();
+
+document.querySelectorAll('.txn-sort-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.txn-sort-btn').forEach(b => b.classList.remove('txn-sort-active'));
+    this.classList.add('txn-sort-active');
+  });
+});
+</script>
+</body>
+</html>

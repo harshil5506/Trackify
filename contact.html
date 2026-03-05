@@ -10,21 +10,28 @@
 <body>
 
 <!-- ===== NAVBAR ===== -->
-<nav class="navbar">
-  <div class="nav-brand">
-    <div class="logo-placeholder">
-      <img src="assets/logo1.jpeg" alt="Trackify Logo" class="logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"/>
-      <div class="logo-fallback" style="display:none;">T</div>
-    </div>
-    <span class="brand-name">Trackify</span>
+<nav class="app-nav">
+  <div class="app-nav-brand">
+    <img src="assets/logo1.jpeg" alt="Trackify" class="app-logo"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+    <div class="app-logo-fallback" style="display:none;">T</div>
+    <span class="app-brand-name">Trackify</span>
   </div>
-  <ul class="nav-links">
-    <li><a href="index.html">Home</a></li>
-    <li><a href="profile.html">Profile</a></li>
-    <li><a href="about.html">About</a></li>
-    <li><a href="contact.html" class="nav-active">Contact</a></li>
-    <li><a href="signup.html">Sign up</a></li>
+  <ul class="app-nav-links">
+    <li><a href="dashboard.html" class="app-nav-active">Dashboard</a></li>
+    <li><a href="add-expense.html">Add Expense</a></li>
+    <li><a href="transactions.html">Transactions</a></li>
+    <li><a href="reports.html">Reports</a></li>
+    <li><a href="budget.html">Budget</a></li>
   </ul>
+  <div class="app-nav-right">
+    <button class="notif-btn"><i data-lucide="bell"></i><span class="notif-badge">2</span></button>
+    <div class="app-user-chip">
+      <div class="app-avatar">JD</div>
+      <span class="app-username">John<br>Doe</span>
+      <i data-lucide="chevron-down" class="app-chevron"></i>
+    </div>
+  </div>
 </nav>
 
 <!-- ===== CONTACT PAGE ===== -->
