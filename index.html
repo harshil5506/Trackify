@@ -21,7 +21,12 @@
       </div>
       <span class="brand-name">Trackify</span>
     </div>
-    <ul class="nav-links">
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+    <ul class="nav-links" id="navLinks">
       <li><a href="index.html">Home</a></li>
       <li><a href="profile.html">Profile</a></li>
       <li><a href="about.html">About</a></li>
@@ -33,7 +38,7 @@
   <!-- ========== HERO SECTION ========== -->
   <section class="hero" id="home">
     <div class="hero-content">
-      <h1 class="hero-title">Track &nbsp; Smart &nbsp; Spend &nbsp; Better</h1>
+      <h1 class="hero-title">Track Smart, Spend Better</h1>
       <p class="hero-subtitle">
         Powerful project tracking and analytics platform designed to help
         teams collaborate efficiently and achieve their goals faster
@@ -206,21 +211,13 @@
       let next = (current + dir + cards.length) % cards.length;
       goToSlide(next);
     }
+
+    // Hamburger toggle
+    document.getElementById('navToggle').addEventListener('click', function() {
+      document.getElementById('navLinks').classList.toggle('open');
+      this.classList.toggle('active');
+    });
   </script>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trackify - Track Your Expenses Easily</title>
-    <link rel="stylesheet" href="css/styles.css">
-</head>
-<body>
-    <!-- Main Content -->
-    <div class="main-content">
-        <h1>Welcome to Trackify</h1>
-        <p>Your ultimate expense tracking solution. Start managing your finances smarter today!</p>
-        <a href="signup.html" class="btn btn-primary">Get Started</a>
-    </div>
+</body>
 </html>
