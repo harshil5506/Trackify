@@ -23,13 +23,25 @@ const Transactions = () => {
   const fetchTransactions = async () => {
     try {
       const { data } = await API.get("/api/expenses");
-      setTransactions(data.expenses || []);
+      // Backend returns array directly, not { expenses: [] }
+      const list = Array.isArray(data) ? data : [];
+      setTransactions(list);
+
+      // Calculate stats from the data itself
+      const totalIncome = list
+        .filter((t) => t.type === "income")
+        .reduce((s, t) => s + t.amount, 0);
+      const totalExpense = list
+        .filter((t) => t.type === "expense")
+        .reduce((s, t) => s + t.amount, 0);
+
       setStats({
-        totalIncome: data.totalIncome || 0,
-        totalExpense: data.totalExpense || 0,
-        netBalance: (data.totalIncome || 0) - (data.totalExpense || 0),
+        totalIncome,
+        totalExpense,
+        netBalance: totalIncome - totalExpense,
       });
     } catch (err) {
+      toast.error("Failed to load transactions");
     } finally {
       setLoading(false);
     }

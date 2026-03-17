@@ -21,16 +21,24 @@ const Dashboard = () => {
   const fetchDashboardData = async () => {
     try {
       const [expRes, anaRes] = await Promise.all([
-        API.get("/api/expenses?limit=5"),
+        API.get("/api/expenses"),
         API.get("/api/analytics/summary"),
       ]);
-      setTransactions(expRes.data.expenses || []);
+
+      // Backend returns array directly
+      const list = Array.isArray(expRes.data) ? expRes.data : [];
+      // Show only latest 5
+      setTransactions(list.slice(0, 5));
+
       setStats({
         totalIncome: anaRes.data.totalIncome || 0,
         totalExpense: anaRes.data.totalExpense || 0,
-        netBalance: anaRes.data.netBalance || 0,
+        // Backend returns 'balance', not 'netBalance'
+        netBalance: anaRes.data.balance || 0,
       });
-    } catch (err) {}
+    } catch (err) {
+      toast.error("Failed to load dashboard");
+    }
   };
 
   const handleDelete = async (id) => {

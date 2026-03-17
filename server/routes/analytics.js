@@ -1,8 +1,8 @@
+const mongoose = require("mongoose");
 const express = require("express");
 const router = express.Router();
 const Expense = require("../models/Expense");
 const authMiddleware = require("../middleware/authMiddleware");
-const mongoose = require("mongoose");
 
 // GET overall summary
 router.get("/summary", authMiddleware, async (req, res) => {
