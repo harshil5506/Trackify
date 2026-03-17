@@ -28,6 +28,7 @@ const AddExpense = () => {
     setLoading(true);
     try {
       await API.post("/api/expenses", {
+        title: form.description || form.merchant || "Transaction", // ← ADD THIS
         amount: parseFloat(form.amount),
         category: form.category,
         paymentMethod: form.paymentMethod,
@@ -255,6 +256,7 @@ const AddExpense = () => {
                     padding: "10px 14px",
                     fontSize: "0.9rem",
                     outline: "none",
+                    color: "#000",
                   }}
                 />
               </div>

@@ -1,47 +1,83 @@
 const express = require("express");
 const router = express.Router();
 const Expense = require("../models/Expense");
-const auth = require("../middleware/authMiddleware");
+const authMiddleware = require("../middleware/authMiddleware");
 
-router.use(auth);
-
-router.post("/", async (req, res) => {
+// GET all expenses for logged-in user
+router.get("/", authMiddleware, async (req, res) => {
   try {
-    const { amount, category, type, date, note, merchant, paymentMethod } = req.body;
-    const expense = await Expense.create({ userId: req.user._id, amount, category, type, date: date||Date.now(), note, merchant, paymentMethod });
-    res.status(201).json(expense);
-  } catch (err) { res.status(500).json({ message: "Server error", error: err.message }); }
-});
+    const { type, category, startDate, endDate } = req.query;
+    let filter = { user: req.user.id };
 
-router.get("/", async (req, res) => {
-  try {
-    const { category, type, startDate, endDate, limit } = req.query;
-    const filter = { userId: req.user._id };
-    if (category) filter.category = category;
     if (type) filter.type = type;
-    if (startDate || endDate) { filter.date = {}; if (startDate) filter.date.$gte = new Date(startDate); if (endDate) filter.date.$lte = new Date(endDate); }
-    const expenses = await Expense.find(filter).sort({ date: -1 }).limit(limit ? parseInt(limit) : 100);
-    const all = await Expense.find({ userId: req.user._id });
-    const totalIncome = all.filter(e => e.type==="income").reduce((s,e) => s+e.amount, 0);
-    const totalExpense = all.filter(e => e.type==="expense").reduce((s,e) => s+e.amount, 0);
-    res.json({ expenses, totalIncome, totalExpense });
-  } catch (err) { res.status(500).json({ message: "Server error", error: err.message }); }
+    if (category) filter.category = category;
+    if (startDate || endDate) {
+      filter.date = {};
+      if (startDate) filter.date.$gte = new Date(startDate);
+      if (endDate) filter.date.$lte = new Date(endDate);
+    }
+
+    const expenses = await Expense.find(filter).sort({ date: -1 });
+    res.json(expenses);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
-router.put("/:id", async (req, res) => {
+// POST add new expense/income
+router.post("/", authMiddleware, async (req, res) => {
   try {
-    const expense = await Expense.findOneAndUpdate({ _id: req.params.id, userId: req.user._id }, req.body, { new: true });
-    if (!expense) return res.status(404).json({ message: "Not found" });
-    res.json(expense);
-  } catch (err) { res.status(500).json({ message: "Server error", error: err.message }); }
+    const { title, amount, category, type, date, note } = req.body;
+
+    const expense = await Expense.create({
+      user: req.user.id,
+      title,
+      amount,
+      category,
+      type,
+      date,
+      note,
+    });
+
+    res.status(201).json(expense);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
-router.delete("/:id", async (req, res) => {
+// PUT update expense
+router.put("/:id", authMiddleware, async (req, res) => {
   try {
-    const expense = await Expense.findOneAndDelete({ _id: req.params.id, userId: req.user._id });
-    if (!expense) return res.status(404).json({ message: "Not found" });
-    res.json({ message: "Deleted" });
-  } catch (err) { res.status(500).json({ message: "Server error", error: err.message }); }
+    const expense = await Expense.findById(req.params.id);
+    if (!expense) return res.status(404).json({ message: "Expense not found" });
+
+    if (expense.user.toString() !== req.user.id)
+      return res.status(403).json({ message: "Not authorized" });
+
+    const updated = await Expense.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
+
+    res.json(updated);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// DELETE expense
+router.delete("/:id", authMiddleware, async (req, res) => {
+  try {
+    const expense = await Expense.findById(req.params.id);
+    if (!expense) return res.status(404).json({ message: "Expense not found" });
+
+    if (expense.user.toString() !== req.user.id)
+      return res.status(403).json({ message: "Not authorized" });
+
+    await expense.deleteOne();
+    res.json({ message: "Expense deleted" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
 module.exports = router;
