@@ -21,7 +21,7 @@ import Vision from "./pages/Vision";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
-
+import GroupDetail from "./pages/GroupDetail";
 function App() {
   return (
     <AuthProvider>
@@ -97,6 +97,14 @@ function App() {
             element={
               <PrivateRoute>
                 <Groups />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/groups/:id"
+            element={
+              <PrivateRoute>
+                <GroupDetail />
               </PrivateRoute>
             }
           />

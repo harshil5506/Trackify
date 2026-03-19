@@ -18,11 +18,14 @@ mongoose
   .then(() => console.log("MongoDB connected ✅"))
   .catch((err) => console.log("MongoDB error ❌", err));
 
+// ── Routes ──────────────────────────────
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/expenses", require("./routes/expenses"));
 app.use("/api/user", require("./routes/user"));
 app.use("/api/analytics", require("./routes/analytics"));
 app.use("/api/budget", require("./routes/budget"));
+app.use("/api/friends", require("./routes/friends"));
+app.use("/api/groups", require("./routes/groups"));
 
 app.get("/", (req, res) => res.send("Backend running 🚀"));
 
