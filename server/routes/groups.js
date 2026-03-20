@@ -155,11 +155,16 @@ router.post("/:id/expenses", authMiddleware, async (req, res) => {
 });
 
 // PUT — Settle a share
+// PUT — Settle a share (admin can settle anyone, members settle own)
 router.put(
   "/:groupId/expenses/:expenseId/settle",
   authMiddleware,
   async (req, res) => {
     try {
+      const { userId, partialAmount } = req.body;
+      // userId — who is being settled (admin settles others)
+      // partialAmount — optional partial payment amount
+
       const group = await Group.findById(req.params.groupId);
       if (!group) return res.status(404).json({ message: "Group not found" });
 
@@ -167,19 +172,49 @@ router.put(
       if (!expense)
         return res.status(404).json({ message: "Expense not found" });
 
+      const isAdmin = group.createdBy.toString() === req.user.id;
+
+      // Target user — admin can settle others, members settle themselves
+      const targetUserId = isAdmin && userId ? userId : req.user.id;
+
+      // Check if requester is allowed
+      if (!isAdmin && targetUserId !== req.user.id)
+        return res
+          .status(403)
+          .json({ message: "Only admin can settle others" });
+
       const split = expense.splitBetween.find(
-        (s) => s.user.toString() === req.user.id.toString(),
+        (s) => s.user.toString() === targetUserId,
       );
-      if (split) split.settled = true;
+
+      if (!split)
+        return res
+          .status(404)
+          .json({ message: "Split not found for this user" });
+
+      if (split.settled)
+        return res.status(400).json({ message: "Already fully settled" });
+
+      // Partial settlement support
+      if (partialAmount && partialAmount > 0 && partialAmount < split.share) {
+        split.settledAmount =
+          (split.settledAmount || 0) + parseFloat(partialAmount);
+        split.share = parseFloat((split.share - partialAmount).toFixed(2));
+        if (split.share <= 0) split.settled = true;
+      } else {
+        // Full settlement
+        split.settledAmount = split.share;
+        split.share = 0;
+        split.settled = true;
+      }
 
       await group.save();
-      res.json({ message: "Marked as settled!" });
+      res.json({ message: "Settlement updated!", group });
     } catch (err) {
       res.status(500).json({ message: err.message });
     }
   },
 );
-
 // DELETE — Delete group (only creator)
 router.delete("/:id", authMiddleware, async (req, res) => {
   try {

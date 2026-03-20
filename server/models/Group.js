@@ -12,6 +12,7 @@ const groupExpenseSchema = new mongoose.Schema({
     {
       user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
       share: { type: Number }, // amount owed
+      settledAmount: { type: Number, default: 0 },
       settled: { type: Boolean, default: false },
     },
   ],
