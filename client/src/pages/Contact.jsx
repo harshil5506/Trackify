@@ -40,12 +40,6 @@ const Contact = () => {
     }, 1000);
   };
 
-  const handleLogout = () => {
-    logout();
-    toast.success("Logged out!");
-    navigate("/login");
-  };
-
   return (
     <div
       style={{
@@ -54,53 +48,6 @@ const Contact = () => {
         fontFamily: "'Inter',sans-serif",
       }}
     >
-      <nav style={s.appNav}>
-        <div style={s.appNavBrand}>
-          <div style={s.appLogoFallback}>T</div>
-          <span style={s.appBrandName}>Trackify</span>
-        </div>
-        <ul style={s.appNavLinks}>
-          <li>
-            <Link to="/dashboard" style={s.appNavLink}>
-              Dashboard
-            </Link>
-          </li>
-          <li>
-            <Link to="/add-expense" style={s.appNavLink}>
-              Add Expense
-            </Link>
-          </li>
-          <li>
-            <Link to="/transactions" style={s.appNavLink}>
-              Transactions
-            </Link>
-          </li>
-          <li>
-            <Link to="/reports" style={s.appNavLink}>
-              Reports
-            </Link>
-          </li>
-          <li>
-            <Link to="/budget" style={s.appNavLink}>
-              Budget
-            </Link>
-          </li>
-        </ul>
-        <div style={s.appNavRight}>
-          <button style={s.notifBtn}>
-            🔔<span style={s.notifBadge}>2</span>
-          </button>
-          <div style={s.appUserChip}>
-            <div style={s.appAvatar}>
-              {user?.name?.charAt(0).toUpperCase() || "U"}
-            </div>
-            <span style={s.appUsername}>{user?.name || "User"}</span>
-          </div>
-          <button style={s.logoutBtn} onClick={handleLogout}>
-            Logout
-          </button>
-        </div>
-      </nav>
       <div
         style={{
           maxWidth: "1100px",

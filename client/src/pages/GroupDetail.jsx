@@ -1585,12 +1585,6 @@ const GroupDetail = () => {
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    toast.success("Logged out!");
-    navigate("/login");
-  };
-
   // ✅ Fixed getOweSummary with settled field
   const getOweSummary = () => {
     if (!group) return [];
@@ -1650,56 +1644,6 @@ const GroupDetail = () => {
   return (
     <div style={s.appBody}>
       {/* Nav */}
-      <nav style={s.appNav}>
-        <div style={s.appNavBrand}>
-          <div style={s.appLogoFallback}>T</div>
-          <span style={s.appBrandName}>Trackify</span>
-        </div>
-        <ul style={s.appNavLinks}>
-          <li>
-            <Link to="/dashboard" style={s.appNavLink}>
-              Dashboard
-            </Link>
-          </li>
-          <li>
-            <Link to="/add-expense" style={s.appNavLink}>
-              Add Expense
-            </Link>
-          </li>
-          <li>
-            <Link to="/transactions" style={s.appNavLink}>
-              Transactions
-            </Link>
-          </li>
-          <li>
-            <Link to="/friends" style={s.appNavLink}>
-              Friends
-            </Link>
-          </li>
-          <li>
-            <Link to="/groups" style={{ ...s.appNavLink, color: "white" }}>
-              Groups
-            </Link>
-          </li>
-          <li>
-            <Link to="/budget" style={s.appNavLink}>
-              Budget
-            </Link>
-          </li>
-        </ul>
-        <div style={s.appNavRight}>
-          <button style={s.notifBtn}>
-            🔔<span style={s.notifBadge}>2</span>
-          </button>
-          <div style={s.appUserChip}>
-            <div style={s.appAvatar}>{user?.name?.charAt(0).toUpperCase()}</div>
-            <span style={s.appUsername}>{user?.name}</span>
-          </div>
-          <button style={s.logoutBtn} onClick={handleLogout}>
-            Logout
-          </button>
-        </div>
-      </nav>
 
       <main style={s.dashMain}>
         {/* Header */}
