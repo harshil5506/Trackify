@@ -26,6 +26,7 @@ app.use("/api/analytics", require("./routes/analytics"));
 app.use("/api/budget", require("./routes/budget"));
 app.use("/api/friends", require("./routes/friends"));
 app.use("/api/groups", require("./routes/groups"));
+app.use("/api/messages", require("./routes/messages"));
 
 app.get("/", (req, res) => res.send("Backend running 🚀"));
 

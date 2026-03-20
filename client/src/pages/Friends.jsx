@@ -1,49 +1,165 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
+import API from "../api/axios";
 import toast from "react-hot-toast";
 
-const friendRequests = [
-  { initials: "AT", name: "Alex Thompson", mutual: 5, time: "2 hours ago" },
-  { initials: "JL", name: "Jessica Lee", mutual: 12, time: "5 hours ago" },
-  { initials: "RC", name: "Ryan Cooper", mutual: 8, time: "1 day ago" },
-];
-
-const recentFriends = [
-  { initials: "SJ", name: "Sarah Johnson", mutual: 23, online: true },
-  { initials: "MC", name: "Michael Chen", mutual: 15, online: false },
-  { initials: "EW", name: "Emma Williams", mutual: 31, online: false },
-  { initials: "JR", name: "James Rodriguez", mutual: 8, online: false },
-  { initials: "OM", name: "Olivia Martinez", mutual: 19, online: true },
-];
-
 const Friends = () => {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
-  const [requests, setRequests] = useState(friendRequests);
+  const { user } = useAuth();
+  const [friends, setFriends] = useState([]);
+  const [pending, setPending] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("friends");
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [sending, setSending] = useState(false);
 
-  const handleAccept = (name) => {
-    setRequests((p) => p.filter((r) => r.name !== name));
-    toast.success(`${name} accepted!`);
+  // Message modal state
+  const [messageModal, setMessageModal] = useState(null);
+  const [conversation, setConversation] = useState([]);
+  const [newMessage, setNewMessage] = useState("");
+  const [sendingMsg, setSendingMsg] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    fetchAll();
+  }, []);
+
+  // Auto scroll to bottom of messages
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [conversation]);
+
+  const fetchAll = async () => {
+    try {
+      const [friendsRes, pendingRes, unreadRes] = await Promise.all([
+        API.get("/api/friends/list"),
+        API.get("/api/friends/pending"),
+        API.get("/api/messages/unread"),
+      ]);
+      setFriends(Array.isArray(friendsRes.data) ? friendsRes.data : []);
+      setPending(Array.isArray(pendingRes.data) ? pendingRes.data : []);
+      setUnreadCount(Array.isArray(unreadRes.data) ? unreadRes.data.length : 0);
+    } catch (err) {
+      toast.error("Failed to load friends");
+    } finally {
+      setLoading(false);
+    }
   };
-  const handleDecline = (name) => {
-    setRequests((p) => p.filter((r) => r.name !== name));
-    toast.error(`${name} declined`);
+
+  const openChat = async (friend) => {
+    setMessageModal(friend);
+    try {
+      const { data } = await API.get(
+        `/api/messages/conversation/${friend._id}`,
+      );
+      setConversation(Array.isArray(data) ? data : []);
+      // Refresh unread count after opening
+      fetchAll();
+    } catch (err) {
+      toast.error("Failed to load conversation");
+    }
   };
+
+  const handleSendMessage = async () => {
+    if (!newMessage.trim()) return toast.error("Write a message first!");
+    setSendingMsg(true);
+    try {
+      const { data } = await API.post("/api/messages/send", {
+        receiverId: messageModal._id,
+        text: newMessage.trim(),
+      });
+      setConversation((prev) => [...prev, data.data]);
+      setNewMessage("");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to send message");
+    } finally {
+      setSendingMsg(false);
+    }
+  };
+
+  const handleSendRequest = async () => {
+    if (!inviteEmail.trim()) return toast.error("Enter an email address");
+    setSending(true);
+    try {
+      await API.post("/api/friends/send-request", { email: inviteEmail });
+      toast.success("Friend request sent!");
+      setInviteEmail("");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to send request");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleRespond = async (requestId, status, name) => {
+    try {
+      await API.put(`/api/friends/respond/${requestId}`, { status });
+      toast.success(
+        status === "accepted" ? `${name} accepted!` : `${name} declined`,
+      );
+      fetchAll();
+    } catch (err) {
+      toast.error("Failed to respond");
+    }
+  };
+
+  const handleRemoveFriend = async (friendId, name) => {
+    if (!window.confirm(`Remove ${name} from friends?`)) return;
+    try {
+      await API.delete(`/api/friends/${friendId}`);
+      toast.success(`${name} removed`);
+      fetchAll();
+    } catch (err) {
+      toast.error("Failed to remove friend");
+    }
+  };
+
+  const tabs = [
+    { key: "friends", label: "My Friends", count: friends.length },
+    { key: "requests", label: "Requests", count: pending.length },
+    { key: "invite", label: "Add Friend", count: null },
+  ];
+
+  const myId = user?._id || user?.id;
 
   return (
     <div style={s.appBody}>
       <main style={s.dashMain}>
-        <div>
-          <h1 style={s.pageTitle}>Friends & Social</h1>
-          <p style={{ fontSize: "0.85rem", color: "#666" }}>
-            Manage your connections
-          </p>
+        {/* Header */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <div>
+            <h1 style={s.pageTitle}>Friends & Social</h1>
+            <p style={{ fontSize: "0.85rem", color: "#666" }}>
+              Manage your connections and split expenses
+            </p>
+          </div>
+          {unreadCount > 0 && (
+            <div
+              style={{
+                background: "#fee2e2",
+                color: "#dc2626",
+                borderRadius: "8px",
+                padding: "8px 16px",
+                fontSize: "0.84rem",
+                fontWeight: "600",
+              }}
+            >
+              📬 {unreadCount} unread message{unreadCount > 1 ? "s" : ""}
+            </div>
+          )}
         </div>
+
+        {/* Stats Cards */}
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(4,1fr)",
+            gridTemplateColumns: "repeat(3,1fr)",
             gap: "14px",
           }}
         >
@@ -51,30 +167,33 @@ const Friends = () => {
             {
               icon: "👥",
               label: "Total Friends",
-              value: "247",
-              tag: "+12 this week",
+              value: friends.length,
+              tag: "Connected",
               tagBg: "#dbeafe",
               tagColor: "#1d4ed8",
             },
             {
               icon: "⏰",
               label: "Pending Requests",
-              value: requests.length.toString(),
-              tag: "Action needed",
-              tagBg: "#fef3c7",
-              tagColor: "#92400e",
+              value: pending.length,
+              tag: pending.length > 0 ? "Action needed" : "All clear",
+              tagBg: pending.length > 0 ? "#fef3c7" : "#dcfce7",
+              tagColor: pending.length > 0 ? "#92400e" : "#166534",
+              action: () => setActiveTab("requests"),
             },
             {
-              icon: "⚙️",
-              label: "Groups Joined",
-              value: "8",
-              tag: "Active",
-              tagBg: "#dcfce7",
-              tagColor: "#166534",
+              icon: "➕",
+              label: "Add Friend",
+              value: "Invite",
+              tag: "Grow network",
+              tagBg: "#f3e8ff",
+              tagColor: "#6b21a8",
+              action: () => setActiveTab("invite"),
             },
           ].map((stat) => (
             <div
               key={stat.label}
+              onClick={stat.action}
               style={{
                 background: "linear-gradient(160deg,#1e36be,#2a47d0)",
                 borderRadius: "14px",
@@ -84,6 +203,7 @@ const Friends = () => {
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "space-between",
+                cursor: stat.action ? "pointer" : "default",
               }}
             >
               <div
@@ -129,265 +249,561 @@ const Friends = () => {
               </p>
             </div>
           ))}
+        </div>
+
+        {/* Main Card with Tabs */}
+        <div style={s.dashCard}>
+          {/* Tab Headers */}
           <div
             style={{
-              background: "linear-gradient(160deg,#1e36be,#2a47d0)",
-              borderRadius: "14px",
-              padding: "18px 20px",
-              color: "white",
               display: "flex",
-              flexDirection: "column",
+              gap: "8px",
+              marginBottom: "20px",
+              borderBottom: "1px solid #e2e6f0",
+            }}
+          >
+            {tabs.map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                style={{
+                  padding: "10px 20px",
+                  border: "none",
+                  background: "none",
+                  fontSize: "0.88rem",
+                  fontWeight: activeTab === tab.key ? "700" : "500",
+                  color: activeTab === tab.key ? "#1a2ea8" : "#666",
+                  borderBottom:
+                    activeTab === tab.key
+                      ? "2px solid #1a2ea8"
+                      : "2px solid transparent",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  marginBottom: "-1px",
+                }}
+              >
+                {tab.label}
+                {tab.count !== null && tab.count > 0 && (
+                  <span
+                    style={{
+                      background: "#1a2ea8",
+                      color: "white",
+                      fontSize: "0.68rem",
+                      fontWeight: "700",
+                      padding: "1px 6px",
+                      borderRadius: "10px",
+                    }}
+                  >
+                    {tab.count}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* ── My Friends Tab ── */}
+          {activeTab === "friends" && (
+            <div>
+              {loading ? (
+                <p
+                  style={{
+                    textAlign: "center",
+                    padding: "40px",
+                    color: "#666",
+                  }}
+                >
+                  Loading...
+                </p>
+              ) : friends.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "40px 0" }}>
+                  <p style={{ fontSize: "48px", marginBottom: "12px" }}>👥</p>
+                  <p
+                    style={{
+                      fontSize: "1rem",
+                      fontWeight: "600",
+                      color: "#1a1a2e",
+                      marginBottom: "8px",
+                    }}
+                  >
+                    No friends yet
+                  </p>
+                  <p
+                    style={{
+                      fontSize: "0.85rem",
+                      color: "#666",
+                      marginBottom: "20px",
+                    }}
+                  >
+                    Add friends to split expenses together
+                  </p>
+                  <button
+                    onClick={() => setActiveTab("invite")}
+                    style={s.primaryBtn}
+                  >
+                    Add Your First Friend
+                  </button>
+                </div>
+              ) : (
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "8px",
+                  }}
+                >
+                  {friends.map((friend) => (
+                    <div key={friend._id} style={s.friendRow}>
+                      <div style={s.avatar}>
+                        {friend.name?.charAt(0).toUpperCase()}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <p
+                          style={{
+                            fontSize: "0.88rem",
+                            fontWeight: "600",
+                            color: "#1a1a2e",
+                            marginBottom: "2px",
+                          }}
+                        >
+                          {friend.name}
+                        </p>
+                        <p style={{ fontSize: "0.74rem", color: "#666" }}>
+                          {friend.email}
+                        </p>
+                      </div>
+                      <div style={{ display: "flex", gap: "8px" }}>
+                        <button
+                          onClick={() => openChat(friend)}
+                          style={s.msgBtn}
+                        >
+                          💬 Message
+                        </button>
+                        <button
+                          onClick={() =>
+                            handleRemoveFriend(friend._id, friend.name)
+                          }
+                          style={s.removeBtn}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── Requests Tab ── */}
+          {activeTab === "requests" && (
+            <div>
+              {loading ? (
+                <p
+                  style={{
+                    textAlign: "center",
+                    padding: "40px",
+                    color: "#666",
+                  }}
+                >
+                  Loading...
+                </p>
+              ) : pending.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "40px 0" }}>
+                  <p style={{ fontSize: "48px", marginBottom: "12px" }}>✅</p>
+                  <p
+                    style={{
+                      fontSize: "1rem",
+                      fontWeight: "600",
+                      color: "#1a1a2e",
+                    }}
+                  >
+                    No pending requests
+                  </p>
+                  <p style={{ fontSize: "0.85rem", color: "#666" }}>
+                    You're all caught up!
+                  </p>
+                </div>
+              ) : (
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "8px",
+                  }}
+                >
+                  {pending.map((req) => (
+                    <div key={req._id} style={s.friendRow}>
+                      <div
+                        style={{
+                          ...s.avatar,
+                          background: "#fef3c7",
+                          color: "#92400e",
+                        }}
+                      >
+                        {req.sender?.name?.charAt(0).toUpperCase()}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <p
+                          style={{
+                            fontSize: "0.88rem",
+                            fontWeight: "600",
+                            color: "#1a1a2e",
+                            marginBottom: "2px",
+                          }}
+                        >
+                          {req.sender?.name}
+                        </p>
+                        <p style={{ fontSize: "0.74rem", color: "#666" }}>
+                          {req.sender?.email} •{" "}
+                          {new Date(req.createdAt).toLocaleDateString("en-IN", {
+                            day: "numeric",
+                            month: "short",
+                          })}
+                        </p>
+                      </div>
+                      <div style={{ display: "flex", gap: "8px" }}>
+                        <button
+                          onClick={() =>
+                            handleRespond(req._id, "accepted", req.sender?.name)
+                          }
+                          style={s.primaryBtn}
+                        >
+                          ✓ Accept
+                        </button>
+                        <button
+                          onClick={() =>
+                            handleRespond(req._id, "rejected", req.sender?.name)
+                          }
+                          style={s.removeBtn}
+                        >
+                          ✕ Decline
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── Add Friend Tab ── */}
+          {activeTab === "invite" && (
+            <div>
+              <div
+                style={{
+                  background: "#f8f9fc",
+                  borderRadius: "12px",
+                  padding: "24px",
+                  border: "1px solid #e2e6f0",
+                  marginBottom: "20px",
+                }}
+              >
+                <h4
+                  style={{
+                    fontFamily: "'Sora',sans-serif",
+                    fontSize: "0.95rem",
+                    fontWeight: "700",
+                    color: "#1a1a2e",
+                    marginBottom: "6px",
+                  }}
+                >
+                  🔍 Find & Add Friend
+                </h4>
+                <p
+                  style={{
+                    fontSize: "0.82rem",
+                    color: "#666",
+                    marginBottom: "16px",
+                  }}
+                >
+                  Enter your friend's registered email to send a request
+                </p>
+                <div style={{ display: "flex", gap: "10px" }}>
+                  <input
+                    type="email"
+                    placeholder="Enter friend's email address"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSendRequest()}
+                    style={{
+                      flex: 1,
+                      padding: "11px 14px",
+                      border: "1.5px solid #d1d5db",
+                      borderRadius: "8px",
+                      fontSize: "0.9rem",
+                      fontFamily: "'Inter',sans-serif",
+                      color: "#1a1a2e",
+                      background: "white",
+                      outline: "none",
+                    }}
+                  />
+                  <button
+                    onClick={handleSendRequest}
+                    disabled={sending}
+                    style={s.primaryBtn}
+                  >
+                    {sending ? "Sending..." : "Send Request"}
+                  </button>
+                </div>
+              </div>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(3,1fr)",
+                  gap: "12px",
+                }}
+              >
+                {[
+                  {
+                    icon: "📧",
+                    title: "Enter Email",
+                    desc: "Type your friend's registered email",
+                  },
+                  {
+                    icon: "📨",
+                    title: "Send Request",
+                    desc: "They get a friend request notification",
+                  },
+                  {
+                    icon: "🤝",
+                    title: "Start Splitting",
+                    desc: "Once accepted, split expenses together!",
+                  },
+                ].map((step) => (
+                  <div
+                    key={step.title}
+                    style={{
+                      background: "#f8f9fc",
+                      borderRadius: "10px",
+                      padding: "16px",
+                      border: "1px solid #e2e6f0",
+                      textAlign: "center",
+                    }}
+                  >
+                    <p style={{ fontSize: "28px", marginBottom: "8px" }}>
+                      {step.icon}
+                    </p>
+                    <p
+                      style={{
+                        fontSize: "0.84rem",
+                        fontWeight: "700",
+                        color: "#1a1a2e",
+                        marginBottom: "4px",
+                      }}
+                    >
+                      {step.title}
+                    </p>
+                    <p style={{ fontSize: "0.76rem", color: "#666" }}>
+                      {step.desc}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ── Message / Chat Modal ── */}
+        {messageModal && (
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "rgba(0,0,0,0.4)",
+              display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              textAlign: "center",
-              cursor: "pointer",
+              zIndex: 1000,
             }}
           >
             <div
               style={{
-                width: "46px",
-                height: "46px",
-                borderRadius: "50%",
-                background: "rgba(255,255,255,0.2)",
+                background: "white",
+                borderRadius: "16px",
+                width: "100%",
+                maxWidth: "480px",
+                boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
                 display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "20px",
-                marginBottom: "8px",
+                flexDirection: "column",
+                maxHeight: "80vh",
               }}
             >
-              ➕
-            </div>
-            <p
-              style={{
-                fontFamily: "'Sora',sans-serif",
-                fontSize: "0.9rem",
-                fontWeight: "700",
-              }}
-            >
-              Invite Friends
-            </p>
-            <p style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.68)" }}>
-              Grow your network
-            </p>
-          </div>
-        </div>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "16px",
-          }}
-        >
-          <div style={s.dashCard}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                marginBottom: "16px",
-              }}
-            >
-              <h3 style={s.dashCardTitle}>Friend Requests</h3>
-              <span
-                style={{
-                  background: "#1a2ea8",
-                  color: "white",
-                  fontSize: "0.7rem",
-                  fontWeight: "600",
-                  padding: "3px 10px",
-                  borderRadius: "20px",
-                }}
-              >
-                {requests.length} pending
-              </span>
-            </div>
-            {requests.length === 0 ? (
-              <p
-                style={{
-                  color: "#666",
-                  fontSize: "14px",
-                  textAlign: "center",
-                  padding: "20px",
-                }}
-              >
-                No pending requests
-              </p>
-            ) : (
-              requests.map((req) => (
-                <div
-                  key={req.name}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "12px",
-                    padding: "13px 0",
-                    borderBottom: "1px solid #f0f2f8",
-                  }}
-                >
-                  <div
-                    style={{
-                      width: "40px",
-                      height: "40px",
-                      borderRadius: "50%",
-                      background: "#e2e6f5",
-                      color: "#1a2ea8",
-                      fontFamily: "'Sora',sans-serif",
-                      fontSize: "12px",
-                      fontWeight: "700",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0,
-                    }}
-                  >
-                    {req.initials}
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <p
-                      style={{
-                        fontSize: "0.88rem",
-                        fontWeight: "600",
-                        color: "#1a1a2e",
-                        marginBottom: "2px",
-                      }}
-                    >
-                      {req.name}
-                    </p>
-                    <p style={{ fontSize: "0.73rem", color: "#666" }}>
-                      👥 {req.mutual} mutual • {req.time}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => handleAccept(req.name)}
-                    style={{
-                      background: "#1a2ea8",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "7px",
-                      padding: "6px 16px",
-                      fontSize: "0.8rem",
-                      fontWeight: "600",
-                      cursor: "pointer",
-                    }}
-                  >
-                    Accept
-                  </button>
-                  <button
-                    onClick={() => handleDecline(req.name)}
-                    style={{
-                      background: "none",
-                      border: "none",
-                      color: "#666",
-                      fontSize: "0.8rem",
-                      cursor: "pointer",
-                    }}
-                  >
-                    Decline
-                  </button>
-                </div>
-              ))
-            )}
-          </div>
-          <div style={s.dashCard}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                marginBottom: "16px",
-              }}
-            >
-              <h3 style={s.dashCardTitle}>Recent Friends</h3>
-              <a
-                href="#"
-                style={{
-                  fontSize: "0.82rem",
-                  color: "#2d47c9",
-                  fontWeight: "600",
-                  textDecoration: "none",
-                }}
-              >
-                View All
-              </a>
-            </div>
-            {recentFriends.map((f) => (
+              {/* Chat Header */}
               <div
-                key={f.name}
                 style={{
                   display: "flex",
                   alignItems: "center",
                   gap: "12px",
-                  padding: "13px 0",
-                  borderBottom: "1px solid #f0f2f8",
+                  padding: "16px 20px",
+                  borderBottom: "1px solid #e2e6f0",
                 }}
               >
-                <div style={{ position: "relative" }}>
-                  <div
-                    style={{
-                      width: "40px",
-                      height: "40px",
-                      borderRadius: "50%",
-                      background: "#e2e6f5",
-                      color: "#1a2ea8",
-                      fontFamily: "'Sora',sans-serif",
-                      fontSize: "12px",
-                      fontWeight: "700",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    {f.initials}
-                  </div>
-                  {f.online && (
-                    <div
-                      style={{
-                        position: "absolute",
-                        bottom: "1px",
-                        right: "1px",
-                        width: "10px",
-                        height: "10px",
-                        borderRadius: "50%",
-                        background: "#22c55e",
-                        border: "2px solid white",
-                      }}
-                    />
-                  )}
+                <div style={s.avatar}>
+                  {messageModal.name?.charAt(0).toUpperCase()}
                 </div>
                 <div style={{ flex: 1 }}>
                   <p
                     style={{
-                      fontSize: "0.88rem",
-                      fontWeight: "600",
+                      fontFamily: "'Sora',sans-serif",
+                      fontSize: "0.95rem",
+                      fontWeight: "700",
                       color: "#1a1a2e",
-                      marginBottom: "2px",
                     }}
                   >
-                    {f.name}
+                    {messageModal.name}
                   </p>
-                  <p style={{ fontSize: "0.73rem", color: "#666" }}>
-                    {f.mutual} mutual friends
+                  <p
+                    style={{
+                      fontSize: "0.74rem",
+                      color: "#16a34a",
+                      fontWeight: "600",
+                    }}
+                  >
+                    ● Active
                   </p>
                 </div>
                 <button
+                  onClick={() => {
+                    setMessageModal(null);
+                    setConversation([]);
+                    setNewMessage("");
+                  }}
                   style={{
-                    background: "#f3f4f8",
-                    border: "1px solid #e2e6f0",
-                    borderRadius: "7px",
-                    padding: "5px 16px",
-                    fontSize: "0.78rem",
-                    fontWeight: "600",
-                    color: "#1a1a2e",
+                    background: "none",
+                    border: "none",
+                    fontSize: "20px",
                     cursor: "pointer",
+                    color: "#666",
                   }}
                 >
-                  Message
+                  ✕
                 </button>
               </div>
-            ))}
+
+              {/* Messages Area */}
+              <div
+                style={{
+                  flex: 1,
+                  overflowY: "auto",
+                  padding: "16px 20px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "10px",
+                  minHeight: "300px",
+                  maxHeight: "400px",
+                  background: "#f8f9fc",
+                }}
+              >
+                {conversation.length === 0 ? (
+                  <div style={{ textAlign: "center", margin: "auto" }}>
+                    <p style={{ fontSize: "36px", marginBottom: "8px" }}>👋</p>
+                    <p style={{ fontSize: "0.84rem", color: "#666" }}>
+                      Say hello to {messageModal.name}!
+                    </p>
+                  </div>
+                ) : (
+                  conversation.map((msg) => {
+                    const isMine =
+                      msg.sender?._id?.toString() === myId?.toString() ||
+                      msg.sender?.id?.toString() === myId?.toString();
+                    return (
+                      <div
+                        key={msg._id}
+                        style={{
+                          display: "flex",
+                          justifyContent: isMine ? "flex-end" : "flex-start",
+                        }}
+                      >
+                        <div
+                          style={{
+                            maxWidth: "70%",
+                            padding: "10px 14px",
+                            borderRadius: isMine
+                              ? "14px 14px 4px 14px"
+                              : "14px 14px 14px 4px",
+                            background: isMine ? "#1a2ea8" : "white",
+                            color: isMine ? "white" : "#1a1a2e",
+                            fontSize: "0.86rem",
+                            boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
+                            border: isMine ? "none" : "1px solid #e2e6f0",
+                          }}
+                        >
+                          <p style={{ marginBottom: "4px" }}>{msg.text}</p>
+                          <p
+                            style={{
+                              fontSize: "0.66rem",
+                              color: isMine ? "rgba(255,255,255,0.6)" : "#999",
+                              textAlign: "right",
+                            }}
+                          >
+                            {new Date(msg.createdAt).toLocaleTimeString(
+                              "en-IN",
+                              {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              },
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+
+              {/* Message Input */}
+              <div
+                style={{
+                  padding: "14px 16px",
+                  borderTop: "1px solid #e2e6f0",
+                  display: "flex",
+                  gap: "10px",
+                  alignItems: "flex-end",
+                }}
+              >
+                <textarea
+                  placeholder={`Message ${messageModal.name}...`}
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendMessage();
+                    }
+                  }}
+                  rows={2}
+                  style={{
+                    flex: 1,
+                    padding: "10px 12px",
+                    border: "1.5px solid #d1d5db",
+                    borderRadius: "10px",
+                    fontSize: "0.88rem",
+                    fontFamily: "'Inter',sans-serif",
+                    color: "#1a1a2e",
+                    background: "#f9fafb",
+                    outline: "none",
+                    resize: "none",
+                  }}
+                />
+                <button
+                  onClick={handleSendMessage}
+                  disabled={sendingMsg}
+                  style={{
+                    ...s.primaryBtn,
+                    padding: "10px 16px",
+                    borderRadius: "10px",
+                    fontSize: "18px",
+                  }}
+                >
+                  {sendingMsg ? "..." : "➤"}
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
+        )}
       </main>
     </div>
   );
@@ -398,111 +814,6 @@ const s = {
     background: "#eef0f7",
     minHeight: "100vh",
     fontFamily: "'Inter',sans-serif",
-  },
-  appNav: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: "0 36px",
-    height: "60px",
-    background: "#1a2ea8",
-    position: "sticky",
-    top: 0,
-    zIndex: 100,
-  },
-  appNavBrand: { display: "flex", alignItems: "center", gap: "10px" },
-  appLogoFallback: {
-    width: "38px",
-    height: "38px",
-    borderRadius: "50%",
-    background: "#4a6cf7",
-    color: "white",
-    fontFamily: "'Sora',sans-serif",
-    fontSize: "16px",
-    fontWeight: "700",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  appBrandName: {
-    fontFamily: "'Sora',sans-serif",
-    fontSize: "19px",
-    fontWeight: "700",
-    color: "white",
-  },
-  appNavLinks: {
-    display: "flex",
-    gap: "30px",
-    listStyle: "none",
-    margin: 0,
-    padding: 0,
-  },
-  appNavLink: {
-    color: "rgba(255,255,255,0.78)",
-    fontSize: "14px",
-    fontWeight: "500",
-    textDecoration: "none",
-  },
-  appNavRight: { display: "flex", alignItems: "center", gap: "12px" },
-  notifBtn: {
-    position: "relative",
-    background: "rgba(255,255,255,0.14)",
-    border: "none",
-    borderRadius: "8px",
-    width: "36px",
-    height: "36px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    cursor: "pointer",
-    color: "white",
-    fontSize: "16px",
-  },
-  notifBadge: {
-    position: "absolute",
-    top: "-5px",
-    right: "-5px",
-    background: "#ef4444",
-    color: "white",
-    fontSize: "10px",
-    fontWeight: "700",
-    width: "17px",
-    height: "17px",
-    borderRadius: "50%",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  appUserChip: {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    background: "#2d47c9",
-    borderRadius: "8px",
-    padding: "5px 10px 5px 5px",
-  },
-  appAvatar: {
-    width: "30px",
-    height: "30px",
-    borderRadius: "6px",
-    background: "rgba(255,255,255,0.2)",
-    color: "white",
-    fontSize: "11px",
-    fontWeight: "700",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  appUsername: { fontSize: "12px", color: "white" },
-  logoutBtn: {
-    background: "rgba(255,255,255,0.15)",
-    border: "none",
-    borderRadius: "8px",
-    padding: "6px 14px",
-    color: "white",
-    fontSize: "13px",
-    fontWeight: "600",
-    cursor: "pointer",
   },
   dashMain: {
     maxWidth: "1060px",
@@ -525,11 +836,59 @@ const s = {
     border: "1px solid #e2e6f0",
     padding: "26px 28px",
   },
-  dashCardTitle: {
+  friendRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: "14px",
+    padding: "13px 14px",
+    borderRadius: "10px",
+    background: "#f8f9fc",
+    border: "1px solid #e2e6f0",
+  },
+  avatar: {
+    width: "42px",
+    height: "42px",
+    borderRadius: "50%",
+    background: "#e2e6f5",
+    color: "#1a2ea8",
     fontFamily: "'Sora',sans-serif",
-    fontSize: "1rem",
+    fontSize: "14px",
     fontWeight: "700",
-    color: "#1a1a2e",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  primaryBtn: {
+    background: "#1a2ea8",
+    color: "white",
+    border: "none",
+    borderRadius: "8px",
+    padding: "8px 18px",
+    fontSize: "0.82rem",
+    fontWeight: "600",
+    fontFamily: "'Sora',sans-serif",
+    cursor: "pointer",
+  },
+  msgBtn: {
+    background: "#e3ebff",
+    color: "#1a2ea8",
+    border: "none",
+    borderRadius: "8px",
+    padding: "7px 14px",
+    fontSize: "0.8rem",
+    fontWeight: "600",
+    cursor: "pointer",
+  },
+  removeBtn: {
+    background: "#fee2e2",
+    color: "#dc2626",
+    border: "none",
+    borderRadius: "8px",
+    padding: "7px 14px",
+    fontSize: "0.8rem",
+    fontWeight: "600",
+    cursor: "pointer",
   },
 };
 
