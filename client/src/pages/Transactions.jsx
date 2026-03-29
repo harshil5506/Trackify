@@ -1,12 +1,11 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import API from "../api/axios";
 import toast from "react-hot-toast";
 
 const Transactions = () => {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
+  const { user } = useAuth();
   const [transactions, setTransactions] = useState([]);
   const [stats, setStats] = useState({
     totalIncome: 0,
@@ -16,6 +15,11 @@ const Transactions = () => {
   const [sortBy, setSortBy] = useState("date");
   const [loading, setLoading] = useState(true);
 
+  // ✅ Edit modal state
+  const [editModal, setEditModal] = useState(null); // holds txn object
+  const [editForm, setEditForm] = useState({});
+  const [saving, setSaving] = useState(false);
+
   useEffect(() => {
     fetchTransactions();
   }, []);
@@ -23,11 +27,9 @@ const Transactions = () => {
   const fetchTransactions = async () => {
     try {
       const { data } = await API.get("/api/expenses");
-      // Backend returns array directly, not { expenses: [] }
       const list = Array.isArray(data) ? data : [];
       setTransactions(list);
 
-      // Calculate stats from the data itself
       const totalIncome = list
         .filter((t) => t.type === "income")
         .reduce((s, t) => s + t.amount, 0);
@@ -54,7 +56,48 @@ const Transactions = () => {
       toast.success("Deleted!");
       fetchTransactions();
     } catch (err) {
-      toast.error("Failed");
+      toast.error("Failed to delete");
+    }
+  };
+
+  // ✅ Open edit modal
+  const openEdit = (txn) => {
+    setEditModal(txn);
+    setEditForm({
+      title: txn.title || txn.note || "",
+      amount: txn.amount,
+      category: txn.category,
+      date: txn.date ? txn.date.split("T")[0] : "",
+      type: txn.type,
+      paymentMethod: txn.paymentMethod || "Cash",
+      note: txn.note || "",
+    });
+  };
+
+  // ✅ Save edited transaction
+  const handleSaveEdit = async () => {
+    if (!editForm.title.trim()) return toast.error("Title is required");
+    if (!editForm.amount || editForm.amount <= 0)
+      return toast.error("Enter a valid amount");
+
+    setSaving(true);
+    try {
+      await API.put(`/api/expenses/${editModal._id}`, {
+        title: editForm.title,
+        amount: parseFloat(editForm.amount),
+        category: editForm.category,
+        date: editForm.date,
+        type: editForm.type,
+        paymentMethod: editForm.paymentMethod,
+        note: editForm.note,
+      });
+      toast.success("Transaction updated! ✅");
+      setEditModal(null);
+      fetchTransactions();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to update");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -77,9 +120,30 @@ const Transactions = () => {
     Other: "💰",
   };
 
+  const categories = [
+    "Food",
+    "Transportation",
+    "Shopping",
+    "Entertainment",
+    "Bills & Utilities",
+    "Healthcare",
+    "Education",
+    "Rent",
+    "Other",
+  ];
+
+  const paymentMethods = [
+    "Cash",
+    "Credit Card",
+    "Debit Card",
+    "Bank Transfer",
+    "UPI",
+  ];
+
   return (
     <div style={s.appBody}>
       <main style={s.dashMain}>
+        {/* Header */}
         <div
           style={{
             display: "flex",
@@ -99,6 +163,8 @@ const Transactions = () => {
             <button style={s.filterBtn}>📤 Export</button>
           </div>
         </div>
+
+        {/* Stats Cards */}
         <div
           style={{
             display: "grid",
@@ -174,6 +240,8 @@ const Transactions = () => {
             </div>
           ))}
         </div>
+
+        {/* Transactions List */}
         <div style={s.dashCard}>
           <div
             style={{
@@ -208,6 +276,7 @@ const Transactions = () => {
               ))}
             </div>
           </div>
+
           {loading ? (
             <p style={{ textAlign: "center", padding: "40px", color: "#666" }}>
               Loading...
@@ -244,6 +313,7 @@ const Transactions = () => {
                   borderBottom: "1px solid #f0f2f8",
                 }}
               >
+                {/* Icon */}
                 <div
                   style={{
                     width: "40px",
@@ -259,6 +329,8 @@ const Transactions = () => {
                 >
                   {catIcons[txn.category] || "💰"}
                 </div>
+
+                {/* Info */}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div
                     style={{
@@ -275,7 +347,7 @@ const Transactions = () => {
                         color: "#1a1a2e",
                       }}
                     >
-                      {txn.note || txn.category}
+                      {txn.title || txn.note || txn.category}
                     </p>
                     <span
                       style={{
@@ -290,6 +362,22 @@ const Transactions = () => {
                     >
                       {txn.type?.toUpperCase()}
                     </span>
+                    {/* Source badge */}
+                    {txn.source && txn.source !== "personal" && (
+                      <span
+                        style={{
+                          fontSize: "0.64rem",
+                          fontWeight: "700",
+                          padding: "2px 6px",
+                          borderRadius: "4px",
+                          background:
+                            txn.source === "group" ? "#e3ebff" : "#f3e8ff",
+                          color: txn.source === "group" ? "#1a2ea8" : "#6b21a8",
+                        }}
+                      >
+                        {txn.source === "group" ? "👥 Group" : "🤝 Friend"}
+                      </span>
+                    )}
                   </div>
                   <p style={{ fontSize: "0.74rem", color: "#666" }}>
                     {txn.category} •{" "}
@@ -300,6 +388,8 @@ const Transactions = () => {
                     })}
                   </p>
                 </div>
+
+                {/* Amount + Actions */}
                 <div
                   style={{
                     display: "flex",
@@ -330,14 +420,27 @@ const Transactions = () => {
                       {txn.paymentMethod || "Cash"}
                     </p>
                   </div>
+                  {/* ✅ Edit button */}
                   <button
+                    onClick={() => openEdit(txn)}
                     style={{
                       background: "none",
                       border: "none",
                       cursor: "pointer",
                       fontSize: "14px",
                     }}
+                  >
+                    ✏️
+                  </button>
+                  {/* Delete button */}
+                  <button
                     onClick={() => handleDelete(txn._id)}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      fontSize: "14px",
+                    }}
                   >
                     🗑️
                   </button>
@@ -347,6 +450,300 @@ const Transactions = () => {
           )}
         </div>
       </main>
+
+      {/* ✅ Edit Modal */}
+      {editModal && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.45)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+            padding: "20px",
+          }}
+        >
+          <div
+            style={{
+              background: "white",
+              borderRadius: "16px",
+              padding: "28px",
+              width: "100%",
+              maxWidth: "500px",
+              boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
+              maxHeight: "90vh",
+              overflowY: "auto",
+            }}
+          >
+            {/* Modal Header */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: "22px",
+              }}
+            >
+              <div>
+                <h3
+                  style={{
+                    fontFamily: "'Sora',sans-serif",
+                    fontSize: "1.1rem",
+                    fontWeight: "700",
+                    color: "#1a1a2e",
+                    marginBottom: "4px",
+                  }}
+                >
+                  ✏️ Edit Transaction
+                </h3>
+                <p style={{ fontSize: "0.78rem", color: "#666" }}>
+                  Update your transaction details
+                </p>
+              </div>
+              <button
+                onClick={() => setEditModal(null)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  fontSize: "22px",
+                  cursor: "pointer",
+                  color: "#666",
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Form Fields */}
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "16px" }}
+            >
+              {/* Title */}
+              <div style={s.fieldGroup}>
+                <label style={s.label}>Title / Description</label>
+                <input
+                  type="text"
+                  value={editForm.title}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, title: e.target.value })
+                  }
+                  style={s.input}
+                  placeholder="What was this for?"
+                />
+              </div>
+
+              {/* Amount */}
+              <div style={s.fieldGroup}>
+                <label style={s.label}>Amount</label>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    border: "1.5px solid #d1d5db",
+                    borderRadius: "8px",
+                    background: "#f9fafb",
+                    overflow: "hidden",
+                  }}
+                >
+                  <span
+                    style={{
+                      padding: "0 14px",
+                      fontSize: "0.9rem",
+                      borderRight: "1.5px solid #d1d5db",
+                      height: "44px",
+                      display: "flex",
+                      alignItems: "center",
+                    }}
+                  >
+                    ₹
+                  </span>
+                  <input
+                    type="number"
+                    value={editForm.amount}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, amount: e.target.value })
+                    }
+                    style={{
+                      border: "none",
+                      background: "transparent",
+                      flex: 1,
+                      padding: "10px 14px",
+                      fontSize: "0.9rem",
+                      outline: "none",
+                    }}
+                    placeholder="0.00"
+                  />
+                </div>
+              </div>
+
+              {/* Category + Payment Method */}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "12px",
+                }}
+              >
+                <div style={s.fieldGroup}>
+                  <label style={s.label}>Category</label>
+                  <select
+                    value={editForm.category}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, category: e.target.value })
+                    }
+                    style={s.select}
+                  >
+                    {categories.map((c) => (
+                      <option key={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+                <div style={s.fieldGroup}>
+                  <label style={s.label}>Payment Method</label>
+                  <select
+                    value={editForm.paymentMethod}
+                    onChange={(e) =>
+                      setEditForm({
+                        ...editForm,
+                        paymentMethod: e.target.value,
+                      })
+                    }
+                    style={s.select}
+                  >
+                    {paymentMethods.map((p) => (
+                      <option key={p}>{p}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Date */}
+              <div style={s.fieldGroup}>
+                <label style={s.label}>Date</label>
+                <input
+                  type="date"
+                  value={editForm.date}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, date: e.target.value })
+                  }
+                  style={s.input}
+                />
+              </div>
+
+              {/* Type Toggle */}
+              <div style={s.fieldGroup}>
+                <label style={s.label}>Transaction Type</label>
+                <div
+                  style={{
+                    display: "flex",
+                    border: "1.5px solid #d1d5db",
+                    borderRadius: "8px",
+                    overflow: "hidden",
+                    width: "fit-content",
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setEditForm({ ...editForm, type: "expense" })
+                    }
+                    style={{
+                      padding: "9px 30px",
+                      border: "none",
+                      fontFamily: "'Sora',sans-serif",
+                      fontSize: "0.86rem",
+                      fontWeight: "600",
+                      cursor: "pointer",
+                      background:
+                        editForm.type === "expense" ? "#fee2e2" : "white",
+                      color: editForm.type === "expense" ? "#dc2626" : "#666",
+                    }}
+                  >
+                    Expense
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditForm({ ...editForm, type: "income" })}
+                    style={{
+                      padding: "9px 30px",
+                      border: "none",
+                      fontFamily: "'Sora',sans-serif",
+                      fontSize: "0.86rem",
+                      fontWeight: "600",
+                      cursor: "pointer",
+                      background:
+                        editForm.type === "income" ? "#dcfce7" : "white",
+                      color: editForm.type === "income" ? "#16a34a" : "#666",
+                    }}
+                  >
+                    Income
+                  </button>
+                </div>
+              </div>
+
+              {/* Note */}
+              <div style={s.fieldGroup}>
+                <label style={s.label}>Note (optional)</label>
+                <input
+                  type="text"
+                  value={editForm.note}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, note: e.target.value })
+                  }
+                  style={s.input}
+                  placeholder="Additional notes..."
+                />
+              </div>
+
+              {/* Buttons */}
+              <div
+                style={{
+                  display: "flex",
+                  gap: "12px",
+                  justifyContent: "flex-end",
+                  marginTop: "4px",
+                }}
+              >
+                <button
+                  onClick={() => setEditModal(null)}
+                  style={{
+                    padding: "10px 24px",
+                    border: "1.5px solid #d1d5db",
+                    borderRadius: "8px",
+                    background: "white",
+                    fontFamily: "'Sora',sans-serif",
+                    fontSize: "0.86rem",
+                    fontWeight: "600",
+                    color: "#666",
+                    cursor: "pointer",
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveEdit}
+                  disabled={saving}
+                  style={{
+                    padding: "10px 24px",
+                    border: "none",
+                    borderRadius: "8px",
+                    background: "#1a2ea8",
+                    fontFamily: "'Sora',sans-serif",
+                    fontSize: "0.86rem",
+                    fontWeight: "600",
+                    color: "white",
+                    cursor: "pointer",
+                  }}
+                >
+                  {saving ? "Saving..." : "Save Changes ✅"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -356,111 +753,6 @@ const s = {
     background: "#eef0f7",
     minHeight: "100vh",
     fontFamily: "'Inter',sans-serif",
-  },
-  appNav: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: "0 36px",
-    height: "60px",
-    background: "#1a2ea8",
-    position: "sticky",
-    top: 0,
-    zIndex: 100,
-  },
-  appNavBrand: { display: "flex", alignItems: "center", gap: "10px" },
-  appLogoFallback: {
-    width: "38px",
-    height: "38px",
-    borderRadius: "50%",
-    background: "#4a6cf7",
-    color: "white",
-    fontFamily: "'Sora',sans-serif",
-    fontSize: "16px",
-    fontWeight: "700",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  appBrandName: {
-    fontFamily: "'Sora',sans-serif",
-    fontSize: "19px",
-    fontWeight: "700",
-    color: "white",
-  },
-  appNavLinks: {
-    display: "flex",
-    gap: "30px",
-    listStyle: "none",
-    margin: 0,
-    padding: 0,
-  },
-  appNavLink: {
-    color: "rgba(255,255,255,0.78)",
-    fontSize: "14px",
-    fontWeight: "500",
-    textDecoration: "none",
-  },
-  appNavRight: { display: "flex", alignItems: "center", gap: "12px" },
-  notifBtn: {
-    position: "relative",
-    background: "rgba(255,255,255,0.14)",
-    border: "none",
-    borderRadius: "8px",
-    width: "36px",
-    height: "36px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    cursor: "pointer",
-    color: "white",
-    fontSize: "16px",
-  },
-  notifBadge: {
-    position: "absolute",
-    top: "-5px",
-    right: "-5px",
-    background: "#ef4444",
-    color: "white",
-    fontSize: "10px",
-    fontWeight: "700",
-    width: "17px",
-    height: "17px",
-    borderRadius: "50%",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  appUserChip: {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    background: "#2d47c9",
-    borderRadius: "8px",
-    padding: "5px 10px 5px 5px",
-  },
-  appAvatar: {
-    width: "30px",
-    height: "30px",
-    borderRadius: "6px",
-    background: "rgba(255,255,255,0.2)",
-    color: "white",
-    fontSize: "11px",
-    fontWeight: "700",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  appUsername: { fontSize: "12px", color: "white" },
-  logoutBtn: {
-    background: "rgba(255,255,255,0.15)",
-    border: "none",
-    borderRadius: "8px",
-    padding: "6px 14px",
-    color: "white",
-    fontSize: "13px",
-    fontWeight: "600",
-    cursor: "pointer",
   },
   dashMain: {
     maxWidth: "1060px",
@@ -501,6 +793,38 @@ const s = {
     fontSize: "1rem",
     fontWeight: "700",
     color: "#1a1a2e",
+  },
+  fieldGroup: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "7px",
+  },
+  label: {
+    fontSize: "0.82rem",
+    fontWeight: "600",
+    color: "#1a1a2e",
+  },
+  input: {
+    padding: "11px 14px",
+    border: "1.5px solid #d1d5db",
+    borderRadius: "8px",
+    fontSize: "0.9rem",
+    fontFamily: "'Inter',sans-serif",
+    color: "#1a1a2e",
+    background: "#f9fafb",
+    outline: "none",
+  },
+  select: {
+    width: "100%",
+    padding: "11px 14px",
+    border: "1.5px solid #d1d5db",
+    borderRadius: "8px",
+    fontSize: "0.9rem",
+    fontFamily: "'Inter',sans-serif",
+    color: "#1a1a2e",
+    background: "#f9fafb",
+    cursor: "pointer",
+    outline: "none",
   },
 };
 
