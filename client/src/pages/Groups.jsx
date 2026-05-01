@@ -210,7 +210,7 @@ const Groups = () => {
                       {group.members?.slice(0, 3).map((m) => (
                         <span key={m._id} style={s.memberChip}>
                           {m.name?.charAt(0).toUpperCase()}{" "}
-                          {m.name?.split(" ")[0]}
+                          {(m.name || "").split(" ")[0]}
                         </span>
                       ))}
                       {group.members?.length > 3 && (

@@ -3,6 +3,31 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import API from "../api/axios";
 import toast from "react-hot-toast";
+import { formatCurrency, toDateTimeLocalValue } from "../utils/finance";
+
+const EXPENSE_CATEGORIES = [
+  "Food",
+  "Transportation",
+  "Shopping",
+  "Entertainment",
+  "Bills & Utilities",
+  "Healthcare",
+  "Education",
+  "Rent",
+  "Other",
+];
+
+const INCOME_CATEGORIES = [
+  "Business",
+  "Job",
+  "Part-Time Job",
+  "Stock Market",
+  "Freelancing",
+  "Investments",
+  "Rental Income",
+  "Passive Income",
+  "Other",
+];
 
 const AddExpense = () => {
   const { user, logout } = useAuth();
@@ -14,25 +39,36 @@ const AddExpense = () => {
     amount: "",
     category: "Food",
     paymentMethod: "Cash",
-    date: new Date().toISOString().split("T")[0],
-    time: "",
+    dateTime: toDateTimeLocalValue(new Date()),
     description: "",
     merchant: "",
   });
 
+  const availableCategories =
+    type === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
+
+  const handleTypeChange = (nextType) => {
+    setType(nextType);
+    setForm((current) => ({
+      ...current,
+      category:
+        nextType === "income" ? INCOME_CATEGORIES[0] : EXPENSE_CATEGORIES[0],
+    }));
+  };
 
   const handleSubmit = async () => {
     if (!form.amount) return toast.error("Amount is required");
     setLoading(true);
     try {
       await API.post("/api/expenses", {
-        title: form.description || form.merchant || "Transaction", // ← ADD THIS
+        title: form.description || form.merchant || "Transaction",
         amount: parseFloat(form.amount),
         category: form.category,
         paymentMethod: form.paymentMethod,
-        date: form.date,
+        date: new Date(form.dateTime).toISOString(),
         note: form.description,
         merchant: form.merchant,
         type,
@@ -50,22 +86,27 @@ const AddExpense = () => {
     <div style={s.appBody}>
       <main style={s.dashMain}>
         <div style={s.dashCard}>
-          <h2
-            style={{
-              fontFamily: "'Sora',sans-serif",
-              fontSize: "1.4rem",
-              fontWeight: "700",
-              color: "#1a1a2e",
-              marginBottom: "6px",
-            }}
-          >
-            Add New Transaction
-          </h2>
-          <p
-            style={{ fontSize: "0.88rem", color: "#666", marginBottom: "20px" }}
-          >
-            Choose your preferred input method:
-          </p>
+          <div style={s.headerRow}>
+            <div>
+              <h2 style={s.title}>Add New Transaction</h2>
+              <p style={s.subtitle}>
+                Capture income or expense quickly with a smoother,
+                mobile-friendly form.
+              </p>
+            </div>
+            <div style={s.previewChip}>
+              <span style={{ fontSize: "0.74rem", color: "#64748b" }}>
+                Preview
+              </span>
+              <strong
+                style={{ color: type === "income" ? "#16a34a" : "#dc2626" }}
+              >
+                {type === "income" ? "+" : "-"}
+                {formatCurrency(form.amount || 0)}
+              </strong>
+            </div>
+          </div>
+          <p style={s.helperText}>Choose your preferred input method:</p>
           <div
             style={{
               display: "grid",
@@ -225,15 +266,7 @@ const AddExpense = () => {
                   onChange={handleChange}
                   style={s.select}
                 >
-                  {[
-                    "Food",
-                    "Transportation",
-                    "Shopping",
-                    "Entertainment",
-                    "Bills & Utilities",
-                    "Healthcare",
-                    "Other",
-                  ].map((c) => (
+                  {availableCategories.map((c) => (
                     <option key={c}>{c}</option>
                   ))}
                 </select>
@@ -266,24 +299,28 @@ const AddExpense = () => {
               }}
             >
               <div style={s.field}>
-                <label style={s.label}>Date</label>
+                <label style={s.label}>Date & Time</label>
                 <input
-                  type="date"
-                  name="date"
-                  value={form.date}
+                  type="datetime-local"
+                  name="dateTime"
+                  value={form.dateTime}
                   onChange={handleChange}
                   style={s.input}
                 />
+                <span style={s.helperSmall}>
+                  Pick the exact moment this transaction happened.
+                </span>
               </div>
               <div style={s.field}>
-                <label style={s.label}>Time</label>
-                <input
-                  type="time"
-                  name="time"
-                  value={form.time}
-                  onChange={handleChange}
-                  style={s.input}
-                />
+                <label style={s.label}>Recorded At</label>
+                <div style={s.readOnlyBox}>
+                  <span style={{ fontSize: "0.92rem", color: "#475569" }}>
+                    {new Date(form.dateTime).toLocaleString("en-IN", {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    })}
+                  </span>
+                </div>
               </div>
             </div>
             <div style={s.field}>
@@ -321,7 +358,7 @@ const AddExpense = () => {
               >
                 <button
                   type="button"
-                  onClick={() => setType("expense")}
+                  onClick={() => handleTypeChange("expense")}
                   style={{
                     padding: "9px 30px",
                     border: "none",
@@ -337,7 +374,7 @@ const AddExpense = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setType("income")}
+                  onClick={() => handleTypeChange("income")}
                   style={{
                     padding: "9px 30px",
                     border: "none",
@@ -405,7 +442,7 @@ const AddExpense = () => {
 
 const s = {
   appBody: {
-    background: "#eef0f7",
+    background: "linear-gradient(180deg,#eef0f7 0%,#f8fafc 100%)",
     minHeight: "100vh",
     fontFamily: "'Inter',sans-serif",
   },
@@ -524,33 +561,86 @@ const s = {
   },
   dashCard: {
     background: "white",
+    borderRadius: "18px",
+    border: "1px solid #e2e8f0",
+    padding: "28px",
+    boxShadow: "0 12px 30px rgba(15,23,42,0.06)",
+  },
+  headerRow: {
+    display: "flex",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    gap: "16px",
+    flexWrap: "wrap",
+    marginBottom: "2px",
+  },
+  title: {
+    fontFamily: "'Sora',sans-serif",
+    fontSize: "1.8rem",
+    fontWeight: "800",
+    color: "#0f172a",
+    marginBottom: "6px",
+  },
+  subtitle: {
+    fontSize: "0.92rem",
+    color: "#64748b",
+    lineHeight: 1.6,
+    maxWidth: "620px",
+  },
+  previewChip: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-end",
+    gap: "4px",
+    padding: "12px 16px",
     borderRadius: "14px",
-    border: "1px solid #e2e6f0",
-    padding: "26px 28px",
+    background: "#f8fafc",
+    border: "1px solid #e2e8f0",
+    minWidth: "160px",
+  },
+  helperText: {
+    fontSize: "0.88rem",
+    color: "#64748b",
+    marginBottom: "8px",
   },
   field: { display: "flex", flexDirection: "column", gap: "7px" },
-  label: { fontSize: "0.82rem", fontWeight: "600", color: "#1a1a2e" },
+  label: { fontSize: "0.82rem", fontWeight: "700", color: "#0f172a" },
   input: {
-    padding: "11px 14px",
-    border: "1.5px solid #d1d5db",
-    borderRadius: "8px",
-    fontSize: "0.9rem",
+    padding: "13px 14px",
+    border: "1px solid #cbd5e1",
+    borderRadius: "12px",
+    fontSize: "0.92rem",
     fontFamily: "'Inter',sans-serif",
-    color: "#1a1a2e",
-    background: "#f9fafb",
+    color: "#0f172a",
+    background: "#ffffff",
     outline: "none",
+    boxShadow: "inset 0 1px 2px rgba(15,23,42,0.04)",
   },
   select: {
     width: "100%",
-    padding: "11px 14px",
-    border: "1.5px solid #d1d5db",
-    borderRadius: "8px",
-    fontSize: "0.9rem",
+    padding: "13px 14px",
+    border: "1px solid #cbd5e1",
+    borderRadius: "12px",
+    fontSize: "0.92rem",
     fontFamily: "'Inter',sans-serif",
-    color: "#1a1a2e",
-    background: "#f9fafb",
+    color: "#0f172a",
+    background: "#ffffff",
     cursor: "pointer",
     outline: "none",
+    boxShadow: "inset 0 1px 2px rgba(15,23,42,0.04)",
+  },
+  helperSmall: {
+    fontSize: "0.74rem",
+    color: "#64748b",
+  },
+  readOnlyBox: {
+    minHeight: "48px",
+    display: "flex",
+    alignItems: "center",
+    padding: "0 14px",
+    borderRadius: "12px",
+    border: "1px dashed #cbd5e1",
+    background: "#f8fafc",
   },
 };
 

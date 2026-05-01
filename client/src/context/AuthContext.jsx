@@ -1,5 +1,3 @@
-
-
 // // import { createContext, useContext, useState, useEffect } from "react";
 // // const AuthContext = createContext();
 // // export const AuthProvider = ({ children }) => {
@@ -100,7 +98,6 @@
 
 // export const useAuth = () => useContext(AuthContext);
 
-
 // --------------------------------------------------------------------------------
 
 import { createContext, useContext, useState, useEffect } from "react";
@@ -172,6 +169,11 @@ export const AuthProvider = ({ children }) => {
     updateLastActive();
   };
 
+  const updateUser = (userData) => {
+    setUser(userData);
+    localStorage.setItem("user", JSON.stringify(userData));
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -186,6 +188,7 @@ export const AuthProvider = ({ children }) => {
         isSessionExpired,
         isWithin30Mins,
         updateLastActive,
+        updateUser,
       }}
     >
       {children}

@@ -1,21 +1,45 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import API from "../api/axios";
 import toast from "react-hot-toast";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { formatCurrency, getBalanceTone } from "../utils/finance";
 
-const breakdown = [
-  {
-    name: "Travel & Transport",
-    amount: "₹12,450",
-    pct: 27.3,
-    color: "#4ade80",
-  },
-  { name: "Food & Dining", amount: "₹8,920", pct: 19.5, color: "#fb923c" },
-  { name: "Office Supplies", amount: "₹6,780", pct: 14.8, color: "#a78bfa" },
-  { name: "Utilities", amount: "₹5,430", pct: 11.9, color: "#f87171" },
-  { name: "Marketing", amount: "₹7,890", pct: 17.3, color: "#38bdf8" },
+const CATEGORY_COLORS = [
+  "#4ade80",
+  "#fb923c",
+  "#a78bfa",
+  "#f87171",
+  "#38bdf8",
+  "#60a5fa",
+  "#facc15",
 ];
+
+const filterByRange = (list, range) => {
+  const now = new Date();
+  if (range === "Last 7 Days") {
+    const from = new Date(now);
+    from.setDate(now.getDate() - 7);
+    return list.filter((item) => new Date(item.date) >= from);
+  }
+  if (range === "Last 30 Days") {
+    const from = new Date(now);
+    from.setDate(now.getDate() - 30);
+    return list.filter((item) => new Date(item.date) >= from);
+  }
+  if (range === "This Month") {
+    return list.filter((item) => {
+      const date = new Date(item.date);
+      return (
+        date.getMonth() === now.getMonth() &&
+        date.getFullYear() === now.getFullYear()
+      );
+    });
+  }
+  return list;
+};
 
 const Reports = () => {
   const { user, logout } = useAuth();
@@ -24,13 +48,154 @@ const Reports = () => {
   const [dateRange, setDateRange] = useState("Last 30 Days");
   const [exportFormat, setExportFormat] = useState("PDF");
   const [generating, setGenerating] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [summary, setSummary] = useState({
+    totalIncome: 0,
+    totalExpense: 0,
+    balance: 0,
+    totalTransactions: 0,
+  });
+  const [categories, setCategories] = useState([]);
+  const [transactions, setTransactions] = useState([]);
+
+  useEffect(() => {
+    fetchReportData();
+  }, []);
+
+  const fetchReportData = async () => {
+    setLoading(true);
+    try {
+      const [summaryRes, categoryRes, expenseRes] = await Promise.all([
+        API.get("/api/analytics/summary"),
+        API.get("/api/analytics/by-category"),
+        API.get("/api/expenses"),
+      ]);
+
+      setSummary({
+        totalIncome: summaryRes.data.totalIncome || 0,
+        totalExpense: summaryRes.data.totalExpense || 0,
+        balance: summaryRes.data.balance || 0,
+        totalTransactions: summaryRes.data.totalTransactions || 0,
+      });
+      setCategories(Array.isArray(categoryRes.data) ? categoryRes.data : []);
+      setTransactions(Array.isArray(expenseRes.data) ? expenseRes.data : []);
+    } catch (err) {
+      toast.error("Failed to load report data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredTransactions = useMemo(
+    () => filterByRange(transactions, dateRange),
+    [transactions, dateRange],
+  );
+
+  const filteredSummary = useMemo(() => {
+    const income = filteredTransactions
+      .filter((item) => item.type === "income")
+      .reduce((sum, item) => sum + item.amount, 0);
+    const expense = filteredTransactions
+      .filter((item) => item.type === "expense")
+      .reduce((sum, item) => sum + item.amount, 0);
+
+    return {
+      totalIncome: income,
+      totalExpense: expense,
+      balance: income - expense,
+      totalTransactions: filteredTransactions.length,
+    };
+  }, [filteredTransactions]);
+
+  const breakdown = useMemo(() => {
+    const totalExpense = filteredSummary.totalExpense || 1;
+    return categories.map((item, index) => ({
+      name: item.category,
+      amount: formatCurrency(item.total),
+      pct: Number(((item.total / totalExpense) * 100).toFixed(1)),
+      color: CATEGORY_COLORS[index % CATEGORY_COLORS.length],
+    }));
+  }, [categories, filteredSummary.totalExpense]);
 
   const handleGenerate = async () => {
+    if (exportFormat !== "PDF") {
+      toast(
+        "PDF export is available right now. Other formats can be added next.",
+      );
+      return;
+    }
+
     setGenerating(true);
-    setTimeout(() => {
+    try {
+      const doc = new jsPDF({ unit: "pt", format: "a4" });
+      const generatedAt = new Date().toLocaleString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+
+      doc.setFontSize(18);
+      doc.text("Trackify Financial Report", 40, 48);
+      doc.setFontSize(11);
+      doc.text(`User: ${user?.name || "User"}`, 40, 70);
+      doc.text(`Generated: ${generatedAt}`, 40, 86);
+      doc.text(`Report Type: ${reportType}`, 320, 70);
+      doc.text(`Date Range: ${dateRange}`, 320, 86);
+
+      autoTable(doc, {
+        startY: 106,
+        theme: "grid",
+        head: [["Metric", "Value"]],
+        body: [
+          ["Total Income", formatCurrency(filteredSummary.totalIncome)],
+          ["Total Expenses", formatCurrency(filteredSummary.totalExpense)],
+          ["Net Balance", formatCurrency(filteredSummary.balance)],
+          ["Total Transactions", String(filteredSummary.totalTransactions)],
+        ],
+      });
+
+      const categoryRows = breakdown.map((item) => [
+        item.name,
+        item.amount,
+        `${item.pct}%`,
+      ]);
+      autoTable(doc, {
+        startY: doc.lastAutoTable.finalY + 18,
+        theme: "striped",
+        head: [["Category", "Amount", "Share"]],
+        body: categoryRows.length
+          ? categoryRows
+          : [["No category data", "-", "-"]],
+      });
+
+      const transactionRows = filteredTransactions
+        .slice(0, 200)
+        .map((txn) => [
+          new Date(txn.date).toLocaleDateString("en-IN"),
+          txn.category,
+          txn.type,
+          formatCurrency(txn.amount),
+          txn.note || txn.title || "-",
+        ]);
+
+      autoTable(doc, {
+        startY: doc.lastAutoTable.finalY + 18,
+        theme: "grid",
+        head: [["Date", "Category", "Type", "Amount", "Note"]],
+        body: transactionRows.length
+          ? transactionRows
+          : [["-", "-", "-", "-", "No transactions"]],
+      });
+
+      doc.save(`trackify-report-${Date.now()}.pdf`);
       toast.success("Report downloaded!");
+    } catch (err) {
+      toast.error("Failed to generate PDF");
+    } finally {
       setGenerating(false);
-    }, 1500);
+    }
   };
 
   return (
@@ -67,6 +232,40 @@ const Reports = () => {
             >
               Report Configuration
             </h3>
+            <div style={{ marginBottom: "16px" }}>
+              <p
+                style={{
+                  fontSize: "0.78rem",
+                  fontWeight: "600",
+                  color: "#666",
+                  marginBottom: "8px",
+                }}
+              >
+                Date Range
+              </p>
+              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                {["Last 7 Days", "Last 30 Days", "This Month", "All Time"].map(
+                  (range) => (
+                    <button
+                      key={range}
+                      onClick={() => setDateRange(range)}
+                      style={{
+                        padding: "7px 14px",
+                        border: "1px solid #e2e6f0",
+                        borderRadius: "8px",
+                        fontSize: "0.8rem",
+                        fontWeight: "500",
+                        cursor: "pointer",
+                        background: dateRange === range ? "#1a2ea8" : "white",
+                        color: dateRange === range ? "white" : "#1a1a2e",
+                      }}
+                    >
+                      {range}
+                    </button>
+                  ),
+                )}
+              </div>
+            </div>
             <div style={{ marginBottom: "16px" }}>
               <p
                 style={{
@@ -315,17 +514,17 @@ const Reports = () => {
                   marginBottom: "4px",
                 }}
               >
-                Total Amount
+                Net Balance
               </p>
               <p
                 style={{
                   fontFamily: "'Sora',sans-serif",
                   fontSize: "1.4rem",
                   fontWeight: "800",
-                  color: "white",
+                  color: getBalanceTone(filteredSummary.balance).color,
                 }}
               >
-                ₹45,678.90
+                {formatCurrency(filteredSummary.balance)}
               </p>
             </div>
             <button
@@ -385,19 +584,19 @@ const Reports = () => {
               {
                 icon: "🔄",
                 label: "Transactions",
-                value: "1,247",
+                value: String(filteredSummary.totalTransactions),
                 color: "#16a34a",
               },
               {
                 icon: "📈",
-                label: "Avg. Daily",
-                value: "₹1,522",
+                label: "Total Income",
+                value: formatCurrency(filteredSummary.totalIncome),
                 color: "#ea580c",
               },
               {
                 icon: "⬆️",
-                label: "Highest Expense",
-                value: "₹12,450",
+                label: "Total Expenses",
+                value: formatCurrency(filteredSummary.totalExpense),
                 color: "#7c3aed",
               },
             ].map((qs) => (
@@ -451,6 +650,68 @@ const Reports = () => {
                 </div>
               </div>
             ))}
+          </div>
+          <div style={s.dashCard}>
+            <h3
+              style={{
+                fontFamily: "'Sora',sans-serif",
+                fontSize: "1rem",
+                fontWeight: "700",
+                color: "#1a1a2e",
+                marginBottom: "14px",
+              }}
+            >
+              Transactions Preview
+            </h3>
+            {loading ? (
+              <p style={{ fontSize: "0.84rem", color: "#666" }}>
+                Loading transactions...
+              </p>
+            ) : filteredTransactions.length === 0 ? (
+              <p style={{ fontSize: "0.84rem", color: "#666" }}>
+                No transactions found for this range.
+              </p>
+            ) : (
+              <div style={{ maxHeight: "280px", overflow: "auto" }}>
+                {filteredTransactions.slice(0, 10).map((txn) => (
+                  <div
+                    key={txn._id}
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "110px 1fr 100px",
+                      gap: "10px",
+                      alignItems: "center",
+                      padding: "10px 0",
+                      borderBottom: "1px solid #edf0f6",
+                    }}
+                  >
+                    <span style={{ fontSize: "0.76rem", color: "#666" }}>
+                      {new Date(txn.date).toLocaleDateString("en-IN")}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: "0.82rem",
+                        color: "#1a1a2e",
+                        fontWeight: 600,
+                      }}
+                    >
+                      {txn.note || txn.title || txn.category}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: "0.82rem",
+                        fontWeight: 700,
+                        color: txn.type === "income" ? "#16a34a" : "#dc2626",
+                        textAlign: "right",
+                      }}
+                    >
+                      {txn.type === "income" ? "+" : "-"}
+                      {formatCurrency(txn.amount)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </main>

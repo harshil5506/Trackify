@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import API from "../api/axios";
 import toast from "react-hot-toast";
+import { formatCurrency, getBalanceTone } from "../utils/finance";
 
 const Transactions = () => {
   const { user } = useAuth();
@@ -14,6 +15,8 @@ const Transactions = () => {
   });
   const [sortBy, setSortBy] = useState("date");
   const [loading, setLoading] = useState(true);
+  const [filterType, setFilterType] = useState("all"); // all, income, expense
+  const [filterCategory, setFilterCategory] = useState("all");
 
   // ✅ Edit modal state
   const [editModal, setEditModal] = useState(null); // holds txn object
@@ -75,6 +78,27 @@ const Transactions = () => {
   };
 
   // ✅ Save edited transaction
+  const categories = [
+    "Food",
+    "Transportation",
+    "Shopping",
+    "Entertainment",
+    "Bills & Utilities",
+    "Healthcare",
+    "Education",
+    "Rent",
+    "Business",
+    "Job",
+    "Part-Time Job",
+    "Stock Market",
+    "Freelancing",
+    "Investments",
+    "Rental Income",
+    "Passive Income",
+    "Salary",
+    "Other",
+  ];
+
   const handleSaveEdit = async () => {
     if (!editForm.title.trim()) return toast.error("Title is required");
     if (!editForm.amount || editForm.amount <= 0)
@@ -101,11 +125,18 @@ const Transactions = () => {
     }
   };
 
-  const sorted = [...transactions].sort((a, b) => {
-    if (sortBy === "date") return new Date(b.date) - new Date(a.date);
-    if (sortBy === "amount") return b.amount - a.amount;
-    return (a.note || "").localeCompare(b.note || "");
-  });
+  const sorted = [...transactions]
+    .filter((t) => {
+      if (filterType !== "all" && t.type !== filterType) return false;
+      if (filterCategory !== "all" && t.category !== filterCategory)
+        return false;
+      return true;
+    })
+    .sort((a, b) => {
+      if (sortBy === "date") return new Date(b.date) - new Date(a.date);
+      if (sortBy === "amount") return b.amount - a.amount;
+      return (a.note || "").localeCompare(b.note || "");
+    });
 
   const catIcons = {
     Food: "☕",
@@ -114,23 +145,118 @@ const Transactions = () => {
     Entertainment: "🎬",
     "Bills & Utilities": "⚡",
     Healthcare: "💊",
+    Education: "🎓",
+    Rent: "🏠",
+    Business: "🏬",
+    Job: "💼",
+    "Part-Time Job": "🕒",
+    "Stock Market": "📈",
+    Freelancing: "💻",
+    Investments: "📊",
+    "Rental Income": "🏘️",
+    "Passive Income": "🪙",
     Salary: "🏢",
     Freelance: "💻",
     Investment: "📈",
     Other: "💰",
   };
 
-  const categories = [
-    "Food",
-    "Transportation",
-    "Shopping",
-    "Entertainment",
-    "Bills & Utilities",
-    "Healthcare",
-    "Education",
-    "Rent",
-    "Other",
-  ];
+  const handleExportCSV = () => {
+    if (sorted.length === 0) {
+      toast.error("No transactions to export");
+      return;
+    }
+
+    const headers = [
+      "Date",
+      "Category",
+      "Type",
+      "Amount",
+      "Title/Note",
+      "Payment Method",
+    ];
+    const csvContent = [
+      headers.join(","),
+      ...sorted.map((txn) =>
+        [
+          new Date(txn.date).toLocaleDateString("en-IN"),
+          txn.category || "-",
+          txn.type || "-",
+          txn.amount || 0,
+          (txn.title || txn.note || "").replace(/"/g, '""'),
+          txn.paymentMethod || "Cash",
+        ]
+          .map((field) =>
+            typeof field === "string" && field.includes(",")
+              ? `"${field}"`
+              : field,
+          )
+          .join(","),
+      ),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `transactions-${Date.now()}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("CSV exported successfully!");
+  };
+
+  const handleExportPDF = async () => {
+    if (sorted.length === 0) {
+      toast.error("No transactions to export");
+      return;
+    }
+
+    try {
+      const jsPDF = (await import("jspdf")).default;
+      const autoTable = (await import("jspdf-autotable")).default;
+
+      const doc = new jsPDF({ unit: "pt", format: "a4" });
+      const generatedAt = new Date().toLocaleString("en-IN");
+
+      doc.setFontSize(18);
+      doc.text("Transaction Export", 40, 40);
+      doc.setFontSize(10);
+      doc.text(`Generated: ${generatedAt}`, 40, 60);
+      doc.text(`Total Transactions: ${sorted.length}`, 40, 74);
+
+      const tableData = sorted
+        .slice(0, 500)
+        .map((txn) => [
+          new Date(txn.date).toLocaleDateString("en-IN"),
+          txn.category,
+          txn.type.toUpperCase(),
+          `₹${txn.amount.toFixed(2)}`,
+          txn.title || txn.note || "-",
+          txn.paymentMethod || "Cash",
+        ]);
+
+      autoTable(doc, {
+        startY: 90,
+        theme: "grid",
+        head: [
+          [
+            "Date",
+            "Category",
+            "Type",
+            "Amount",
+            "Title/Note",
+            "Payment Method",
+          ],
+        ],
+        body: tableData,
+      });
+
+      doc.save(`transactions-${Date.now()}.pdf`);
+      toast.success("PDF exported successfully!");
+    } catch (err) {
+      toast.error("Failed to export PDF");
+    }
+  };
 
   const paymentMethods = [
     "Cash",
@@ -159,8 +285,68 @@ const Transactions = () => {
             </p>
           </div>
           <div style={{ display: "flex", gap: "10px" }}>
-            <button style={s.filterBtn}>⚙️ Filters</button>
-            <button style={s.filterBtn}>📤 Export</button>
+            <button
+              onClick={() => {
+                // Toggle export menu
+                const menu = document.getElementById("exportMenu");
+                if (menu) {
+                  menu.style.display =
+                    menu.style.display === "none" ? "flex" : "none";
+                }
+              }}
+              style={s.filterBtn}
+            >
+              📤 Export
+            </button>
+            <div
+              id="exportMenu"
+              style={{
+                display: "none",
+                position: "absolute",
+                top: "72px",
+                right: "20px",
+                background: "white",
+                border: "1px solid #e2e6f0",
+                borderRadius: "8px",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                zIndex: 100,
+                flexDirection: "column",
+              }}
+            >
+              <button
+                onClick={() => {
+                  handleExportCSV();
+                  document.getElementById("exportMenu").style.display = "none";
+                }}
+                style={{
+                  border: "none",
+                  background: "darkblue",
+                  padding: "12px 20px",
+                  textAlign: "left",
+                  cursor: "pointer",
+                  fontSize: "0.9rem",
+                  borderBottom: "1px solid #e2e6f0",
+                }}
+              >
+                📊 CSV Export
+              </button>
+              <button
+                onClick={() => {
+                  handleExportPDF();
+                  document.getElementById("exportMenu").style.display = "none";
+                }}
+                style={{
+                  border: "none",
+                  background: "darkblue",
+                  padding: "12px 20px",
+                  textAlign: "left",
+                  cursor: "pointer",
+                  fontSize: "0.9rem",
+                }}
+              >
+                📄 PDF Export
+              </button>
+            </div>
           </div>
         </div>
 
@@ -177,72 +363,165 @@ const Transactions = () => {
               label: "Total Income",
               value: stats.totalIncome,
               icon: "🪙",
-              green: false,
             },
             {
               label: "Total Expenses",
               value: stats.totalExpense,
               icon: "🧾",
-              green: false,
             },
             {
               label: "Net Balance",
               value: stats.netBalance,
               icon: "👛",
-              green: true,
+              isBalance: true,
             },
-          ].map((c) => (
-            <div
-              key={c.label}
-              style={{
-                borderRadius: "14px",
-                padding: "20px 22px",
-                position: "relative",
-                background: "linear-gradient(135deg,#1a2ea8,#2a3fb0)",
-              }}
-            >
-              <p
-                style={{
-                  fontSize: "0.8rem",
-                  color: "rgba(255,255,255,0.72)",
-                  marginBottom: "6px",
-                }}
-              >
-                {c.label}
-              </p>
+          ].map((c) => {
+            const balanceTone = c.isBalance ? getBalanceTone(c.value) : null;
+
+            return (
               <div
+                key={c.label}
                 style={{
-                  position: "absolute",
-                  top: "18px",
-                  right: "18px",
-                  width: "36px",
-                  height: "36px",
-                  background: "rgba(255,255,255,0.14)",
-                  borderRadius: "8px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: "18px",
+                  borderRadius: "14px",
+                  padding: "20px 22px",
+                  position: "relative",
+                  background: "linear-gradient(135deg,#1a2ea8,#2a3fb0)",
                 }}
               >
-                {c.icon}
+                <p
+                  style={{
+                    fontSize: "0.8rem",
+                    color: "rgba(255,255,255,0.72)",
+                    marginBottom: "6px",
+                  }}
+                >
+                  {c.label}
+                </p>
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "18px",
+                    right: "18px",
+                    width: "36px",
+                    height: "36px",
+                    background: "rgba(255,255,255,0.14)",
+                    borderRadius: "8px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "18px",
+                  }}
+                >
+                  {c.icon}
+                </div>
+                <p
+                  style={{
+                    fontFamily: "'Sora',sans-serif",
+                    fontSize: "1.55rem",
+                    fontWeight: "700",
+                    color: c.isBalance ? balanceTone.color : "white",
+                  }}
+                >
+                  {formatCurrency(c.value)}
+                </p>
               </div>
-              <p
-                style={{
-                  fontFamily: "'Sora',sans-serif",
-                  fontSize: "1.55rem",
-                  fontWeight: "700",
-                  color: c.green ? "#4ade80" : "white",
-                }}
-              >
-                ₹{c.value.toFixed(2)}
-              </p>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Transactions List */}
         <div style={s.dashCard}>
+          {/* Filters */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+              gap: "12px",
+              marginBottom: "16px",
+            }}
+          >
+            {/* Type Filter */}
+            <div>
+              <label style={{ fontSize: "0.75rem", color: "#666" }}>
+                Filter by Type
+              </label>
+              <select
+                value={filterType}
+                onChange={(e) => setFilterType(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "8px 12px",
+                  border: "1.5px solid #e2e6f0",
+                  borderRadius: "6px",
+                  fontSize: "0.85rem",
+                  background: "white",
+                  cursor: "pointer",
+                }}
+              >
+                <option value="all">All Types</option>
+                <option value="income">Income Only</option>
+                <option value="expense">Expense Only</option>
+              </select>
+            </div>
+
+            {/* Category Filter */}
+            <div>
+              <label style={{ fontSize: "0.75rem", color: "#666" }}>
+                Filter by Category
+              </label>
+              <select
+                value={filterCategory}
+                onChange={(e) => setFilterCategory(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "8px 12px",
+                  border: "1.5px solid #e2e6f0",
+                  borderRadius: "6px",
+                  fontSize: "0.85rem",
+                  background: "white",
+                  cursor: "pointer",
+                }}
+              >
+                <option value="all">All Categories</option>
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Clear Filters */}
+            {(filterType !== "all" || filterCategory !== "all") && (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "flex-end",
+                }}
+              >
+                <button
+                  onClick={() => {
+                    setFilterType("all");
+                    setFilterCategory("all");
+                  }}
+                  style={{
+                    width: "100%",
+                    padding: "8px 12px",
+                    border: "1px solid #e2e6f0",
+                    borderRadius: "6px",
+                    background: "#f7f8fc",
+                    cursor: "pointer",
+                    fontSize: "0.85rem",
+                    fontWeight: "500",
+                  }}
+                >
+                  Clear Filters
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Sort Controls */}
           <div
             style={{
               display: "flex",
@@ -251,7 +530,7 @@ const Transactions = () => {
               marginBottom: "14px",
             }}
           >
-            <h3 style={s.dashCardTitle}>All Transactions</h3>
+            <h3 style={s.dashCardTitle}>All Transactions ({sorted.length})</h3>
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
               <span style={{ fontSize: "0.78rem", color: "#666" }}>
                 Sort by:

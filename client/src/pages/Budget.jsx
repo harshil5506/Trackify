@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import API from "../api/axios";
 import toast from "react-hot-toast";
+import { formatCurrency } from "../utils/finance";
 
 const CATEGORIES = [
   "Food",
@@ -11,49 +12,105 @@ const CATEGORIES = [
   "Entertainment",
   "Bills & Utilities",
   "Healthcare",
+  "Education",
+  "Rent",
   "Other",
 ];
+
+const getCurrentMonth = () => {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+};
 
 const Budget = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [budgets, setBudgets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ category: "Food", limit: "" });
+  const [selectedMonth, setSelectedMonth] = useState(getCurrentMonth());
+  const [editingBudgetId, setEditingBudgetId] = useState(null);
+  const [form, setForm] = useState({
+    category: "Food",
+    limit: "",
+    month: getCurrentMonth(),
+  });
 
   useEffect(() => {
-    fetchBudgets();
-  }, []);
+    fetchBudgets(selectedMonth);
+  }, [selectedMonth]);
 
-  const fetchBudgets = async () => {
+  const fetchBudgets = async (monthValue = selectedMonth) => {
+    setLoading(true);
     try {
-      const { data } = await API.get("/api/budget");
+      const { data } = await API.get("/api/budget", {
+        params: { month: monthValue },
+      });
       setBudgets(data);
     } catch (err) {
+      toast.error("Failed to load budgets");
     } finally {
       setLoading(false);
     }
   };
 
   const handleSubmit = async () => {
-    if (!form.limit) return toast.error("Please enter a limit");
+    const numericLimit = Number(form.limit);
+    if (!form.category) return toast.error("Please select a category");
+    if (!Number.isFinite(numericLimit) || numericLimit <= 0) {
+      return toast.error("Please enter a valid limit greater than 0");
+    }
+
+    setSaving(true);
     try {
-      await API.post("/api/budget", { ...form, limit: parseFloat(form.limit) });
-      toast.success("Budget set!");
+      const payload = {
+        category: form.category,
+        limit: numericLimit,
+        month: form.month || selectedMonth,
+      };
+
+      if (editingBudgetId) {
+        await API.put(`/api/budget/${editingBudgetId}`, payload);
+        toast.success("Budget updated!");
+      } else {
+        await API.post("/api/budget", payload);
+        toast.success("Budget set!");
+      }
+
       setShowForm(false);
-      setForm({ category: "Food", limit: "" });
-      fetchBudgets();
+      setEditingBudgetId(null);
+      setForm({ category: "Food", limit: "", month: selectedMonth });
+      fetchBudgets(selectedMonth);
     } catch (err) {
-      toast.error("Failed to set budget");
+      toast.error(err.response?.data?.message || "Failed to save budget");
+    } finally {
+      setSaving(false);
     }
   };
 
+  const startEdit = (budget) => {
+    setEditingBudgetId(budget._id);
+    setForm({
+      category: budget.category,
+      limit: String(budget.limit || ""),
+      month: budget.month || selectedMonth,
+    });
+    setShowForm(true);
+  };
+
+  const cancelEdit = () => {
+    setEditingBudgetId(null);
+    setShowForm(false);
+    setForm({ category: "Food", limit: "", month: selectedMonth });
+  };
+
   const handleDelete = async (id) => {
+    if (!window.confirm("Delete this budget?")) return;
     try {
       await API.delete(`/api/budget/${id}`);
       toast.success("Removed");
-      fetchBudgets();
+      fetchBudgets(selectedMonth);
     } catch (err) {
       toast.error("Failed");
     }
@@ -65,6 +122,14 @@ const Budget = () => {
   };
   const totalBudget = budgets.reduce((s, b) => s + b.limit, 0);
   const totalSpent = budgets.reduce((s, b) => s + (b.spent || 0), 0);
+  const totalRemaining = totalBudget - totalSpent;
+
+  const monthLabel = new Date(
+    `${selectedMonth}-01T00:00:00`,
+  ).toLocaleDateString("en-IN", {
+    month: "long",
+    year: "numeric",
+  });
 
   return (
     <div style={s.appBody}>
@@ -79,12 +144,32 @@ const Budget = () => {
           <div>
             <h1 style={s.pageTitle}>Budget Planner</h1>
             <p style={{ fontSize: "0.85rem", color: "#666" }}>
-              Set and track your monthly spending limits
+              Set and track your monthly spending limits for {monthLabel}
             </p>
           </div>
-          <button style={s.addBtn} onClick={() => setShowForm(!showForm)}>
-            {showForm ? "✕ Cancel" : "+ Set Budget"}
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <input
+              type="month"
+              value={selectedMonth}
+              onChange={(e) => {
+                setSelectedMonth(e.target.value);
+                setForm((prev) => ({ ...prev, month: e.target.value }));
+              }}
+              style={{
+                padding: "10px 12px",
+                border: "1.5px solid #d1d5db",
+                borderRadius: "8px",
+                fontSize: "0.86rem",
+                background: "white",
+              }}
+            />
+            <button
+              style={s.addBtn}
+              onClick={() => (showForm ? cancelEdit() : setShowForm(true))}
+            >
+              {showForm ? "✕ Cancel" : "+ Set Budget"}
+            </button>
+          </div>
         </div>
         <div
           style={{
@@ -108,8 +193,8 @@ const Budget = () => {
             },
             {
               label: "Remaining",
-              value: Math.max(0, totalBudget - totalSpent),
-              color: "#16a34a",
+              value: totalRemaining,
+              color: totalRemaining < 0 ? "#dc2626" : "#16a34a",
               icon: "💰",
             },
           ].map((c) => (
@@ -139,9 +224,13 @@ const Budget = () => {
                   fontFamily: "'Sora',sans-serif",
                   fontSize: "1.4rem",
                   fontWeight: "700",
+                  color:
+                    c.label === "Remaining" && c.value < 0
+                      ? "#fecaca"
+                      : "white",
                 }}
               >
-                ₹{c.value.toFixed(2)}
+                {formatCurrency(c.value)}
               </p>
             </div>
           ))}
@@ -162,7 +251,7 @@ const Budget = () => {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "1fr 1fr auto",
+                gridTemplateColumns: "1fr 1fr 1fr auto",
                 gap: "16px",
                 alignItems: "end",
               }}
@@ -201,6 +290,25 @@ const Budget = () => {
                     color: "#1a1a2e",
                   }}
                 >
+                  Month
+                </label>
+                <input
+                  type="month"
+                  value={form.month}
+                  onChange={(e) => setForm({ ...form, month: e.target.value })}
+                  style={s.formInput}
+                />
+              </div>
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: "6px" }}
+              >
+                <label
+                  style={{
+                    fontSize: "0.82rem",
+                    fontWeight: "600",
+                    color: "#1a1a2e",
+                  }}
+                >
                   Monthly Limit (₹)
                 </label>
                 <input
@@ -213,6 +321,7 @@ const Budget = () => {
               </div>
               <button
                 onClick={handleSubmit}
+                disabled={saving}
                 style={{
                   padding: "11px 24px",
                   background: "#1a2ea8",
@@ -222,9 +331,10 @@ const Budget = () => {
                   fontSize: "0.88rem",
                   fontWeight: "600",
                   cursor: "pointer",
+                  opacity: saving ? 0.7 : 1,
                 }}
               >
-                Save
+                {saving ? "Saving..." : editingBudgetId ? "Update" : "Save"}
               </button>
             </div>
           </div>
@@ -358,10 +468,20 @@ const Budget = () => {
                             color: "#1a1a2e",
                           }}
                         >
-                          ₹{(b.spent || 0).toFixed(2)} spent
+                          {formatCurrency(b.spent || 0)} spent
                         </span>
                         <span style={{ fontSize: "0.82rem", color: "#666" }}>
-                          of ₹{b.limit.toFixed(2)}
+                          of {formatCurrency(b.limit)}
+                        </span>
+                        <span
+                          style={{
+                            fontSize: "0.8rem",
+                            color:
+                              (b.remaining || 0) < 0 ? "#dc2626" : "#16a34a",
+                            fontWeight: "600",
+                          }}
+                        >
+                          Remaining: {formatCurrency(b.remaining || 0)}
                         </span>
                       </div>
                       <div
@@ -387,17 +507,38 @@ const Budget = () => {
                         {pct}% used
                       </p>
                     </div>
-                    <button
-                      onClick={() => handleDelete(b._id)}
+                    <div
                       style={{
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
-                        fontSize: "16px",
+                        display: "flex",
+                        gap: "10px",
+                        alignItems: "center",
                       }}
                     >
-                      🗑️
-                    </button>
+                      <button
+                        onClick={() => startEdit(b)}
+                        style={{
+                          background: "none",
+                          border: "none",
+                          cursor: "pointer",
+                          fontSize: "16px",
+                        }}
+                        title="Edit budget"
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        onClick={() => handleDelete(b._id)}
+                        style={{
+                          background: "none",
+                          border: "none",
+                          cursor: "pointer",
+                          fontSize: "16px",
+                        }}
+                        title="Delete budget"
+                      >
+                        🗑️
+                      </button>
+                    </div>
                   </div>
                 );
               })}

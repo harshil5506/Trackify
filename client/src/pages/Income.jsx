@@ -3,6 +3,19 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import API from "../api/axios";
 import toast from "react-hot-toast";
+import { formatCurrency } from "../utils/finance";
+
+const INCOME_CATEGORIES = [
+  "Business",
+  "Job",
+  "Part-Time Job",
+  "Stock Market",
+  "Freelancing",
+  "Investments",
+  "Rental Income",
+  "Passive Income",
+  "Other",
+];
 
 const Income = () => {
   const { user, logout } = useAuth();
@@ -12,7 +25,7 @@ const Income = () => {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({
     amount: "",
-    category: "Salary",
+    category: "Business",
     note: "",
     date: new Date().toISOString().split("T")[0],
   });
@@ -43,7 +56,7 @@ const Income = () => {
       setShowForm(false);
       setForm({
         amount: "",
-        category: "Salary",
+        category: "Business",
         note: "",
         date: new Date().toISOString().split("T")[0],
       });
@@ -209,11 +222,11 @@ const Income = () => {
                   <label
                     style={{
                       fontSize: "0.82rem",
-                      fontWeight: "600",
-                      color: "#1a1a2e",
+                      fontWeight: "700",
+                      color: "#0f172a",
                     }}
                   >
-                    Source
+                    Income Category
                   </label>
                   <select
                     value={form.category}
@@ -222,13 +235,7 @@ const Income = () => {
                     }
                     style={s.formInput}
                   >
-                    {[
-                      "Salary",
-                      "Freelance",
-                      "Investment",
-                      "Business",
-                      "Other",
-                    ].map((c) => (
+                    {INCOME_CATEGORIES.map((c) => (
                       <option key={c}>{c}</option>
                     ))}
                   </select>
@@ -573,20 +580,22 @@ const s = {
   },
   dashCard: {
     background: "white",
-    borderRadius: "14px",
-    border: "1px solid #e2e6f0",
-    padding: "26px 28px",
+    borderRadius: "18px",
+    border: "1px solid #e2e8f0",
+    padding: "28px",
+    boxShadow: "0 12px 30px rgba(15,23,42,0.06)",
   },
   formInput: {
-    padding: "11px 14px",
-    border: "1.5px solid #d1d5db",
-    borderRadius: "8px",
-    fontSize: "0.9rem",
+    padding: "13px 14px",
+    border: "1px solid #cbd5e1",
+    borderRadius: "12px",
+    fontSize: "0.92rem",
     fontFamily: "'Inter',sans-serif",
-    color: "#1a1a2e",
-    background: "#f9fafb",
+    color: "#0f172a",
+    background: "#ffffff",
     outline: "none",
     width: "100%",
+    boxShadow: "inset 0 1px 2px rgba(15,23,42,0.04)",
   },
 };
 
