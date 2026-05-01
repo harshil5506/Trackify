@@ -13,5 +13,14 @@ const userSchema = new mongoose.Schema({
   country: { type: String, default: "" },
   language: { type: String, default: "English" },
   timezone: { type: String, default: "IST (UTC+5:30)" },
+  
+  pin: { type: String, default: null },
+
+   resetPasswordToken: {
+    type: String,
+  },
+  resetPasswordExpire: {
+    type: Date,
+  },
 }, { timestamps: true });
 module.exports = mongoose.model("User", userSchema);

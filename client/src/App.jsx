@@ -9,6 +9,9 @@ import PrivateRoute from "./components/PrivateRoute";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import ResetPassword from "./pages/ResetPassword";
+import SetPin from "./pages/SetPin";
+import PinLock from "./pages/PinLock";
 import ForgotPassword from "./pages/ForgotPassword";
 import Verify from "./pages/Verify";
 import Dashboard from "./pages/Dashboard";
@@ -28,7 +31,15 @@ import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 
 // ✅ Pages where Navbar should NOT show
-const noNavbarPages = ["/", "/login", "/signup", "/forgot-password", "/verify"];
+const noNavbarPages = [
+  "/",
+  "/login",
+  "/signup",
+  "/forgot-password",
+  "/verify",
+  "/set-pin",
+  "/pinlock",
+];
 
 // ✅ Layout defined OUTSIDE App — important!
 const Layout = ({ children }) => {
@@ -61,9 +72,13 @@ function App() {
             <Route path="/signup" element={<Signup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/verify" element={<Verify />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
+<Route path="/set-pin" element={<SetPin />} />
+<Route path="/pinlock" element={<PinLock />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/vision" element={<Vision />} />
+            
             <Route
               path="/dashboard"
               element={

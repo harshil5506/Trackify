@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 
+import API from "../api/axios";
+
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -10,12 +12,19 @@ const ForgotPassword = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
-      setSent(true);
-      toast.success("Reset link sent!");
-      setLoading(false);
-    }, 1000);
-  };
+
+  try {
+    await API.post("/api/auth/forgot-password", { email });
+
+    setSent(true);
+    toast.success("Reset link sent!");
+  } catch (err) {
+    toast.error(err.response?.data?.message || "Error sending email");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div style={s.container}>
