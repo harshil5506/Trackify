@@ -10,11 +10,28 @@ const Signup = () => {
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [loading, setLoading] = useState(false);
 
+  const isStrongPassword = (value) => {
+    const password = String(value || "");
+    return (
+      password.length >= 8 &&
+      /[a-z]/.test(password) &&
+      /[A-Z]/.test(password) &&
+      /\d/.test(password) &&
+      /[^A-Za-z0-9]/.test(password)
+    );
+  };
+
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!isStrongPassword(form.password)) {
+      toast.error(
+        "Password must be at least 8 characters and include uppercase, lowercase, number, and special character",
+      );
+      return;
+    }
     setLoading(true);
     try {
       const { data } = await API.post("/api/auth/register", form);

@@ -38,7 +38,6 @@
 
 // export default ResetPassword;
 
-
 import { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import API from "../api/axios";
@@ -52,14 +51,27 @@ const ResetPassword = () => {
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
 
+  const isStrongPassword = (value) => {
+    const password = String(value || "");
+    return (
+      password.length >= 8 &&
+      /[a-z]/.test(password) &&
+      /[A-Z]/.test(password) &&
+      /\d/.test(password) &&
+      /[^A-Za-z0-9]/.test(password)
+    );
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (password !== confirm) {
       toast.error("Passwords don't match");
       return;
     }
-    if (password.length < 6) {
-      toast.error("Password must be at least 6 characters");
+    if (!isStrongPassword(password)) {
+      toast.error(
+        "Password must be at least 8 characters and include uppercase, lowercase, number, and special character",
+      );
       return;
     }
     setLoading(true);
@@ -84,13 +96,17 @@ const ResetPassword = () => {
 
         {!done ? (
           <>
-            <div style={{ fontSize: "48px", marginBottom: "16px", textAlign: "center" }}>
+            <div
+              style={{
+                fontSize: "48px",
+                marginBottom: "16px",
+                textAlign: "center",
+              }}
+            >
               🔑
             </div>
             <h1 style={s.title}>Set New Password</h1>
-            <p style={s.sub}>
-              Enter your new password below. Make it strong!
-            </p>
+            <p style={s.sub}>Enter your new password below. Make it strong!</p>
 
             <form onSubmit={handleSubmit} style={s.form}>
               <div style={s.field}>
@@ -137,7 +153,13 @@ const ResetPassword = () => {
           </>
         ) : (
           <>
-            <div style={{ fontSize: "56px", marginBottom: "16px", textAlign: "center" }}>
+            <div
+              style={{
+                fontSize: "56px",
+                marginBottom: "16px",
+                textAlign: "center",
+              }}
+            >
               🎉
             </div>
             <h1 style={s.title}>Password Updated!</h1>
@@ -157,7 +179,14 @@ const ResetPassword = () => {
               }}
             >
               <span style={{ fontSize: "16px" }}>✅</span>
-              <p style={{ fontSize: "13px", color: "#166534", lineHeight: 1.5, margin: 0 }}>
+              <p
+                style={{
+                  fontSize: "13px",
+                  color: "#166534",
+                  lineHeight: 1.5,
+                  margin: 0,
+                }}
+              >
                 All done! Your account is secured with the new password.
               </p>
             </div>
