@@ -1108,7 +1108,7 @@
 //                             color: s.settled ? "#16a34a" : "#dc2626",
 //                           }}
 //                         >
-//                           {s.user?.name?.split(" ")[0] || "?"}: ₹{s.share}
+//                           {(s.user?.name || "?").split(" ")[0]}: ₹{s.share}
 //                           {s.settled ? " ✓" : ""}
 //                         </span>
 //                       ))}
@@ -2508,7 +2508,8 @@ const GroupDetail = () => {
                             color: s.settled ? "#16a34a" : "#dc2626",
                           }}
                         >
-                          {s.user?.name?.split(" ")[0] || "?"}: ₹{s.share}
+                          {(s.user?.name || "?").split(" ")[0] || "?"}: ₹
+                          {s.share}
                           {s.settled ? " ✓" : ""}
                         </span>
                       ))}

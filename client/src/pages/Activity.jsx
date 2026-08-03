@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import API from "../api/axios";
 import toast from "react-hot-toast";
+import { formatCurrency, getBalanceTone } from "../utils/finance";
 
 const Activity = () => {
   const { user, logout } = useAuth();
@@ -108,10 +109,11 @@ const Activity = () => {
               icon: "🔄",
               bg: "#16a34a",
               label: "Current Balance",
-              value: `₹${stats.balance.toLocaleString()}`,
+              value: formatCurrency(stats.balance),
               pill: "Active",
               pillBg: "#dbeafe",
               pillColor: "#1d4ed8",
+              isBalance: true,
             },
             {
               icon: "📊",
@@ -182,7 +184,9 @@ const Activity = () => {
                   fontFamily: "'Sora',sans-serif",
                   fontSize: "1.35rem",
                   fontWeight: "700",
-                  color: "#1a1a2e",
+                  color: c.isBalance
+                    ? getBalanceTone(stats.balance).color
+                    : "#1a1a2e",
                 }}
               >
                 {c.value}

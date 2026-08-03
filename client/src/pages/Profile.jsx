@@ -5,13 +5,17 @@ import API from "../api/axios";
 import toast from "react-hot-toast";
 
 const Profile = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, updateUser } = useAuth();
   const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [twoFA, setTwoFA] = useState(true);
   const [emailNotif, setEmailNotif] = useState(true);
   const [form, setForm] = useState({
     name: user?.name || "",
+    email: user?.email || "",
+    avatar: user?.avatar || "",
     phone: "",
     address: "",
     city: "",
@@ -28,29 +32,86 @@ const Profile = () => {
   }, []);
 
   const fetchProfile = async () => {
+    setProfileLoading(true);
     try {
       const { data } = await API.get("/api/user/profile");
       setForm((prev) => ({ ...prev, ...data }));
-    } catch (err) {}
+      updateUser({
+        ...user,
+        ...data,
+      });
+    } catch (err) {
+      toast.error("Failed to load profile");
+    } finally {
+      setProfileLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    logout();
+    toast.success("Logged out!");
+    navigate("/login");
   };
 
   const handleSave = async () => {
+    if (!form.name?.trim()) return toast.error("Name is required");
+    if (!form.email?.trim()) return toast.error("Email is required");
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(form.email.trim())) {
+      return toast.error("Please enter a valid email");
+    }
+
+    setSaving(true);
     try {
-      await API.put("/api/user/profile", form);
+      const payload = {
+        ...form,
+        name: form.name.trim(),
+        email: form.email.trim().toLowerCase(),
+      };
+      const { data } = await API.put("/api/user/profile", payload);
+      setForm((prev) => ({ ...prev, ...data }));
+      updateUser({
+        ...user,
+        ...data,
+      });
       toast.success("Profile updated!");
       setEditing(false);
     } catch (err) {
-      toast.error("Failed to update");
+      toast.error("Failed to update profile");
+    } finally {
+      setSaving(false);
     }
   };
 
   const initials =
-    user?.name
-      ?.split(" ")
+    (form.name || user?.name || "")
+      .toString()
+      .split(" ")
       .map((n) => n[0])
       .join("")
       .toUpperCase()
       .slice(0, 2) || "U";
+
+  if (profileLoading) {
+    return (
+      <div style={s.appBody}>
+        <div
+          style={{
+            maxWidth: "900px",
+            margin: "0 auto",
+            padding: "36px 24px 60px",
+          }}
+        >
+          <div style={{ ...s.pcard, textAlign: "center", padding: "40px" }}>
+            <p style={{ color: "#666", fontSize: "0.92rem" }}>
+              Loading profile...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={s.appBody}>
@@ -65,12 +126,14 @@ const Profile = () => {
           style={{
             background: "white",
             borderRadius: "16px",
-            border: "1px solid #e4e8f0",
+            border: "1px solid #e2e6f0",
             padding: "28px 30px",
             display: "flex",
             alignItems: "flex-start",
             gap: "24px",
             marginBottom: "24px",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
+            transition: "all 0.3s ease",
           }}
         >
           <div
@@ -87,31 +150,63 @@ const Profile = () => {
                 width: "80px",
                 height: "80px",
                 borderRadius: "50%",
+                overflow: "hidden",
                 background: "#1a2ea8",
-                color: "white",
-                fontFamily: "'Sora',sans-serif",
-                fontSize: "1.5rem",
-                fontWeight: "700",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
               }}
             >
-              {initials}
+              {form.avatar ? (
+                <img
+                  src={form.avatar}
+                  alt="Avatar"
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              ) : (
+                <div
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    color: "white",
+                    fontFamily: "'Sora',sans-serif",
+                    fontSize: "1.5rem",
+                    fontWeight: "700",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  {initials}
+                </div>
+              )}
             </div>
-            <button
-              style={{
-                background: "#f7f8fc",
-                border: "1px solid #e4e8f0",
-                borderRadius: "6px",
-                padding: "6px 12px",
-                fontSize: "0.78rem",
-                color: "#666",
-                cursor: "pointer",
-              }}
-            >
-              Change Photo
-            </button>
+            {editing && (
+              <input
+                placeholder="Paste avatar image URL"
+                value={form.avatar || ""}
+                onChange={(e) => setForm({ ...form, avatar: e.target.value })}
+                onFocus={(e) => {
+                  e.target.style.borderColor = "#2d47c9";
+                  e.target.style.background = "white";
+                  e.target.style.boxShadow = "0 0 0 3px rgba(45,71,201,0.1)";
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = "#e2e6f0";
+                  e.target.style.background = "#fafbfc";
+                  e.target.style.boxShadow = "none";
+                }}
+                style={{
+                  width: "180px",
+                  padding: "10px 12px",
+                  border: "1.5px solid #e2e6f0",
+                  borderRadius: "8px",
+                  fontSize: "0.8rem",
+                  background: "#fafbfc",
+                  color: "#1a1a2e",
+                  fontFamily: "'Inter',sans-serif",
+                  transition: "all 0.2s ease",
+                  outline: "none",
+                }}
+              />
+            )}
           </div>
           <div style={{ flex: 1 }}>
             <h2
@@ -123,12 +218,12 @@ const Profile = () => {
                 marginBottom: "4px",
               }}
             >
-              {user?.name}
+              {form.name || user?.name}
             </h2>
             <p
               style={{ fontSize: "0.9rem", color: "#666", marginBottom: "2px" }}
             >
-              {user?.email}
+              {form.email || user?.email}
             </p>
             <p
               style={{
@@ -142,32 +237,62 @@ const Profile = () => {
             <div style={{ display: "flex", gap: "10px" }}>
               <button
                 onClick={() => (editing ? handleSave() : setEditing(true))}
+                disabled={saving}
+                onMouseEnter={(e) => {
+                  if (!saving) {
+                    e.target.style.transform = "translateY(-2px)";
+                    e.target.style.boxShadow =
+                      "0 8px 16px rgba(26,46,168,0.25)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = "translateY(0)";
+                  e.target.style.boxShadow = "none";
+                }}
                 style={{
-                  padding: "8px 20px",
+                  padding: "10px 22px",
                   borderRadius: "8px",
-                  background: "#1a2ea8",
+                  background: saving
+                    ? "#2d47c9"
+                    : "linear-gradient(135deg,#1a2ea8,#2d47c9)",
                   color: "white",
                   border: "none",
-                  fontSize: "0.88rem",
+                  fontSize: "0.9rem",
                   fontWeight: "600",
                   fontFamily: "'Sora',sans-serif",
-                  cursor: "pointer",
+                  cursor: saving ? "default" : "pointer",
+                  opacity: saving ? 0.8 : 1,
+                  transition: "all 0.2s ease",
                 }}
               >
-                {editing ? "Save Changes" : "Edit Profile"}
+                {editing
+                  ? saving
+                    ? "Saving..."
+                    : "Save Changes"
+                  : "Edit Profile"}
               </button>
               {editing && (
                 <button
                   onClick={() => setEditing(false)}
+                  onMouseEnter={(e) => {
+                    e.target.style.background = "#eef0f7";
+                    e.target.style.borderColor = "#d1d5db";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.background = "#f7f8fc";
+                    e.target.style.borderColor = "#e2e6f0";
+                  }}
                   style={{
-                    padding: "8px 20px",
+                    padding: "10px 22px",
                     borderRadius: "8px",
                     background: "#f7f8fc",
                     color: "#1a1a2e",
-                    border: "1px solid #e4e8f0",
-                    fontSize: "0.88rem",
+                    border: "1.5px solid #e2e6f0",
+                    fontSize: "0.9rem",
                     fontWeight: "600",
+                    fontFamily: "'Sora',sans-serif",
                     cursor: "pointer",
+                    transition: "all 0.2s ease",
                   }}
                 >
                   Cancel
@@ -227,6 +352,7 @@ const Profile = () => {
               >
                 {[
                   { l: "Full Name", k: "name" },
+                  { l: "Email", k: "email" },
                   { l: "Phone", k: "phone" },
                   { l: "Address", k: "address" },
                   { l: "City", k: "city" },
@@ -265,7 +391,7 @@ const Profile = () => {
               <>
                 {[
                   { l: "Full Name", v: form.name },
-                  { l: "Email", v: user?.email },
+                  { l: "Email", v: form.email || user?.email },
                   { l: "Phone", v: form.phone || "—" },
                   { l: "Address", v: form.address || "—" },
                   { l: "City", v: form.city || "—" },
@@ -460,13 +586,28 @@ const Profile = () => {
                     onChange={(e) =>
                       setForm({ ...form, [f.k]: e.target.value })
                     }
+                    onFocus={(e) => {
+                      e.target.style.borderColor = "#2d47c9";
+                      e.target.style.background = "white";
+                      e.target.style.boxShadow =
+                        "0 0 0 3px rgba(45,71,201,0.1)";
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = "#e2e6f0";
+                      e.target.style.background = "#fafbfc";
+                      e.target.style.boxShadow = "none";
+                    }}
                     style={{
-                      padding: "8px 12px",
-                      border: "1.5px solid #d1d5db",
+                      width: "100%",
+                      padding: "11px 14px",
+                      border: "1.5px solid #e2e6f0",
                       borderRadius: "8px",
                       fontSize: "0.9rem",
+                      fontFamily: "'Inter',sans-serif",
+                      color: "#1a1a2e",
+                      background: "#fafbfc",
                       outline: "none",
-                      width: "100%",
+                      transition: "all 0.2s ease",
                     }}
                   />
                 ) : (
@@ -661,8 +802,46 @@ const s = {
   pcard: {
     background: "white",
     borderRadius: "14px",
-    border: "1px solid #e4e8f0",
-    padding: "24px",
+    border: "1px solid #e2e6f0",
+    padding: "28px",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
+    transition: "all 0.3s ease",
+  },
+  input: {
+    width: "100%",
+    padding: "11px 14px",
+    border: "1.5px solid #e2e6f0",
+    borderRadius: "8px",
+    fontSize: "0.9rem",
+    fontFamily: "'Inter',sans-serif",
+    color: "#1a1a2e",
+    background: "#fafbfc",
+    outline: "none",
+    transition: "all 0.2s ease",
+  },
+  inputFocus: {
+    borderColor: "#2d47c9",
+    background: "white",
+    boxShadow: "0 0 0 3px rgba(45,71,201,0.1)",
+  },
+  button: {
+    padding: "10px 20px",
+    borderRadius: "8px",
+    border: "none",
+    fontSize: "0.9rem",
+    fontWeight: "600",
+    fontFamily: "'Sora',sans-serif",
+    cursor: "pointer",
+    transition: "all 0.2s ease",
+  },
+  primaryButton: {
+    background: "linear-gradient(135deg,#1a2ea8,#2d47c9)",
+    color: "white",
+  },
+  secondaryButton: {
+    background: "#f7f8fc",
+    color: "#1a1a2e",
+    border: "1px solid #e2e6f0",
   },
 };
 

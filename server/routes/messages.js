@@ -75,9 +75,10 @@ router.get("/inbox", authMiddleware, async (req, res) => {
     // Get unique conversations
     const seen = new Set();
     const inbox = [];
+    const currentUserId = req.user.id.toString();
     messages.forEach((msg) => {
       const friendId =
-        msg.sender._id.toString() === req.user.id
+        msg.sender._id.toString() === currentUserId
           ? msg.receiver._id.toString()
           : msg.sender._id.toString();
       if (!seen.has(friendId)) {

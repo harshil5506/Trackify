@@ -2,6 +2,7 @@ require("dotenv").config({ path: __dirname + "/.env" });
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const authRoutes = require("./routes/auth");
 
 const app = express();
 
@@ -19,7 +20,7 @@ mongoose
   .catch((err) => console.log("MongoDB error ❌", err));
 
 // ── Routes ──────────────────────────────
-app.use("/api/auth", require("./routes/auth"));
+app.use("/api/auth", authRoutes);
 app.use("/api/expenses", require("./routes/expenses"));
 app.use("/api/user", require("./routes/user"));
 app.use("/api/analytics", require("./routes/analytics"));

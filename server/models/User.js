@@ -2,7 +2,8 @@ const mongoose = require("mongoose");
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true, trim: true },
   email: { type: String, required: true, unique: true, lowercase: true },
-  password: { type: String, required: true },
+  password: { type: String, required: false },
+  googleId: { type: String, default: null },
   avatar: { type: String, default: "" },
   currency: { type: String, default: "INR" },
   phone: { type: String, default: "" },
@@ -13,5 +14,14 @@ const userSchema = new mongoose.Schema({
   country: { type: String, default: "" },
   language: { type: String, default: "English" },
   timezone: { type: String, default: "IST (UTC+5:30)" },
+  
+  pin: { type: String, default: null },
+
+   resetPasswordToken: {
+    type: String,
+  },
+  resetPasswordExpire: {
+    type: Date,
+  },
 }, { timestamps: true });
 module.exports = mongoose.model("User", userSchema);

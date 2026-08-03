@@ -9,6 +9,9 @@ import PrivateRoute from "./components/PrivateRoute";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import ResetPassword from "./pages/ResetPassword";
+import SetPin from "./pages/SetPin";
+import PinLock from "./pages/PinLock";
 import ForgotPassword from "./pages/ForgotPassword";
 import Verify from "./pages/Verify";
 import Dashboard from "./pages/Dashboard";
@@ -28,7 +31,15 @@ import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 
 // ✅ Pages where Navbar should NOT show
-const noNavbarPages = ["/", "/login", "/signup", "/forgot-password", "/verify"];
+const noNavbarPages = [
+  "/",
+  "/login",
+  "/signup",
+  "/forgot-password",
+  "/verify",
+  "/set-pin",
+  "/pinlock",
+];
 
 // ✅ Layout defined OUTSIDE App — important!
 const Layout = ({ children }) => {
@@ -47,13 +58,18 @@ const Layout = ({ children }) => {
   );
 };
 
+import { GoogleOAuthProvider } from "@react-oauth/google";
+
 function App() {
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID";
+
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Toaster position="top-right" />
-        {/* ✅ Layout is INSIDE AuthProvider and BrowserRouter */}
-        <Layout>
+    <GoogleOAuthProvider clientId={googleClientId}>
+      <AuthProvider>
+        <BrowserRouter>
+          <Toaster position="top-right" />
+          {/* ✅ Layout is INSIDE AuthProvider and BrowserRouter */}
+          <Layout>
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/home" element={<Home />} />
@@ -61,9 +77,27 @@ function App() {
             <Route path="/signup" element={<Signup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/verify" element={<Verify />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
+            <Route
+              path="/set-pin"
+              element={
+                <PrivateRoute>
+                  <SetPin />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/pinlock"
+              element={
+                <PrivateRoute>
+                  <PinLock />
+                </PrivateRoute>
+              }
+            />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/vision" element={<Vision />} />
+            
             <Route
               path="/dashboard"
               element={
@@ -157,6 +191,7 @@ function App() {
         </Layout>
       </BrowserRouter>
     </AuthProvider>
+    </GoogleOAuthProvider>
   );
 }
 

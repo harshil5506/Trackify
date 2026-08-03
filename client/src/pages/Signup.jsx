@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import API from "../api/axios";
 import toast from "react-hot-toast";
+import { GoogleLogin } from "@react-oauth/google";
 
 const Signup = () => {
   const { login } = useAuth();
@@ -10,11 +11,28 @@ const Signup = () => {
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [loading, setLoading] = useState(false);
 
+  const isStrongPassword = (value) => {
+    const password = String(value || "");
+    return (
+      password.length >= 8 &&
+      /[a-z]/.test(password) &&
+      /[A-Z]/.test(password) &&
+      /\d/.test(password) &&
+      /[^A-Za-z0-9]/.test(password)
+    );
+  };
+
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!isStrongPassword(form.password)) {
+      toast.error(
+        "Password must be at least 8 characters and include uppercase, lowercase, number, and special character",
+      );
+      return;
+    }
     setLoading(true);
     try {
       const { data } = await API.post("/api/auth/register", form);
@@ -75,6 +93,23 @@ const Signup = () => {
             {loading ? "Creating account..." : "Create Account"}
           </button>
         </form>
+        <div style={{ marginTop: "16px", display: "flex", justifyContent: "center" }}>
+          <GoogleLogin
+            onSuccess={async (credentialResponse) => {
+              try {
+                const { data } = await API.post("/api/auth/google", {
+                  token: credentialResponse.credential,
+                });
+                login(data.user, data.token);
+                toast.success("Signed up with Google!");
+                navigate("/dashboard");
+              } catch (err) {
+                toast.error(err.response?.data?.message || "Google signup failed");
+              }
+            }}
+            onError={() => toast.error("Google Sign-In failed")}
+          />
+        </div>
         <p style={s.bottom}>
           Already have an account?{" "}
           <Link to="/login" style={s.link}>
