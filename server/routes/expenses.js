@@ -28,11 +28,16 @@ router.get("/", authMiddleware, async (req, res) => {
 router.post("/", authMiddleware, async (req, res) => {
   try {
     const { title, amount, category, type, date, note } = req.body;
+    const normalizedAmount = Number(amount);
+
+    if (!Number.isFinite(normalizedAmount) || normalizedAmount <= 0) {
+      return res.status(400).json({ message: "Amount must be greater than 0" });
+    }
 
     const expense = await Expense.create({
       user: req.user.id,
       title,
-      amount,
+      amount: normalizedAmount,
       category,
       type,
       date,
@@ -53,6 +58,16 @@ router.put("/:id", authMiddleware, async (req, res) => {
 
     if (expense.user.toString() !== req.user.id)
       return res.status(403).json({ message: "Not authorized" });
+
+    if (Object.prototype.hasOwnProperty.call(req.body, "amount")) {
+      const normalizedAmount = Number(req.body.amount);
+      if (!Number.isFinite(normalizedAmount) || normalizedAmount <= 0) {
+        return res
+          .status(400)
+          .json({ message: "Amount must be greater than 0" });
+      }
+      req.body.amount = normalizedAmount;
+    }
 
     const updated = await Expense.findByIdAndUpdate(req.params.id, req.body, {
       new: true,

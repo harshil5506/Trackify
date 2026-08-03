@@ -20,7 +20,6 @@ mongoose
   .catch((err) => console.log("MongoDB error ❌", err));
 
 // ── Routes ──────────────────────────────
-app.use("/api/auth", require("./routes/auth"));
 app.use("/api/auth", authRoutes);
 app.use("/api/expenses", require("./routes/expenses"));
 app.use("/api/user", require("./routes/user"));

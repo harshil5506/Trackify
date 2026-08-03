@@ -61,11 +61,15 @@ const AddExpense = () => {
 
   const handleSubmit = async () => {
     if (!form.amount) return toast.error("Amount is required");
+    const amount = Number(form.amount);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      return toast.error("Amount must be greater than 0");
+    }
     setLoading(true);
     try {
       await API.post("/api/expenses", {
         title: form.description || form.merchant || "Transaction",
-        amount: parseFloat(form.amount),
+        amount,
         category: form.category,
         paymentMethod: form.paymentMethod,
         date: new Date(form.dateTime).toISOString(),
@@ -239,6 +243,8 @@ const AddExpense = () => {
                   placeholder="0.00"
                   value={form.amount}
                   onChange={handleChange}
+                  min="0.01"
+                  step="0.01"
                   style={{
                     border: "none",
                     background: "transparent",

@@ -58,13 +58,18 @@ const Layout = ({ children }) => {
   );
 };
 
+import { GoogleOAuthProvider } from "@react-oauth/google";
+
 function App() {
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID";
+
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Toaster position="top-right" />
-        {/* ✅ Layout is INSIDE AuthProvider and BrowserRouter */}
-        <Layout>
+    <GoogleOAuthProvider clientId={googleClientId}>
+      <AuthProvider>
+        <BrowserRouter>
+          <Toaster position="top-right" />
+          {/* ✅ Layout is INSIDE AuthProvider and BrowserRouter */}
+          <Layout>
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/home" element={<Home />} />
@@ -73,8 +78,22 @@ function App() {
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/verify" element={<Verify />} />
             <Route path="/reset-password/:token" element={<ResetPassword />} />
-<Route path="/set-pin" element={<SetPin />} />
-<Route path="/pinlock" element={<PinLock />} />
+            <Route
+              path="/set-pin"
+              element={
+                <PrivateRoute>
+                  <SetPin />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/pinlock"
+              element={
+                <PrivateRoute>
+                  <PinLock />
+                </PrivateRoute>
+              }
+            />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/vision" element={<Vision />} />
@@ -172,6 +191,7 @@ function App() {
         </Layout>
       </BrowserRouter>
     </AuthProvider>
+    </GoogleOAuthProvider>
   );
 }
 

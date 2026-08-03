@@ -4,6 +4,11 @@ const Budget = require("../models/Budget");
 const Expense = require("../models/Expense");
 const authMiddleware = require("../middleware/authMiddleware");
 
+const getCurrentMonth = () => {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+};
+
 // GET all budgets with spent calculation
 router.get("/", authMiddleware, async (req, res) => {
   try {
@@ -11,12 +16,13 @@ router.get("/", authMiddleware, async (req, res) => {
     const filter = { user: req.user.id };
     if (month) filter.month = month;
 
-    const budgets = await Budget.find(filter);
+    const budgets = await Budget.find(filter).sort({ createdAt: -1 });
 
     // For each budget, calculate how much has been spent
     const result = await Promise.all(
       budgets.map(async (b) => {
-        const [year, mon] = b.month.split("-");
+        const safeMonth = b.month || getCurrentMonth();
+        const [year, mon] = safeMonth.split("-");
         const start = new Date(year, mon - 1, 1);
         const end = new Date(year, mon, 0, 23, 59, 59);
 
@@ -48,12 +54,22 @@ router.get("/", authMiddleware, async (req, res) => {
 router.post("/", authMiddleware, async (req, res) => {
   try {
     const { category, limit, month } = req.body;
+    const normalizedMonth = month || getCurrentMonth();
+    const numericLimit = Number(limit);
+
+    if (!category) {
+      return res.status(400).json({ message: "Category is required" });
+    }
+
+    if (!Number.isFinite(numericLimit) || numericLimit <= 0) {
+      return res.status(400).json({ message: "Limit must be greater than 0" });
+    }
 
     // Prevent duplicate budget for same category + month
     const existing = await Budget.findOne({
       user: req.user.id,
       category,
-      month,
+      month: normalizedMonth,
     });
     if (existing)
       return res.status(400).json({
@@ -63,8 +79,8 @@ router.post("/", authMiddleware, async (req, res) => {
     const budget = await Budget.create({
       user: req.user.id,
       category,
-      limit,
-      month,
+      limit: numericLimit,
+      month: normalizedMonth,
     });
 
     res.status(201).json(budget);
@@ -82,7 +98,33 @@ router.put("/:id", authMiddleware, async (req, res) => {
     if (budget.user.toString() !== req.user.id)
       return res.status(403).json({ message: "Not authorized" });
 
-    const updated = await Budget.findByIdAndUpdate(req.params.id, req.body, {
+    const nextPayload = { ...req.body };
+    if (nextPayload.limit !== undefined) {
+      const numericLimit = Number(nextPayload.limit);
+      if (!Number.isFinite(numericLimit) || numericLimit <= 0) {
+        return res
+          .status(400)
+          .json({ message: "Limit must be greater than 0" });
+      }
+      nextPayload.limit = numericLimit;
+    }
+
+    if (nextPayload.category || nextPayload.month) {
+      const duplicate = await Budget.findOne({
+        _id: { $ne: req.params.id },
+        user: req.user.id,
+        category: nextPayload.category || budget.category,
+        month: nextPayload.month || budget.month,
+      });
+
+      if (duplicate) {
+        return res.status(400).json({
+          message: "Budget for this category and month already exists",
+        });
+      }
+    }
+
+    const updated = await Budget.findByIdAndUpdate(req.params.id, nextPayload, {
       new: true,
     });
     res.json(updated);

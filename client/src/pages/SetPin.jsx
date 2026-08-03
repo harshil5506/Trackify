@@ -5,7 +5,7 @@ import API from "../api/axios";
 import toast from "react-hot-toast";
 
 const SetPin = () => {
-  const { user, verifyPin } = useAuth();
+  const { user, verifyPin, updateUser } = useAuth();
   const navigate = useNavigate();
   const [pin, setPin] = useState([]);
   const [confirm, setConfirm] = useState([]);
@@ -44,11 +44,11 @@ const SetPin = () => {
       return;
     }
     try {
-      await API.post("/api/auth/set-pin", { userId: user.id, pin: pinArr.join("") });
+      await API.post("/api/auth/set-pin", { userId: user.id || user._id, pin: pinArr.join("") });
 
-      // ✅ update user in localStorage so PinRoute knows PIN is now set
+      // ✅ update user state and localStorage so PrivateRoute knows PIN is set
       const updatedUser = { ...user, pin: true };
-      localStorage.setItem("user", JSON.stringify(updatedUser));
+      updateUser(updatedUser);
 
       toast.success("PIN set successfully!");
       verifyPin();

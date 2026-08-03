@@ -130,6 +130,9 @@ router.post("/:id/expenses", authMiddleware, async (req, res) => {
       }));
     } else {
       // Default — equal split
+      if (!group.members || group.members.length === 0) {
+        return res.status(400).json({ message: "Cannot split expense in group with no members" });
+      }
       const splitAmount = parseFloat(
         (amount / group.members.length).toFixed(2),
       );
