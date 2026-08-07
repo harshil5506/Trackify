@@ -241,9 +241,9 @@ week2_data = {
         "Data Seeding & Verification: Built seed_trackify.js script populating initial user financial ledgers and verified client production build."
     ],
     "plan_bullets": [
-        "Develop Social & Group Expense Sharing module (Friends list, Direct peer messaging, Group bill creation).",
-        "Build flexible Bill Splitting engine supporting Equal, Custom amount, and Percentage-based allocations.",
-        "Develop Activity Heatmap grid, Spending Personality Quiz, Multi-Currency support, and Automated Email Monthly Reports."
+        "Implement Multi-Currency preference selection and dynamic formatting across ledgers.",
+        "Build Automated Monthly Financial Reports dispatch via Email (Nodemailer).",
+        "Reach Checkpoint 1 milestone tag on GitHub."
     ],
     "references": [
         "GitHub Repository: https://github.com/harshil5506/Trackify.git",
@@ -260,19 +260,15 @@ week3_data = {
     "next_to_date": "14/08/2026",
     "semester": "5th",
     "internship_id": "INT_2026_D25DIT083",
-    "work_summary": "Group Bill Splitting, Peer Chat, Activity Heatmap, Spending Quiz, Multi-Currency & Email Reports (Checkpoint 1)",
+    "work_summary": "Multi-Currency Preference Support & Automated Email Monthly Reports (Checkpoint 1)",
     "work_bullets": [
-        "Group Expense & Bill Splitting Engine: Built groups.js backend routes and GroupDetail.jsx frontend supporting Equal, Custom amount, and Percentage allocation splits with full/partial debt settlement.",
-        "Peer-to-Peer Social Messaging: Implemented Friend.js & Message.js models, friends.js & messages.js API routes, and real-time chat interface in Friends.jsx.",
-        "Activity Heatmap Component: Built ActivityHeatmap.jsx and GET /api/analytics/heatmap endpoint rendering 365-day contribution grid with intensity levels, tooltips, and 90/180/365-day range controls.",
-        "Spending Personality Quiz: Created Quiz.jsx assessment with 5 behavioral questions, archetype score calculation (Master Saver 🛡️, Balanced Budgeter 📈, Experience Enthusiast 🛍️, Impulse Adventurer ⚡), saving profile badges to MongoDB.",
-        "Multi-Currency Preference & Formatting: Added currency configuration (INR, USD, EUR, GBP, etc.) in User Profile and integrated dynamic currency formatting across transaction tables, summaries, and report exports.",
-        "Automated Monthly Financial Reports via Email: Integrated Nodemailer email delivery mechanism sending formatted monthly financial summaries and transaction highlights directly to user email accounts.",
-        "Profile Page Integration & Checkpoint 1: Unified the Spending Personality Assessment card and Activity Heatmap inside Profile.jsx, executed client build, and established Checkpoint 1 milestone tag (checkpoint-1) on GitHub."
+        "Multi-Currency Preference & Formatting: Implemented multi-currency preference selection (INR, USD, EUR, GBP, etc.) in User Profile and integrated dynamic currency formatting across transaction tables, summaries, and report exports.",
+        "Automated Monthly Financial Reports via Email: Developed Nodemailer email delivery mechanism sending formatted monthly financial summaries and transaction highlights directly to user email accounts.",
+        "Checkpoint 1 Verification & Production Build: Executed client production build (npm run build), unified features on Profile.jsx, and tagged release checkpoint-1 on GitHub."
     ],
     "plan_bullets": [
-        "Extend group bill splitting algorithm to support dynamic currency conversion for international shared expenses.",
-        "Develop interactive financial goal tracker and automated recurring subscription manager."
+        "Extend multi-currency support to group expense splitting and debt settlement ledgers.",
+        "Develop automated recurring subscription tracker and spending alert notifications."
     ],
     "references": [
         "GitHub Repository: https://github.com/harshil5506/Trackify.git (Tag: checkpoint-1, Commit: be0f2af)",
