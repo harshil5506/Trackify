@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import API from "../api/axios";
 import toast from "react-hot-toast";
 import { formatCurrency, getBalanceTone } from "../utils/finance";
+import { downloadCSV, formatToCSV } from "../utils/csvExport";
 
 const Transactions = () => {
   const { user } = useAuth();
@@ -169,39 +170,24 @@ const Transactions = () => {
 
     const headers = [
       "Date",
+      "Title/Note",
       "Category",
       "Type",
       "Amount",
-      "Title/Note",
       "Payment Method",
     ];
-    const csvContent = [
-      headers.join(","),
-      ...sorted.map((txn) =>
-        [
-          new Date(txn.date).toLocaleDateString("en-IN"),
-          txn.category || "-",
-          txn.type || "-",
-          txn.amount || 0,
-          (txn.title || txn.note || "").replace(/"/g, '""'),
-          txn.paymentMethod || "Cash",
-        ]
-          .map((field) =>
-            typeof field === "string" && field.includes(",")
-              ? `"${field}"`
-              : field,
-          )
-          .join(","),
-      ),
-    ].join("\n");
 
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = `transactions-${Date.now()}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const rows = sorted.map((txn) => [
+      new Date(txn.date).toLocaleDateString("en-IN"),
+      txn.title || txn.note || "-",
+      txn.category || "-",
+      txn.type || "-",
+      txn.amount || 0,
+      txn.paymentMethod || "Cash",
+    ]);
+
+    const csvContent = formatToCSV(headers, rows);
+    downloadCSV(`transactions-${Date.now()}.csv`, csvContent);
     toast.success("CSV exported successfully!");
   };
 

@@ -25,7 +25,7 @@ const PinLock = () => {
   const handleVerify = async (pinArr) => {
     try {
       await API.post("/api/auth/verify-pin", {
-        userId: user.id,
+        userId: user?.id || user?._id,
         pin: pinArr.join(""),
       });
       verifyPin();

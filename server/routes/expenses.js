@@ -6,7 +6,7 @@ const authMiddleware = require("../middleware/authMiddleware");
 // GET all expenses for logged-in user
 router.get("/", authMiddleware, async (req, res) => {
   try {
-    const { type, category, startDate, endDate } = req.query;
+    const { type, category, startDate, endDate, limit } = req.query;
     let filter = { user: req.user.id };
 
     if (type) filter.type = type;
@@ -17,7 +17,12 @@ router.get("/", authMiddleware, async (req, res) => {
       if (endDate) filter.date.$lte = new Date(endDate);
     }
 
-    const expenses = await Expense.find(filter).sort({ date: -1 });
+    let query = Expense.find(filter).sort({ date: -1 });
+    if (limit && !isNaN(Number(limit))) {
+      query = query.limit(Number(limit));
+    }
+
+    const expenses = await query;
     res.json(expenses);
   } catch (err) {
     res.status(500).json({ message: err.message });

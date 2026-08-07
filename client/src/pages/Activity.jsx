@@ -27,25 +27,30 @@ const Activity = () => {
         API.get("/api/expenses?limit=5"),
         API.get("/api/analytics/summary"),
       ]);
-      if (expRes.data.expenses?.length > 0) {
+      const list = Array.isArray(expRes.data)
+        ? expRes.data
+        : (expRes.data?.expenses || []);
+
+      if (list.length > 0) {
         setTransactions(
-          expRes.data.expenses.map((t) => ({
+          list.map((t) => ({
             id: t._id,
-            name: t.note || t.category,
+            name: t.title || t.note || t.category,
             meta: `${t.category} · ${new Date(t.date).toLocaleDateString()}`,
             amount: `${t.type === "income" ? "+" : "-"}₹${t.amount.toFixed(2)}`,
             type: t.type,
           })),
         );
       }
-      if (anaRes.data)
+      if (anaRes.data) {
         setStats({
           totalIncome: anaRes.data.totalIncome || 0,
           totalExpense: anaRes.data.totalExpense || 0,
-          balance: anaRes.data.netBalance || 0,
+          balance: anaRes.data.balance ?? anaRes.data.netBalance ?? 0,
           budgetUsed: anaRes.data.totalExpense || 0,
           budgetTotal: 5000,
         });
+      }
     } catch (err) {}
   };
 

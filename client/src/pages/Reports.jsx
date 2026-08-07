@@ -7,6 +7,8 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { formatCurrency, getBalanceTone } from "../utils/finance";
 
+import { downloadCSV, escapeCSVField } from "../utils/csvExport";
+
 const CATEGORY_COLORS = [
   "#4ade80",
   "#fb923c",
@@ -118,16 +120,8 @@ const Reports = () => {
   }, [categories, filteredSummary.totalExpense]);
 
   const handleGenerate = async () => {
-    if (exportFormat !== "PDF") {
-      toast(
-        "PDF export is available right now. Other formats can be added next.",
-      );
-      return;
-    }
-
     setGenerating(true);
     try {
-      const doc = new jsPDF({ unit: "pt", format: "a4" });
       const generatedAt = new Date().toLocaleString("en-IN", {
         day: "2-digit",
         month: "short",
@@ -136,63 +130,144 @@ const Reports = () => {
         minute: "2-digit",
       });
 
-      doc.setFontSize(18);
-      doc.text("Trackify Financial Report", 40, 48);
-      doc.setFontSize(11);
-      doc.text(`User: ${user?.name || "User"}`, 40, 70);
-      doc.text(`Generated: ${generatedAt}`, 40, 86);
-      doc.text(`Report Type: ${reportType}`, 320, 70);
-      doc.text(`Date Range: ${dateRange}`, 320, 86);
+      if (exportFormat === "CSV" || exportFormat === "Excel") {
+        const lines = [];
+        lines.push("Trackify Financial Report");
+        lines.push(`User,${escapeCSVField(user?.name || "User")}`);
+        lines.push(`Generated,${escapeCSVField(generatedAt)}`);
+        lines.push(`Report Type,${escapeCSVField(reportType)}`);
+        lines.push(`Date Range,${escapeCSVField(dateRange)}`);
+        lines.push("");
 
-      autoTable(doc, {
-        startY: 106,
-        theme: "grid",
-        head: [["Metric", "Value"]],
-        body: [
-          ["Total Income", formatCurrency(filteredSummary.totalIncome)],
-          ["Total Expenses", formatCurrency(filteredSummary.totalExpense)],
-          ["Net Balance", formatCurrency(filteredSummary.balance)],
-          ["Total Transactions", String(filteredSummary.totalTransactions)],
-        ],
-      });
+        lines.push("SUMMARY METRICS");
+        lines.push("Metric,Value");
+        lines.push(`Total Income,${filteredSummary.totalIncome}`);
+        lines.push(`Total Expenses,${filteredSummary.totalExpense}`);
+        lines.push(`Net Balance,${filteredSummary.balance}`);
+        lines.push(`Total Transactions,${filteredSummary.totalTransactions}`);
+        lines.push("");
 
-      const categoryRows = breakdown.map((item) => [
-        item.name,
-        item.amount,
-        `${item.pct}%`,
-      ]);
-      autoTable(doc, {
-        startY: doc.lastAutoTable.finalY + 18,
-        theme: "striped",
-        head: [["Category", "Amount", "Share"]],
-        body: categoryRows.length
-          ? categoryRows
-          : [["No category data", "-", "-"]],
-      });
+        lines.push("CATEGORY BREAKDOWN");
+        lines.push("Category,Amount,Share (%)");
+        if (breakdown.length > 0) {
+          breakdown.forEach((item) => {
+            lines.push(
+              `${escapeCSVField(item.name)},${escapeCSVField(item.amount)},${item.pct}%`,
+            );
+          });
+        } else {
+          lines.push("No category data,-,-");
+        }
+        lines.push("");
 
-      const transactionRows = filteredTransactions
-        .slice(0, 200)
-        .map((txn) => [
-          new Date(txn.date).toLocaleDateString("en-IN"),
-          txn.category,
-          txn.type,
-          formatCurrency(txn.amount),
-          txn.note || txn.title || "-",
+        lines.push("TRANSACTIONS");
+        lines.push("Date,Category,Type,Amount,Title/Note");
+        if (filteredTransactions.length > 0) {
+          filteredTransactions.forEach((txn) => {
+            lines.push(
+              [
+                new Date(txn.date).toLocaleDateString("en-IN"),
+                txn.category || "-",
+                txn.type || "-",
+                txn.amount || 0,
+                txn.note || txn.title || "-",
+              ]
+                .map(escapeCSVField)
+                .join(","),
+            );
+          });
+        } else {
+          lines.push("-,-,-,-,No transactions");
+        }
+
+        const ext = "csv";
+        downloadCSV(`trackify-report-${Date.now()}.${ext}`, lines.join("\r\n"));
+        toast.success(`${exportFormat} report exported successfully!`);
+      } else if (exportFormat === "JSON") {
+        const reportData = {
+          metadata: {
+            title: "Trackify Financial Report",
+            user: user?.name || "User",
+            generatedAt,
+            reportType,
+            dateRange,
+          },
+          summary: filteredSummary,
+          categoryBreakdown: breakdown,
+          transactions: filteredTransactions,
+        };
+        const blob = new Blob([JSON.stringify(reportData, null, 2)], {
+          type: "application/json;charset=utf-8;",
+        });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.href = url;
+        link.download = `trackify-report-${Date.now()}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        toast.success("JSON report exported successfully!");
+      } else {
+        const doc = new jsPDF({ unit: "pt", format: "a4" });
+        doc.setFontSize(18);
+        doc.text("Trackify Financial Report", 40, 48);
+        doc.setFontSize(11);
+        doc.text(`User: ${user?.name || "User"}`, 40, 70);
+        doc.text(`Generated: ${generatedAt}`, 40, 86);
+        doc.text(`Report Type: ${reportType}`, 320, 70);
+        doc.text(`Date Range: ${dateRange}`, 320, 86);
+
+        autoTable(doc, {
+          startY: 106,
+          theme: "grid",
+          head: [["Metric", "Value"]],
+          body: [
+            ["Total Income", formatCurrency(filteredSummary.totalIncome)],
+            ["Total Expenses", formatCurrency(filteredSummary.totalExpense)],
+            ["Net Balance", formatCurrency(filteredSummary.balance)],
+            ["Total Transactions", String(filteredSummary.totalTransactions)],
+          ],
+        });
+
+        const categoryRows = breakdown.map((item) => [
+          item.name,
+          item.amount,
+          `${item.pct}%`,
         ]);
+        autoTable(doc, {
+          startY: doc.lastAutoTable.finalY + 18,
+          theme: "striped",
+          head: [["Category", "Amount", "Share"]],
+          body: categoryRows.length
+            ? categoryRows
+            : [["No category data", "-", "-"]],
+        });
 
-      autoTable(doc, {
-        startY: doc.lastAutoTable.finalY + 18,
-        theme: "grid",
-        head: [["Date", "Category", "Type", "Amount", "Note"]],
-        body: transactionRows.length
-          ? transactionRows
-          : [["-", "-", "-", "-", "No transactions"]],
-      });
+        const transactionRows = filteredTransactions
+          .slice(0, 200)
+          .map((txn) => [
+            new Date(txn.date).toLocaleDateString("en-IN"),
+            txn.category,
+            txn.type,
+            formatCurrency(txn.amount),
+            txn.note || txn.title || "-",
+          ]);
 
-      doc.save(`trackify-report-${Date.now()}.pdf`);
-      toast.success("Report downloaded!");
+        autoTable(doc, {
+          startY: doc.lastAutoTable.finalY + 18,
+          theme: "grid",
+          head: [["Date", "Category", "Type", "Amount", "Note"]],
+          body: transactionRows.length
+            ? transactionRows
+            : [["-", "-", "-", "-", "No transactions"]],
+        });
+
+        doc.save(`trackify-report-${Date.now()}.pdf`);
+        toast.success("PDF report exported successfully!");
+      }
     } catch (err) {
-      toast.error("Failed to generate PDF");
+      toast.error(`Failed to generate ${exportFormat} report`);
     } finally {
       setGenerating(false);
     }

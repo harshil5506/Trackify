@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import API from "../api/axios";
 import toast from "react-hot-toast";
 import { formatCurrency } from "../utils/finance";
+import { downloadCSV, formatToCSV } from "../utils/csvExport";
 
 const INCOME_CATEGORIES = [
   "Business",
@@ -37,7 +38,8 @@ const Income = () => {
   const fetchIncomes = async () => {
     try {
       const { data } = await API.get("/api/expenses?type=income");
-      setIncomes(data.expenses || []);
+      const list = Array.isArray(data) ? data : (data.expenses || []);
+      setIncomes(list);
     } catch (err) {
     } finally {
       setLoading(false);
@@ -76,6 +78,23 @@ const Income = () => {
     }
   };
 
+  const handleExportCSV = () => {
+    if (incomes.length === 0) {
+      toast.error("No income records to export");
+      return;
+    }
+    const headers = ["Date", "Category", "Amount (₹)", "Note"];
+    const rows = incomes.map((item) => [
+      new Date(item.date).toLocaleDateString("en-IN"),
+      item.category || "-",
+      item.amount || 0,
+      item.note || "-",
+    ]);
+    const csvContent = formatToCSV(headers, rows);
+    downloadCSV(`income-records-${Date.now()}.csv`, csvContent);
+    toast.success("Income CSV exported successfully!");
+  };
+
   const totalIncome = incomes.reduce((s, i) => s + i.amount, 0);
 
   return (
@@ -94,9 +113,17 @@ const Income = () => {
               Track all your income sources
             </p>
           </div>
-          <button style={s.addBtn} onClick={() => setShowForm(!showForm)}>
-            {showForm ? "✕ Cancel" : "+ Add Income"}
-          </button>
+          <div style={{ display: "flex", gap: "10px" }}>
+            <button
+              style={{ ...s.addBtn, background: "#0284c7" }}
+              onClick={handleExportCSV}
+            >
+              📝 Export CSV
+            </button>
+            <button style={s.addBtn} onClick={() => setShowForm(!showForm)}>
+              {showForm ? "✕ Cancel" : "+ Add Income"}
+            </button>
+          </div>
         </div>
         <div
           style={{
