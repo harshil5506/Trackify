@@ -64,4 +64,37 @@ router.put("/profile", async (req, res) => {
   }
 });
 
+// GET quiz result
+router.get("/quiz-result", async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("spendingPersonality");
+    if (!user) return res.status(404).json({ message: "User not found" });
+    res.json(user.spendingPersonality || {});
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// POST quiz result
+router.post("/quiz-result", async (req, res) => {
+  try {
+    const { archetype, title, badge, score } = req.body;
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.spendingPersonality = {
+      archetype,
+      title,
+      badge,
+      score: Number(score || 0),
+      completedAt: new Date(),
+    };
+
+    await user.save();
+    res.json({ message: "Quiz result saved", spendingPersonality: user.spendingPersonality });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+});
+
 module.exports = router;

@@ -17,7 +17,15 @@ const userSchema = new mongoose.Schema({
   
   pin: { type: String, default: null },
 
-   resetPasswordToken: {
+  spendingPersonality: {
+    archetype: { type: String, default: "" },
+    title: { type: String, default: "" },
+    badge: { type: String, default: "" },
+    score: { type: Number, default: 0 },
+    completedAt: { type: Date, default: null },
+  },
+
+  resetPasswordToken: {
     type: String,
   },
   resetPasswordExpire: {

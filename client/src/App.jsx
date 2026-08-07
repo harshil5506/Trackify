@@ -25,6 +25,7 @@ import Groups from "./pages/Groups";
 import GroupDetail from "./pages/GroupDetail";
 import Activity from "./pages/Activity";
 import Reports from "./pages/Reports";
+import Quiz from "./pages/Quiz";
 import Vision from "./pages/Vision";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
@@ -175,6 +176,14 @@ function App() {
               element={
                 <PrivateRoute>
                   <Activity />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/quiz"
+              element={
+                <PrivateRoute>
+                  <Quiz />
                 </PrivateRoute>
               }
             />

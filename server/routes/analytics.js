@@ -102,4 +102,41 @@ router.get("/by-category", authMiddleware, async (req, res) => {
   }
 });
 
+// GET activity heatmap data (last 365 days)
+router.get("/heatmap", authMiddleware, async (req, res) => {
+  try {
+    const oneYearAgo = new Date();
+    oneYearAgo.setDate(oneYearAgo.getDate() - 365);
+    oneYearAgo.setHours(0, 0, 0, 0);
+
+    const items = await Expense.find({
+      user: req.user.id,
+      date: { $gte: oneYearAgo },
+    });
+
+    const activityMap = {};
+
+    items.forEach((item) => {
+      const dateKey = new Date(item.date).toISOString().split("T")[0];
+      if (!activityMap[dateKey]) {
+        activityMap[dateKey] = { count: 0, totalExpense: 0, totalIncome: 0 };
+      }
+      activityMap[dateKey].count += 1;
+      if (item.type === "income") {
+        activityMap[dateKey].totalIncome += item.amount;
+      } else {
+        activityMap[dateKey].totalExpense += item.amount;
+      }
+    });
+
+    res.json({
+      startDate: oneYearAgo.toISOString().split("T")[0],
+      totalItems: items.length,
+      activity: activityMap,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 module.exports = router;

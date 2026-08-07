@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import API from "../api/axios";
 import toast from "react-hot-toast";
 import { formatCurrency, getBalanceTone } from "../utils/finance";
+import ActivityHeatmap from "../components/ActivityHeatmap";
 
 const Activity = () => {
   const { user, logout } = useAuth();
@@ -68,21 +69,41 @@ const Activity = () => {
           gap: "24px",
         }}
       >
-        <div>
-          <h1
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: "12px" }}>
+          <div>
+            <h1
+              style={{
+                fontFamily: "'Sora',sans-serif",
+                fontSize: "2rem",
+                fontWeight: "800",
+                color: "#1a1a2e",
+                marginBottom: "4px",
+              }}
+            >
+              Activity & Heatmap
+            </h1>
+            <p style={{ fontSize: "0.84rem", color: "#666" }}>
+              Your complete financial overview, spending heatmap, and transaction insights
+            </p>
+          </div>
+          <Link
+            to="/quiz"
             style={{
-              fontFamily: "'Sora',sans-serif",
-              fontSize: "2rem",
-              fontWeight: "800",
-              color: "#1a1a2e",
-              marginBottom: "4px",
+              background: "linear-gradient(135deg, #1a2ea8 0%, #4a6cf7 100%)",
+              color: "white",
+              padding: "10px 18px",
+              borderRadius: "10px",
+              textDecoration: "none",
+              fontWeight: "700",
+              fontSize: "0.85rem",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              boxShadow: "0 4px 14px rgba(26,46,168,0.25)",
             }}
           >
-            Activity Summary
-          </h1>
-          <p style={{ fontSize: "0.84rem", color: "#666" }}>
-            Your financial overview at a glance
-          </p>
+            🧠 Take Spending Personality Quiz
+          </Link>
         </div>
         <div
           style={{
@@ -226,6 +247,9 @@ const Activity = () => {
             </div>
           ))}
         </div>
+
+        <ActivityHeatmap />
+
         <div
           style={{
             background: "white",
