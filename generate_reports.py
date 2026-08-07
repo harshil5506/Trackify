@@ -194,7 +194,7 @@ def build_weekly_report(doc, data):
     r_sig1.font.size = Pt(10.5)
     r_sig1.font.bold = True
 
-# Data focused strictly on recent active work
+# Data for 3 weeks
 week1_data = {
     "project_id": "PRJ_IT_5_2026_10",
     "student_id": "D25DIT083",
@@ -204,22 +204,22 @@ week1_data = {
     "next_to_date": "31/07/2026",
     "semester": "5th",
     "internship_id": "INT_2026_D25DIT083",
-    "work_summary": "Core Authentication Integration, Security PIN Lock & Profile Management",
+    "work_summary": "System Architecture, Authentication Module & Database Schema Definition",
     "work_bullets": [
-        "Authentication Architecture & Security Constraints: Implemented user registration and login endpoints (server/routes/auth.js) with bcryptjs password hashing, JWT session token verification, and password policy constraints (minimum 8 characters, uppercase, lowercase, number, special character).",
-        "Security PIN Protection Layer: Built SetPin.jsx and PinLock.jsx frontend views backed by PIN hashing endpoints to shield sensitive user transaction data.",
-        "User Profile Management & Customization: Developed Profile.jsx view allowing users to update personal details, phone number, address, avatar image URL, timezone, and language settings.",
-        "Password Recovery via SMTP: Integrated Nodemailer transport in auth.js sending password reset links to user email accounts.",
-        "Database Seeding Infrastructure: Developed seed_trackify.js script populating initial user accounts, category budgets, and personal financial ledgers for local testing."
+        "Project Architecture & Environment Setup: Configured React 19 + Vite frontend SPA and Node.js + Express backend server with CORS & cookie-parser.",
+        "Database Schemas Definition: Created Mongoose ODM models for User (auth & profile), Expense (transactions), Budget (category limits), Friend (social), Message (P2P chat), and Group (bill splits).",
+        "User Registration & Login API: Implemented POST /api/auth/register and POST /api/auth/login with password hashing via bcryptjs and 7-day session JWT tokens.",
+        "Security PIN Lock & Recovery Flow: Implemented SetPin.jsx, PinLock.jsx views, password constraints validation, and reset password token generation.",
+        "Google OAuth Integration: Integrated GoogleOAuthProvider and GoogleLogin component setup for smooth authentication."
     ],
     "plan_bullets": [
-        "Implement personal transaction ledger APIs (Income and Expense tracking with category filtering).",
-        "Develop category-based budget limit configuration and spent vs. limit warning alerts.",
-        "Build multi-format data export engine supporting PDF, CSV, and JSON report downloads."
+        "Build core personal financial ledger endpoints (Income tracking, Expense management with category filtering).",
+        "Implement Category Budget limit configuration and visual progress alert indicators.",
+        "Develop Summary Analytics API (GET /summary, GET /monthly, GET /by-category) and frontend chart widgets."
     ],
     "references": [
         "GitHub Repository: https://github.com/harshil5506/Trackify.git (Branch: main, auth-integration)",
-        "Node.js Express & Mongoose ODM Documentation | JWT Security Standards Guidelines"
+        "React.js & Node.js Express Documentation | Mongoose ODM & JWT Authentication Standards"
     ]
 }
 
@@ -232,22 +232,22 @@ week2_data = {
     "next_to_date": "07/08/2026",
     "semester": "5th",
     "internship_id": "INT_2026_D25DIT083",
-    "work_summary": "Financial Ledger CRUD, Category Budgets & Multi-Format Data Exports",
+    "work_summary": "Personal Financial Tracking, Category Budgets & Multi-Format Data Export Engine",
     "work_bullets": [
-        "Income & Expense Management API: Implemented full transaction CRUD endpoints (server/routes/expenses.js) with category filtering, payment method tagging, date range filters, and pagination query limits.",
-        "Category Budgeting & Overrun Alerts: Built budget.js CRUD routes and Budget.jsx view to configure monthly category limits and render real-time budget overrun progress bars.",
-        "Multi-Format Data Export Engine: Developed csvExport.js utility and updated Reports.jsx & Transactions.jsx to support PDF (jsPDF + autotable), CSV, and JSON report downloads.",
-        "Visual Analytics & Dashboard Widgets: Developed analytics.js endpoints (GET /summary, GET /monthly comparison, GET /by-category aggregation) and integrated Recharts pie/bar charts.",
-        "Frontend Code Cleanup & Verification: Removed legacy components, optimized client routes, and executed production build (npm run build)."
+        "Income & Expense Ledger: Developed full CRUD backend API (expenses.js) supporting transaction title, category, payment method, date range, and pagination limits.",
+        "Category Budgeting System: Built budget.js CRUD routes and Budget.jsx view to configure monthly category limits and render active overrun warnings.",
+        "Summary Analytics Engine: Developed analytics.js endpoints (GET /summary, GET /monthly comparison, GET /by-category aggregation) and integrated Recharts widgets.",
+        "Multi-Format Data Export Engine: Created csvExport.js utility and enhanced Reports.jsx & Transactions.jsx to support PDF (jsPDF + autotable), CSV, and JSON report downloads.",
+        "Data Seeding & Verification: Built seed_trackify.js script populating initial user financial ledgers and verified client production build."
     ],
     "plan_bullets": [
-        "Implement Multi-Currency preference selection and dynamic formatting across ledgers.",
-        "Build Automated Monthly Financial Reports dispatch via Email (Nodemailer).",
-        "Develop Activity Heatmap grid and Spending Personality Quiz assessment on the Profile page."
+        "Develop Social & Group Expense Sharing module (Friends list, Direct peer messaging, Group bill creation).",
+        "Build flexible Bill Splitting engine supporting Equal, Custom amount, and Percentage-based allocations.",
+        "Develop Activity Heatmap grid, Spending Personality Quiz, Multi-Currency support, and Automated Email Monthly Reports."
     ],
     "references": [
         "GitHub Repository: https://github.com/harshil5506/Trackify.git",
-        "jsPDF & jspdf-autotable API Guide | Recharts Data Visualization Documentation"
+        "jsPDF & jspdf-autotable Documentation | Recharts Visualization API Guide"
     ]
 }
 
@@ -260,17 +260,19 @@ week3_data = {
     "next_to_date": "14/08/2026",
     "semester": "5th",
     "internship_id": "INT_2026_D25DIT083",
-    "work_summary": "Multi-Currency Support, Automated Email Monthly Reports, Activity Heatmap & Spending Personality Quiz",
+    "work_summary": "Group Bill Splitting, Peer Chat, Activity Heatmap, Spending Quiz, Multi-Currency & Email Reports (Checkpoint 1)",
     "work_bullets": [
+        "Group Expense & Bill Splitting Engine: Built groups.js backend routes and GroupDetail.jsx frontend supporting Equal, Custom amount, and Percentage allocation splits with full/partial debt settlement.",
+        "Peer-to-Peer Social Messaging: Implemented Friend.js & Message.js models, friends.js & messages.js API routes, and real-time chat interface in Friends.jsx.",
+        "Activity Heatmap Component: Built ActivityHeatmap.jsx and GET /api/analytics/heatmap endpoint rendering 365-day contribution grid with intensity levels, tooltips, and 90/180/365-day range controls.",
+        "Spending Personality Quiz: Created Quiz.jsx assessment with 5 behavioral questions, archetype score calculation (Master Saver 🛡️, Balanced Budgeter 📈, Experience Enthusiast 🛍️, Impulse Adventurer ⚡), saving profile badges to MongoDB.",
         "Multi-Currency Preference & Formatting: Added currency configuration (INR, USD, EUR, GBP, etc.) in User Profile and integrated dynamic currency formatting across transaction tables, summaries, and report exports.",
         "Automated Monthly Financial Reports via Email: Integrated Nodemailer email delivery mechanism sending formatted monthly financial summaries and transaction highlights directly to user email accounts.",
-        "Activity Heatmap Component: Built ActivityHeatmap.jsx and GET /api/analytics/heatmap endpoint rendering a 365-day contribution grid with intensity levels, hover tooltips, and range toggles (90 Days, 180 Days, 1 Year).",
-        "Spending Personality Quiz: Created Quiz.jsx assessment with 5 behavioral questions, archetype score calculation (Master Saver 🛡️, Balanced Budgeter 📈, Experience Enthusiast 🛍️, Impulse Adventurer ⚡), and MongoDB profile persistence.",
         "Profile Page Integration & Checkpoint 1: Unified the Spending Personality Assessment card and Activity Heatmap inside Profile.jsx, executed client build, and established Checkpoint 1 milestone tag (checkpoint-1) on GitHub."
     ],
     "plan_bullets": [
-        "Extend social group expense splitting features (Equal, Custom, Percentage splits) and peer debt settlement tracking.",
-        "Develop interactive financial goal tracking and recurring subscription management."
+        "Extend group bill splitting algorithm to support dynamic currency conversion for international shared expenses.",
+        "Develop interactive financial goal tracker and automated recurring subscription manager."
     ],
     "references": [
         "GitHub Repository: https://github.com/harshil5506/Trackify.git (Tag: checkpoint-1, Commit: be0f2af)",
