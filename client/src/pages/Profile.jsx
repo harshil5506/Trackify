@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import API from "../api/axios";
 import toast from "react-hot-toast";
+import ActivityHeatmap from "../components/ActivityHeatmap";
 
 const Profile = () => {
   const { user, logout, updateUser } = useAuth();
@@ -12,6 +13,7 @@ const Profile = () => {
   const [saving, setSaving] = useState(false);
   const [twoFA, setTwoFA] = useState(true);
   const [emailNotif, setEmailNotif] = useState(true);
+  const [quizResult, setQuizResult] = useState(null);
   const [form, setForm] = useState({
     name: user?.name || "",
     email: user?.email || "",
@@ -34,12 +36,21 @@ const Profile = () => {
   const fetchProfile = async () => {
     setProfileLoading(true);
     try {
-      const { data } = await API.get("/api/user/profile");
-      setForm((prev) => ({ ...prev, ...data }));
-      updateUser({
-        ...user,
-        ...data,
-      });
+      const [profRes, quizRes] = await Promise.all([
+        API.get("/api/user/profile"),
+        API.get("/api/user/quiz-result").catch(() => ({ data: null })),
+      ]);
+
+      if (profRes.data) {
+        setForm((prev) => ({ ...prev, ...profRes.data }));
+        updateUser({
+          ...user,
+          ...profRes.data,
+        });
+      }
+      if (quizRes.data && quizRes.data.archetype) {
+        setQuizResult(quizRes.data);
+      }
     } catch (err) {
       toast.error("Failed to load profile");
     } finally {
@@ -682,6 +693,157 @@ const Profile = () => {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* 🧠 Spending Personality Quiz Section */}
+        <div
+          style={{
+            background: "white",
+            borderRadius: "16px",
+            border: "1px solid #e2e6f0",
+            padding: "24px 28px",
+            marginTop: "24px",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "16px",
+              flexWrap: "wrap",
+              gap: "12px",
+            }}
+          >
+            <div>
+              <span
+                style={{
+                  fontFamily: "'Sora',sans-serif",
+                  fontSize: "1.1rem",
+                  fontWeight: "700",
+                  color: "#1a1a2e",
+                  display: "block",
+                  marginBottom: "4px",
+                }}
+              >
+                🧠 Spending Personality & Assessment
+              </span>
+              <p style={{ fontSize: "0.85rem", color: "#666", margin: 0 }}>
+                Understand your financial habits, behavioral archetype, and customized recommendations.
+              </p>
+            </div>
+            <Link
+              to="/quiz"
+              style={{
+                background: "linear-gradient(135deg, #1a2ea8 0%, #2d47c9 100%)",
+                color: "white",
+                padding: "9px 18px",
+                borderRadius: "8px",
+                textDecoration: "none",
+                fontSize: "0.85rem",
+                fontWeight: "600",
+                boxShadow: "0 4px 12px rgba(26,46,168,0.2)",
+              }}
+            >
+              {quizResult ? "🔄 Retake Quiz" : "⚡ Take Quiz"}
+            </Link>
+          </div>
+
+          {quizResult ? (
+            <div
+              style={{
+                background: "#f8fafc",
+                border: "1px solid #e2e8f0",
+                borderRadius: "12px",
+                padding: "20px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                flexWrap: "wrap",
+                gap: "16px",
+              }}
+            >
+              <div>
+                <span
+                  style={{
+                    background: "#dbeafe",
+                    color: "#1d4ed8",
+                    fontSize: "11px",
+                    fontWeight: "700",
+                    padding: "3px 10px",
+                    borderRadius: "20px",
+                    display: "inline-block",
+                    marginBottom: "8px",
+                  }}
+                >
+                  Current Archetype Badge: {quizResult.badge || "Financial Planner"}
+                </span>
+                <h3
+                  style={{
+                    fontSize: "1.2rem",
+                    fontWeight: "800",
+                    color: "#1e293b",
+                    margin: "0 0 4px 0",
+                    fontFamily: "'Sora',sans-serif",
+                  }}
+                >
+                  {quizResult.title || "The Balanced Budgeter"}
+                </h3>
+                <p style={{ fontSize: "0.88rem", color: "#475569", margin: 0 }}>
+                  Completed on {new Date(quizResult.completedAt || Date.now()).toLocaleDateString()}
+                </p>
+              </div>
+              <Link
+                to="/quiz"
+                style={{
+                  background: "#ffffff",
+                  border: "1px solid #cbd5e1",
+                  color: "#334155",
+                  padding: "8px 16px",
+                  borderRadius: "8px",
+                  textDecoration: "none",
+                  fontSize: "0.82rem",
+                  fontWeight: "600",
+                }}
+              >
+                View Details & Tips →
+              </Link>
+            </div>
+          ) : (
+            <div
+              style={{
+                background: "#f0f4ff",
+                borderRadius: "12px",
+                padding: "20px",
+                textAlign: "center",
+              }}
+            >
+              <p style={{ fontSize: "0.9rem", color: "#2d47c9", margin: "0 0 12px 0", fontWeight: "600" }}>
+                You haven't taken the Spending Personality Quiz yet!
+              </p>
+              <Link
+                to="/quiz"
+                style={{
+                  background: "#1a2ea8",
+                  color: "white",
+                  padding: "9px 20px",
+                  borderRadius: "8px",
+                  textDecoration: "none",
+                  fontSize: "0.85rem",
+                  fontWeight: "600",
+                  display: "inline-block",
+                }}
+              >
+                Discover Your Financial Archetype →
+              </Link>
+            </div>
+          )}
+        </div>
+
+        {/* 🔥 Activity Heatmap Section */}
+        <div style={{ marginTop: "24px" }}>
+          <ActivityHeatmap />
         </div>
       </div>
     </div>

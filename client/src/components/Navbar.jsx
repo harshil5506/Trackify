@@ -20,12 +20,11 @@ const Navbar = () => {
     { to: "/dashboard", label: "Dashboard" },
     { to: "/add-expense", label: "Add Expense" },
     { to: "/transactions", label: "Transactions" },
-    { to: "/activity", label: "Activity Heatmap" },
-    { to: "/quiz", label: "Spending Quiz 🧠" },
     { to: "/reports", label: "Reports" },
     { to: "/budget", label: "Budget" },
     { to: "/friends", label: "Friends" },
     { to: "/groups", label: "Groups" },
+    { to: "/profile", label: "Profile & Heatmap" },
   ];
 
   return (
