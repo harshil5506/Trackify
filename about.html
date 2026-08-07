@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Trackify – About Us</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/styles.css" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body>
+
+<!-- ========== NAVBAR ========== -->
+<nav class="app-nav">
+  <div class="app-nav-brand">
+    <img src="assets/logo1.jpeg" alt="Trackify" class="app-logo"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+    <div class="app-logo-fallback" style="display:none;">T</div>
+    <span class="app-brand-name">Trackify</span>
+  </div>
+  <ul class="app-nav-links">
+    <li><a href="dashboard.html" class="app-nav-active">Dashboard</a></li>
+    <li><a href="add-expense.html">Add Expense</a></li>
+    <li><a href="transactions.html">Transactions</a></li>
+    <li><a href="reports.html">Reports</a></li>
+    <li><a href="budget.html">Budget</a></li>
+  </ul>
+  <div class="app-nav-right">
+    <button class="notif-btn"><i data-lucide="bell"></i><span class="notif-badge">2</span></button>
+    <div class="app-user-chip">
+      <div class="app-avatar">JD</div>
+      <span class="app-username">John<br>Doe</span>
+      <i data-lucide="chevron-down" class="app-chevron"></i>
+    </div>
+  </div>
+</nav>
+
+<!-- ========== ABOUT PAGE ========== -->
+<div class="about-page">
+
+  <!-- ── Hero / Intro ── -->
+  <section class="about-hero">
+    <div class="about-hero-inner">
+      <h1 class="about-title">About<br>Trackify</h1>
+      <div class="about-hero-text">
+        <p class="about-lead">
+          Trackify is a simple and secure personal expense tracker that helps you manage money smarter, track daily spending and build better financial habits.
+        </p>
+        <p class="about-body">
+          Managing personal finances can be confusing and time consuming. Trackify is built to make expense tracking simple, transparent and accessible to everyone.
+        </p>
+        <div class="about-badges">
+          <span class="badge"><i data-lucide="check"></i> Secure and user focused</span>
+          <span class="badge"><i data-lucide="check"></i> No hidden fees, always free to use</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Key Features ── -->
+  <section class="about-section">
+    <div class="about-container">
+      <h2 class="about-section-title">Key Features</h2>
+      <div class="key-features-list">
+
+        <div class="key-feature-item">
+          <div class="key-feature-icon">
+            <i data-lucide="trending-up"></i>
+          </div>
+          <div class="key-feature-text">
+            <h3>Track Income &amp; Expenses</h3>
+            <p>Easily log your daily transactions.</p>
+          </div>
+        </div>
+
+        <div class="key-feature-item">
+          <div class="key-feature-icon">
+            <i data-lucide="layout-grid"></i>
+          </div>
+          <div class="key-feature-text">
+            <h3>Categorize Spending</h3>
+            <p>Automatically sort expenses by category.</p>
+          </div>
+        </div>
+
+        <div class="key-feature-item">
+          <div class="key-feature-icon">
+            <i data-lucide="dollar-sign"></i>
+          </div>
+          <div class="key-feature-text">
+            <h3>Set Monthly Budget</h3>
+            <p>Set budget to stay on track.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Our Values ── -->
+  <section class="about-section about-section-alt">
+    <div class="about-container">
+      <h2 class="about-section-title">Our Values</h2>
+      <p class="about-values-lead">
+        Trackify is created for students, professionals, freelancers and anyone who wants a clear and simple view of their personal finances.
+      </p>
+      <div class="values-grid">
+
+        <div class="value-card">
+          <div class="value-icon">
+            <i data-lucide="shield"></i>
+          </div>
+          <h3>Privacy First</h3>
+          <p>Your data stays secure</p>
+        </div>
+
+        <div class="value-card">
+          <div class="value-icon">
+            <i data-lucide="check-circle"></i>
+          </div>
+          <h3>Simplicity</h3>
+          <p>Easy to use, no clutter</p>
+        </div>
+
+        <div class="value-card">
+          <div class="value-icon">
+            <i data-lucide="bar-chart-2"></i>
+          </div>
+          <h3>Clarity</h3>
+          <p>Clear insights, better decisions</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CTA Banner ── -->
+  <section class="about-cta">
+    <div class="about-container">
+      <div class="cta-banner">
+        <p>Have questions or feedback? We're here to help</p>
+        <a href="contact.html" class="cta-btn">Contact Us</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Why Choose + Commitment ── -->
+  <section class="about-footer-section">
+    <div class="about-container">
+      <div class="about-footer-grid">
+
+        <div class="about-footer-col">
+          <h3>Why Choose Trackify?</h3>
+          <p>
+            We believe financial wellness should be accessible to everyone. Trackify removes the complexity from expense tracking, giving you the tools you need without overwhelming you with features you don't.
+          </p>
+          <p style="margin-top: 14px;">
+            Whether you're saving for a goal, managing debt, or simply want to understand where your money goes, Trackify provides the clarity and control you need.
+          </p>
+        </div>
+
+        <div class="about-footer-col">
+          <h3>Our Commitment</h3>
+          <ul class="commitment-list">
+            <li><i data-lucide="check"></i> Your data is encrypted and never shared with third parties</li>
+            <li><i data-lucide="check"></i> Regular updates and improvements based on user feedback</li>
+            <li><i data-lucide="check"></i> Dedicated support team ready to assist you</li>
+            <li><i data-lucide="check"></i> 100% free, no premium tiers or hidden costs</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- ========== FOOTER ========== -->
+<footer class="footer">
+  <p>&copy; 2024 Trackify. All rights reserved. Built with care for your financial wellness.</p>
+</footer>
+
+<script>lucide.createIcons();</script>
+</body>
+</html>

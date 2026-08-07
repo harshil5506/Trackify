@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Trackify – Profile</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/styles.css"/>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body>
+
+<nav class="app-nav">
+  <div class="app-nav-brand">
+    <img src="assets/logo1.jpeg" alt="Trackify" class="app-logo"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+    <div class="app-logo-fallback" style="display:none;">T</div>
+    <span class="app-brand-name">Trackify</span>
+  </div>
+  <ul class="app-nav-links">
+    <li><a href="dashboard.html" class="app-nav-active">Dashboard</a></li>
+    <li><a href="add-expense.html">Add Expense</a></li>
+    <li><a href="transactions.html">Transactions</a></li>
+    <li><a href="reports.html">Reports</a></li>
+    <li><a href="budget.html">Budget</a></li>
+  </ul>
+  <div class="app-nav-right">
+    <button class="notif-btn"><i data-lucide="bell"></i><span class="notif-badge">2</span></button>
+    <div class="app-user-chip">
+      <div class="app-avatar">JD</div>
+      <span class="app-username">John<br>Doe</span>
+      <i data-lucide="chevron-down" class="app-chevron"></i>
+    </div>
+  </div>
+</nav>
+<div class="profile-page-wrap">
+
+  <!-- top user card -->
+  <div class="user-card">
+    <div class="user-avatar-wrap">
+      <div class="user-avatar">JA</div>
+      <button class="change-photo-btn">Change Photo</button>
+    </div>
+    <div class="user-info">
+      <h2 class="user-name">John Anderson</h2>
+      <p class="user-email">john.anderson@email.com</p>
+      <p class="user-phone">+1 (555) 123-4567</p>
+      <div class="user-actions">
+        <button class="action-btn action-btn-primary">Edit Profile</button>
+        <button class="action-btn action-btn-ghost">View Activity</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- main grid -->
+  <div class="profile-grid">
+
+    <!-- personal info -->
+    <div class="pcard">
+      <div class="pcard-header">
+        <span class="pcard-title">Personal Information</span>
+        <button class="pcard-edit-btn"><i data-lucide="pencil"></i></button>
+      </div>
+      <div class="pfield">
+        <span class="pfield-label">Full Name</span>
+        <span class="pfield-value">John Anderson</span>
+      </div>
+      <div class="pfield">
+        <span class="pfield-label">Email Address</span>
+        <span class="pfield-value">john.anderson@email.com</span>
+      </div>
+      <div class="pfield">
+        <span class="pfield-label">Phone Number</span>
+        <span class="pfield-value">+1 (555) 123-4567</span>
+      </div>
+      <div class="pfield">
+        <span class="pfield-label">Address</span>
+        <span class="pfield-value">123 Main Street, Apt 4B</span>
+      </div>
+      <div class="pfield-row">
+        <div class="pfield">
+          <span class="pfield-label">City</span>
+          <span class="pfield-value">New York</span>
+        </div>
+        <div class="pfield">
+          <span class="pfield-label">State</span>
+          <span class="pfield-value">NY</span>
+        </div>
+        <div class="pfield">
+          <span class="pfield-label">ZIP Code</span>
+          <span class="pfield-value">10001</span>
+        </div>
+      </div>
+      <div class="pfield">
+        <span class="pfield-label">Country</span>
+        <span class="pfield-value">United States</span>
+      </div>
+    </div>
+
+    <!-- security settings -->
+    <div class="pcard">
+      <div class="pcard-header">
+        <span class="pcard-title">Security Settings</span>
+      </div>
+
+      <div class="security-row">
+        <div class="security-text">
+          <p class="security-name">Two-Factor Authentication</p>
+          <p class="security-desc">Add an extra layer of security to your account</p>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" checked/>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <div class="security-row">
+        <div class="security-text">
+          <p class="security-name">Biometric Authentication</p>
+          <p class="security-desc">Use fingerprint or face ID to login</p>
+        </div>
+        <label class="toggle">
+          <input type="checkbox"/>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <div class="password-row">
+        <div class="password-dots">••••••••••••</div>
+        <button class="change-pw-btn">Change</button>
+      </div>
+
+      <div class="pfield-label" style="margin-bottom: 10px;">Login History</div>
+
+      <div class="login-item">
+        <div class="login-info">
+          <p class="login-device">Chrome on Windows</p>
+          <p class="login-location">New York, USA • Today at 2:45 PM</p>
+        </div>
+        <span class="login-badge current">Current</span>
+      </div>
+
+      <div class="login-item">
+        <div class="login-info">
+          <p class="login-device">Safari on iPhone</p>
+          <p class="login-location">New York, USA • Jan 21 at 9:30 AM</p>
+        </div>
+        <span class="login-badge">Yesterday</span>
+      </div>
+
+      <button class="signout-btn">Sign Out All Devices</button>
+    </div>
+
+    <!-- financial preferences -->
+    <div class="pcard">
+      <div class="pcard-header">
+        <span class="pcard-title">Financial Preferences</span>
+        <button class="pcard-edit-btn"><i data-lucide="pencil"></i></button>
+      </div>
+      <div class="pfield">
+        <span class="pfield-label">Default Currency</span>
+        <span class="pfield-value">USD – US Dollar</span>
+      </div>
+      <div class="pfield">
+        <span class="pfield-label">Language</span>
+        <span class="pfield-value">English</span>
+      </div>
+      <div class="pfield">
+        <span class="pfield-label">Timezone</span>
+        <span class="pfield-value">EST (UTC-5)</span>
+      </div>
+      <div class="pfield">
+        <span class="pfield-label">Budget Alert Threshold</span>
+        <span class="pfield-value">80% of budget</span>
+      </div>
+
+      <div class="security-row" style="margin-top: 16px;">
+        <div class="security-text">
+          <p class="security-name">Email Notifications</p>
+          <p class="security-desc">Receive transaction alerts via email</p>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" checked/>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <div class="security-row">
+        <div class="security-text">
+          <p class="security-name">Push Notifications</p>
+          <p class="security-desc">Get instant updates on your device</p>
+        </div>
+        <label class="toggle">
+          <input type="checkbox"/>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- activity summary -->
+    <div class="pcard">
+      <div class="pcard-header">
+        <span class="pcard-title">Activity Summary</span>
+      </div>
+
+      <div class="activity-item">
+        <div class="activity-text">
+          <p class="activity-name">Total Transactions</p>
+          <p class="activity-sub">This month</p>
+        </div>
+        <span class="activity-value blue">247</span>
+      </div>
+
+      <div class="activity-item">
+        <div class="activity-text">
+          <p class="activity-name">Account Created</p>
+          <p class="activity-sub">Member for 9 days</p>
+        </div>
+        <span class="activity-value">Jan 15, 2024</span>
+      </div>
+
+      <div class="activity-item">
+        <div class="activity-text">
+          <p class="activity-name">Last Login</p>
+          <p class="activity-sub">Chrome on Windows</p>
+        </div>
+        <span class="activity-value">Today, 2:45 PM</span>
+      </div>
+
+      <div class="activity-item">
+        <div class="activity-text">
+          <p class="activity-name">Categories Used</p>
+          <p class="activity-sub">Active categories</p>
+        </div>
+        <span class="activity-value blue">12</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer class="footer">
+  <p>&copy; 2024 Trackify. All rights reserved.</p>
+</footer>
+
+<script>lucide.createIcons();</script>
+</body>
+</html>

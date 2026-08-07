@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Trackify – Contact</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/styles.css"/>
+</head>
+<body>
+
+<!-- ===== NAVBAR ===== -->
+<nav class="app-nav">
+  <div class="app-nav-brand">
+    <img src="assets/logo1.jpeg" alt="Trackify" class="app-logo"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+    <div class="app-logo-fallback" style="display:none;">T</div>
+    <span class="app-brand-name">Trackify</span>
+  </div>
+  <ul class="app-nav-links">
+    <li><a href="dashboard.html" class="app-nav-active">Dashboard</a></li>
+    <li><a href="add-expense.html">Add Expense</a></li>
+    <li><a href="transactions.html">Transactions</a></li>
+    <li><a href="reports.html">Reports</a></li>
+    <li><a href="budget.html">Budget</a></li>
+  </ul>
+  <div class="app-nav-right">
+    <button class="notif-btn"><i data-lucide="bell"></i><span class="notif-badge">2</span></button>
+    <div class="app-user-chip">
+      <div class="app-avatar">JD</div>
+      <span class="app-username">John<br>Doe</span>
+      <i data-lucide="chevron-down" class="app-chevron"></i>
+    </div>
+  </div>
+</nav>
+
+<!-- ===== CONTACT PAGE ===== -->
+<div class="contact-page">
+  <div class="contact-container">
+
+    <!-- Page Header -->
+    <h1 class="contact-title">Get in Touch</h1>
+    <p class="contact-subtitle">Have a question or feedback? We'd love to hear from you. Reach out and our team will get back to you as soon as possible.</p>
+
+    <!-- Info Boxes Row -->
+    <div class="contact-info-row">
+      <div class="info-box-row">
+        <div class="info-box-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+        </div>
+        <div class="info-box-text">
+          <h3>Email</h3>
+          <p>support@trackify.com</p>
+          <span>We'll respond within 24 hours</span>
+        </div>
+      </div>
+      <div class="info-box-row">
+        <div class="info-box-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.07 1.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 16z"/></svg>
+        </div>
+        <div class="info-box-text">
+          <h3>Phone</h3>
+          <p>+1 234 567 8900</p>
+          <span>Mon–Fri, 9 AM – 6 PM EST</span>
+        </div>
+      </div>
+      <div class="info-box-row">
+        <div class="info-box-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <div class="info-box-text">
+          <h3>Location</h3>
+          <p>1234 Office St, Suite 567</p>
+          <span>&nbsp;</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Layout: Form + FAQ -->
+    <div class="contact-layout">
+
+      <!-- Send Message Form -->
+      <div class="contact-form-section">
+        <h2 class="form-section-title">Send us a Message</h2>
+        <p class="form-section-sub">Fill out the form below and we'll contact you within 24 hours.</p>
+
+        <form class="contact-form" onsubmit="return false;">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="name">Your Name*</label>
+              <input type="text" id="name" placeholder="John Doe" required/>
+            </div>
+            <div class="form-group">
+              <label for="email">Your Email*</label>
+              <input type="email" id="email" placeholder="john@example.com" required/>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="subject">Select a Subject*</label>
+            <div class="select-wrapper">
+              <select id="subject" required>
+                <option value="" disabled selected>Choose a subject...</option>
+                <option>General Inquiry</option>
+                <option>Technical Support</option>
+                <option>Billing</option>
+                <option>Partnership</option>
+                <option>Other</option>
+              </select>
+              <span class="select-arrow">&#8595; &#8595;</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="message">Your Message*</label>
+            <textarea id="message" rows="5" placeholder="Type your message here..." required></textarea>
+          </div>
+
+          <button type="submit" class="submit-btn">Send Message</button>
+        </form>
+      </div>
+
+      <!-- FAQ -->
+      <div class="faq-section">
+        <h2 class="faq-title">Frequently Asked Questions</h2>
+
+        <div class="faq-list">
+          <div class="faq-item">
+            <button class="faq-question" onclick="toggleFaq(this)">
+              How quickly do you respond to inquiries?
+              <span class="faq-icon">+</span>
+            </button>
+            <div class="faq-answer">
+              <p>Our support team typically responds within 24 hours on business days. For urgent matters, please call us directly.</p>
+            </div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question" onclick="toggleFaq(this)">
+              What information should I include?
+              <span class="faq-icon">+</span>
+            </button>
+            <div class="faq-answer">
+              <p>Please include your account email, a clear description of the issue, and any relevant screenshots or error messages.</p>
+            </div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question" onclick="toggleFaq(this)">
+              Do you offer phone support?
+              <span class="faq-icon">+</span>
+            </button>
+            <div class="faq-answer">
+              <p>Yes! Phone support is available Mon–Fri from 9 AM to 6 PM EST at +1 234 567 8900.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Still have questions box -->
+        <div class="still-questions">
+          <h3>Still have questions?</h3>
+          <p>Our support team is here to help you with any inquiries.</p>
+          <div class="still-buttons">
+            <button class="still-btn-primary">Start Live Chat</button>
+            <button class="still-btn-secondary">Schedule a Call</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Connect With Us -->
+    <div class="connect-section">
+      <h2 class="connect-title">Connect With Us</h2>
+      <div class="social-icons">
+        <!-- Facebook -->
+        <a href="#" class="social-icon" aria-label="Facebook">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="white" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+        </a>
+        <!-- Twitter/X -->
+        <a href="#" class="social-icon" aria-label="Twitter">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="white" viewBox="0 0 24 24"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"/></svg>
+        </a>
+        <!-- GitHub -->
+        <a href="#" class="social-icon" aria-label="GitHub">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="white" viewBox="0 0 24 24"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== FOOTER ===== -->
+<footer class="footer">
+  <p>&copy; 2025 Trackify. All rights reserved.</p>
+</footer>
+
+<script>
+function toggleFaq(btn) {
+  const item = btn.parentElement;
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+  if (!isOpen) item.classList.add('open');
+}
+</script>
+</body>
+</html>

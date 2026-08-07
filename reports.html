@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Trackify – Reports</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/styles.css"/>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body class="app-body">
+
+<nav class="app-nav">
+  <div class="app-nav-brand">
+    <img src="assets/logo1.jpeg" alt="Trackify" class="app-logo"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+    <div class="app-logo-fallback" style="display:none;">T</div>
+    <span class="app-brand-name">Trackify</span>
+  </div>
+  <ul class="app-nav-links">
+    <li><a href="dashboard.html">Dashboard</a></li>
+    <li><a href="add-expense.html">Add Expense</a></li>
+    <li><a href="transactions.html">Transactions</a></li>
+    <li><a href="reports.html" class="app-nav-active">Reports</a></li>
+    <li><a href="#">Budget</a></li>
+  </ul>
+  <div class="app-nav-right">
+    <button class="notif-btn">
+      <i data-lucide="bell"></i>
+      <span class="notif-badge">2</span>
+    </button>
+    <div class="app-user-chip">
+      <div class="app-avatar">JD</div>
+      <span class="app-username">John<br>Doe</span>
+      <i data-lucide="chevron-down" class="app-chevron"></i>
+    </div>
+  </div>
+</nav>
+
+<main class="dash-main" style="flex-direction: row; align-items: flex-start; gap: 20px;">
+
+  <!-- left column -->
+  <div class="reports-left">
+
+    <!-- report config -->
+    <div class="dash-card">
+      <h3 class="dash-card-title" style="margin-bottom:18px;">Report Configuration</h3>
+
+      <div class="report-config-row">
+        <div class="report-config-col">
+          <p class="report-config-label">Report Type</p>
+          <div class="report-type-btns">
+            <button class="rtype-btn" onclick="setRtype(this)">Daily</button>
+            <button class="rtype-btn rtype-active" onclick="setRtype(this)">Monthly</button>
+            <button class="rtype-btn" onclick="setRtype(this)">Annual</button>
+          </div>
+        </div>
+        <div class="report-config-col">
+          <p class="report-config-label">Date Range</p>
+          <div class="select-wrap">
+            <select class="addexp-select">
+              <option>Last 30 Days</option>
+              <option>Last 7 Days</option>
+              <option>Last 3 Months</option>
+              <option>This Year</option>
+            </select>
+            <i data-lucide="chevron-down" class="select-chevron"></i>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:18px;">
+        <p class="report-config-label">Export Format</p>
+        <div class="export-fmt-btns">
+          <button class="efmt-btn efmt-active" onclick="setFmt(this)">
+            <i data-lucide="file"></i> PDF
+          </button>
+          <button class="efmt-btn" onclick="setFmt(this)">
+            <i data-lucide="table"></i> Excel
+          </button>
+          <button class="efmt-btn" onclick="setFmt(this)">
+            <i data-lucide="file-text"></i> CSV
+          </button>
+          <button class="efmt-btn" onclick="setFmt(this)">
+            <i data-lucide="code"></i> JSON
+          </button>
+        </div>
+      </div>
+
+      <div style="margin-top:18px;">
+        <p class="report-config-label">Select Categories</p>
+        <div class="cat-grid">
+          <div class="cat-item cat-blue cat-active" onclick="toggleCat(this)">All Categories <span>$45,678.90</span></div>
+          <div class="cat-item cat-teal" onclick="toggleCat(this)">Travel &amp; Transport <span>$12,450.00</span></div>
+          <div class="cat-item cat-orange" onclick="toggleCat(this)">Food &amp; Dining <span>$8,920.50</span></div>
+          <div class="cat-item cat-purple cat-active" onclick="toggleCat(this)">Office Supplies <span>$6,760.25</span></div>
+          <div class="cat-item cat-red" onclick="toggleCat(this)">Utilities <span>$5,430.80</span></div>
+          <div class="cat-item cat-cyan" onclick="toggleCat(this)">Marketing <span>$7,890.35</span></div>
+          <div class="cat-item cat-pink" onclick="toggleCat(this)">Software &amp; Tools <span>$4,207.00</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- expense breakdown -->
+    <div class="dash-card">
+      <h3 class="dash-card-title" style="margin-bottom:18px;">Expense Breakdown</h3>
+      <div class="breakdown-list">
+        <div class="breakdown-item">
+          <div class="breakdown-info">
+            <div class="breakdown-dot" style="background:#4ade80;"></div>
+            <span class="breakdown-name">Travel &amp; Transport</span>
+          </div>
+          <span class="breakdown-amount">$12,450.00</span>
+          <div class="breakdown-bar-wrap">
+            <div class="breakdown-bar"><div class="breakdown-fill" style="width:27.3%;background:#4ade80;"></div></div>
+            <span class="breakdown-pct">27.3% of total</span>
+          </div>
+        </div>
+        <div class="breakdown-item">
+          <div class="breakdown-info">
+            <div class="breakdown-dot" style="background:#fb923c;"></div>
+            <span class="breakdown-name">Food &amp; Dining</span>
+          </div>
+          <span class="breakdown-amount">$8,920.50</span>
+          <div class="breakdown-bar-wrap">
+            <div class="breakdown-bar"><div class="breakdown-fill" style="width:19.5%;background:#fb923c;"></div></div>
+            <span class="breakdown-pct">19.5% of total</span>
+          </div>
+        </div>
+        <div class="breakdown-item">
+          <div class="breakdown-info">
+            <div class="breakdown-dot" style="background:#a78bfa;"></div>
+            <span class="breakdown-name">Office Supplies</span>
+          </div>
+          <span class="breakdown-amount">$6,780.25</span>
+          <div class="breakdown-bar-wrap">
+            <div class="breakdown-bar"><div class="breakdown-fill" style="width:14.8%;background:#a78bfa;"></div></div>
+            <span class="breakdown-pct">14.8% of total</span>
+          </div>
+        </div>
+        <div class="breakdown-item">
+          <div class="breakdown-info">
+            <div class="breakdown-dot" style="background:#f87171;"></div>
+            <span class="breakdown-name">Utilities</span>
+          </div>
+          <span class="breakdown-amount">$5,430.80</span>
+          <div class="breakdown-bar-wrap">
+            <div class="breakdown-bar"><div class="breakdown-fill" style="width:11.9%;background:#f87171;"></div></div>
+            <span class="breakdown-pct">11.9% of total</span>
+          </div>
+        </div>
+        <div class="breakdown-item">
+          <div class="breakdown-info">
+            <div class="breakdown-dot" style="background:#38bdf8;"></div>
+            <span class="breakdown-name">Marketing</span>
+          </div>
+          <span class="breakdown-amount">$7,890.35</span>
+          <div class="breakdown-bar-wrap">
+            <div class="breakdown-bar"><div class="breakdown-fill" style="width:17.3%;background:#38bdf8;"></div></div>
+            <span class="breakdown-pct">17.3% of total</span>
+          </div>
+        </div>
+        <div class="breakdown-item">
+          <div class="breakdown-info">
+            <div class="breakdown-dot" style="background:#f472b6;"></div>
+            <span class="breakdown-name">Software &amp; Tools</span>
+          </div>
+          <span class="breakdown-amount">$4,207.00</span>
+          <div class="breakdown-bar-wrap">
+            <div class="breakdown-bar"><div class="breakdown-fill" style="width:9.2%;background:#f472b6;"></div></div>
+            <span class="breakdown-pct">9.2% of total</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- recent exports -->
+    <div class="dash-card">
+      <h3 class="dash-card-title" style="margin-bottom:16px;">Recent Exports</h3>
+      <div class="exports-list">
+        <div class="export-row">
+          <div class="export-file-icon export-pdf"><i data-lucide="file"></i></div>
+          <div class="export-info">
+            <p class="export-name">Monthly_Expenses_Dec_2024.pdf</p>
+            <p class="export-meta">2024-12-15 &nbsp;•&nbsp; 2.4 MB &nbsp;•&nbsp; <span class="export-type-tag pdf-tag">PDF</span></p>
+          </div>
+          <button class="export-dl-btn"><i data-lucide="download"></i></button>
+        </div>
+        <div class="export-row">
+          <div class="export-file-icon export-excel"><i data-lucide="table"></i></div>
+          <div class="export-info">
+            <p class="export-name">Q4_2024_Report.xlsx</p>
+            <p class="export-meta">2024-12-10 &nbsp;•&nbsp; 1.6 MB &nbsp;•&nbsp; <span class="export-type-tag excel-tag">Excel</span></p>
+          </div>
+          <button class="export-dl-btn"><i data-lucide="download"></i></button>
+        </div>
+        <div class="export-row">
+          <div class="export-file-icon export-csv"><i data-lucide="file-text"></i></div>
+          <div class="export-info">
+            <p class="export-name">Annual_Summary_2024.csv</p>
+            <p class="export-meta">2024-12-05 &nbsp;•&nbsp; 856 KB &nbsp;•&nbsp; <span class="export-type-tag csv-tag">CSV</span></p>
+          </div>
+          <button class="export-dl-btn"><i data-lucide="download"></i></button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- right column -->
+  <div class="reports-right">
+
+    <!-- export summary -->
+    <div class="dash-card">
+      <h3 class="dash-card-title" style="margin-bottom:16px;">Export Summary</h3>
+      <div class="export-summary-rows">
+        <div class="exp-sum-row">
+          <span class="exp-sum-label">Report Type</span>
+          <span class="exp-sum-value">Monthly</span>
+        </div>
+        <div class="exp-sum-row">
+          <span class="exp-sum-label">Date Range</span>
+          <span class="exp-sum-value">Last 30 Days</span>
+        </div>
+        <div class="exp-sum-row">
+          <span class="exp-sum-label">Format</span>
+          <span class="exp-sum-value">PDF</span>
+        </div>
+        <div class="exp-sum-row">
+          <span class="exp-sum-label">Categories</span>
+          <span class="exp-sum-value">All</span>
+        </div>
+      </div>
+
+      <div class="exp-sum-total">
+        <p class="exp-sum-total-label">Total Amount</p>
+        <p class="exp-sum-total-num">$45,678.90</p>
+      </div>
+
+      <button class="generate-btn">
+        <i data-lucide="download"></i> Generate &amp; Export
+      </button>
+
+      <div class="export-info-box">
+        <i data-lucide="info" class="export-info-icon"></i>
+        <p>Reports are generated in real-time and may take a few moments depending on the data range selected.</p>
+      </div>
+    </div>
+
+    <!-- quick stats -->
+    <div class="dash-card">
+      <h3 class="dash-card-title" style="margin-bottom:16px;">Quick Stats</h3>
+      <div class="qs-list">
+        <div class="qs-item">
+          <div class="qs-icon qs-green"><i data-lucide="repeat"></i></div>
+          <div class="qs-text">
+            <p class="qs-label">Transactions</p>
+            <p class="qs-value">1,247</p>
+          </div>
+        </div>
+        <div class="qs-item">
+          <div class="qs-icon qs-orange"><i data-lucide="trending-up"></i></div>
+          <div class="qs-text">
+            <p class="qs-label">Avg. Daily</p>
+            <p class="qs-value">$1,522</p>
+          </div>
+        </div>
+        <div class="qs-item">
+          <div class="qs-icon qs-purple"><i data-lucide="arrow-up-right"></i></div>
+          <div class="qs-text">
+            <p class="qs-label">Highest Expense</p>
+            <p class="qs-value">$12,450</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</main>
+
+<script>
+lucide.createIcons();
+
+function setRtype(el) {
+  document.querySelectorAll('.rtype-btn').forEach(b => b.classList.remove('rtype-active'));
+  el.classList.add('rtype-active');
+}
+
+function setFmt(el) {
+  document.querySelectorAll('.efmt-btn').forEach(b => b.classList.remove('efmt-active'));
+  el.classList.add('efmt-active');
+}
+
+function toggleCat(el) {
+  el.classList.toggle('cat-active');
+}
+</script>
+</body>
+</html>

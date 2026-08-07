@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Trackify – Activity Summary</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/styles.css"/>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body class="app-body">
+
+<nav class="app-nav">
+  <div class="app-nav-brand">
+    <img src="assets/logo1.jpeg" alt="Trackify" class="app-logo"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+    <div class="app-logo-fallback" style="display:none;">T</div>
+    <span class="app-brand-name">Trackify</span>
+  </div>
+  <ul class="app-nav-links">
+    <li><a href="dashboard.html">Dashboard</a></li>
+    <li><a href="add-expense.html">Add Expense</a></li>
+    <li><a href="transactions.html">Transactions</a></li>
+    <li><a href="reports.html">Reports</a></li>
+    <li><a href="#">Budget</a></li>
+  </ul>
+  <div class="app-nav-right">
+    <button class="notif-btn">
+      <i data-lucide="bell"></i>
+      <span class="notif-badge">2</span>
+    </button>
+    <div class="app-user-chip">
+      <div class="app-avatar">JD</div>
+      <span class="app-username">John<br>Doe</span>
+      <i data-lucide="chevron-down" class="app-chevron"></i>
+    </div>
+  </div>
+</nav>
+
+<main class="act-main">
+
+  <div class="act-heading">
+    <h1 class="act-title">Activity Summary</h1>
+    <p class="act-sub">Your financial overview at a glance</p>
+  </div>
+
+  <div class="act-cards">
+
+    <div class="act-card">
+      <div class="act-card-top">
+        <div class="act-card-icon act-icon-blue"><i data-lucide="arrow-up"></i></div>
+        <span class="act-pill act-pill-green">+12.5%</span>
+      </div>
+      <p class="act-card-label">Total Income</p>
+      <p class="act-card-amount">$6,200.00</p>
+    </div>
+
+    <div class="act-card">
+      <div class="act-card-top">
+        <div class="act-card-icon act-icon-red"><i data-lucide="credit-card"></i></div>
+        <span class="act-pill act-pill-red">-8.3%</span>
+      </div>
+      <p class="act-card-label">Total Expense</p>
+      <p class="act-card-amount">$2,455.00</p>
+    </div>
+
+    <div class="act-card">
+      <div class="act-card-top">
+        <div class="act-card-icon act-icon-green"><i data-lucide="refresh-cw"></i></div>
+        <span class="act-pill act-pill-blue">Active</span>
+      </div>
+      <p class="act-card-label">Current Balance</p>
+      <p class="act-card-amount">$3,745.00</p>
+    </div>
+
+    <div class="act-card">
+      <div class="act-card-top">
+        <div class="act-card-icon act-icon-purple"><i data-lucide="bar-chart-2"></i></div>
+        <span class="act-pill act-pill-purple">49%</span>
+      </div>
+      <p class="act-card-label">Budget Remaining</p>
+      <p class="act-card-amount">$2,545.00</p>
+      <div class="act-budget-bar">
+        <div class="act-budget-fill" style="width:49%;"></div>
+      </div>
+      <p class="act-budget-label">$2,455.00 / $5,000.00 used</p>
+    </div>
+
+  </div>
+
+  <div class="act-txn-card">
+    <div class="act-txn-header">
+      <div>
+        <h3 class="act-txn-title">Recent Transactions</h3>
+        <p class="act-txn-sub">Your last 5 financial activities</p>
+      </div>
+      <button class="act-view-all">View All</button>
+    </div>
+
+    <div class="act-txn-list">
+
+      <div class="act-txn-row">
+        <div class="act-arrow act-arrow-up"><i data-lucide="arrow-up"></i></div>
+        <div class="act-txn-info">
+          <p class="act-txn-name">Monthly Salary</p>
+          <p class="act-txn-meta">Salary &nbsp;·&nbsp; Jan 15, 2024</p>
+        </div>
+        <div class="act-txn-right">
+          <p class="act-txn-amount act-positive">+$5,000.00</p>
+          <span class="act-tag act-income-tag">Income</span>
+        </div>
+      </div>
+
+      <div class="act-txn-row">
+        <div class="act-arrow act-arrow-down"><i data-lucide="arrow-down"></i></div>
+        <div class="act-txn-info">
+          <p class="act-txn-name">Whole Foods Market</p>
+          <p class="act-txn-meta">Groceries &nbsp;·&nbsp; Jan 14, 2024</p>
+        </div>
+        <div class="act-txn-right">
+          <p class="act-txn-amount act-negative">-$250.00</p>
+          <span class="act-tag act-expense-tag">Expense</span>
+        </div>
+      </div>
+
+      <div class="act-txn-row">
+        <div class="act-arrow act-arrow-down"><i data-lucide="arrow-down"></i></div>
+        <div class="act-txn-info">
+          <p class="act-txn-name">Uber Rides</p>
+          <p class="act-txn-meta">Transport &nbsp;·&nbsp; Jan 13, 2024</p>
+        </div>
+        <div class="act-txn-right">
+          <p class="act-txn-amount act-negative">-$85.00</p>
+          <span class="act-tag act-expense-tag">Expense</span>
+        </div>
+      </div>
+
+      <div class="act-txn-row">
+        <div class="act-arrow act-arrow-up"><i data-lucide="arrow-up"></i></div>
+        <div class="act-txn-info">
+          <p class="act-txn-name">Web Design Project</p>
+          <p class="act-txn-meta">Freelance &nbsp;·&nbsp; Jan 12, 2024</p>
+        </div>
+        <div class="act-txn-right">
+          <p class="act-txn-amount act-positive">+$1,200.00</p>
+          <span class="act-tag act-income-tag">Income</span>
+        </div>
+      </div>
+
+      <div class="act-txn-row act-txn-last">
+        <div class="act-arrow act-arrow-down"><i data-lucide="arrow-down"></i></div>
+        <div class="act-txn-info">
+          <p class="act-txn-name">Netflix &amp; Spotify</p>
+          <p class="act-txn-meta">Entertainment &nbsp;·&nbsp; Jan 11, 2024</p>
+        </div>
+        <div class="act-txn-right">
+          <p class="act-txn-amount act-negative">-$120.00</p>
+          <span class="act-tag act-expense-tag">Expense</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</main>
+
+<script>lucide.createIcons();</script>
+</body>
+</html>

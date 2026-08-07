@@ -1,0 +1,91 @@
+================================================================================
+TRACKIFY — COMPLETE BEGINNER GUIDE: HOW TO RUN & MANUAL TEST PLAN
+================================================================================
+
+PREREQUISITES:
+--------------
+1. Node.js installed on your computer.
+2. MongoDB running locally or MongoDB Atlas URI in server/.env.
+
+--------------------------------------------------------------------------------
+STEP 1: HOW TO RUN THE PROJECT (2 TERMINAL WINDOWS)
+--------------------------------------------------------------------------------
+
+TERMINAL 1: START BACKEND SERVER
+1. Open PowerShell or Command Prompt.
+2. Run command:
+   cd "e:\SGP 5th\Trackify-main\Trackify-main\server"
+3. Run command (only first time):
+   npm install
+4. Run command to start server:
+   npm run dev
+
+Expected Terminal 1 Output:
+   Server running on port 5000
+   MongoDB connected ✅
+   📅 Auto-Report Scheduler Service Initialized ✅
+
+
+TERMINAL 2: START FRONTEND CLIENT
+1. Open a NEW PowerShell window.
+2. Run command:
+   cd "e:\SGP 5th\Trackify-main\Trackify-main\client"
+3. Run command (only first time):
+   npm install
+4. Run command to start frontend:
+   npm run dev
+
+Expected Terminal 2 Output:
+   ➜ Local: http://localhost:5173/
+
+OPEN IN BROWSER:
+   Open Google Chrome / Edge and go to: http://localhost:5173
+
+--------------------------------------------------------------------------------
+STEP 2: COMPLETE MANUAL TEST PLAN (TEST STEP-BY-STEP)
+--------------------------------------------------------------------------------
+
+TEST CASE 1: CREATE ACCOUNT & LOG IN
+1. Go to http://localhost:5173/signup
+2. Enter Name, Email, Password -> click "Sign Up"
+3. Log in at http://localhost:5173/login -> redirected to Dashboard.
+
+TEST CASE 2: VERIFY DEFAULT CURRENCY (INR ₹)
+1. On Dashboard, check Total Income, Total Expense, Net Balance cards.
+2. Result: Amounts show with "₹" symbol by default (e.g. ₹0.00).
+
+TEST CASE 3: ADD SALARY & EXPENSE
+1. Go to "Add Expense" (/add-expense).
+2. Add Income: Title "Salary", Amount "50000", Type "Income", Category "Salary".
+3. Add Expense: Title "Grocery", Amount "5000", Type "Expense", Category "Food".
+4. Result: Dashboard shows Income = ₹50,000.00, Expense = ₹5,000.00, Net Balance = ₹45,000.00.
+
+TEST CASE 4: TEST MULTI-CURRENCY CONVERTER (USD $)
+1. Click Profile on top navbar (/profile) -> click "Edit Profile".
+2. Change Preferred Currency dropdown to "USD ($) - US Dollar".
+3. Click "Save Changes".
+4. Go to Dashboard (/dashboard) & Transactions (/transactions).
+5. Result: Currency symbol updates to "$" and amounts automatically convert (e.g. ₹50,000 -> ~$600.00 USD).
+
+TEST CASE 5: TEST OTHER CURRENCIES (EUR €, GBP £)
+1. Go to Profile -> Edit Profile -> change currency to "EUR (€)" or "GBP (£)".
+2. Save changes.
+3. Result: All amounts across Dashboard, Transactions, and Reports update instantly displaying € or £.
+
+TEST CASE 6: TEST INSTANT EMAIL SUMMARY REPORT
+1. Go to Reports page (/reports).
+2. Click purple button: "📧 Send Instant Email Summary Report".
+3. Result: Toast alert confirms email sent! Terminal 1 shows confirmation and formatted email is generated.
+
+TEST CASE 7: REVERT TO INR (₹)
+1. Go to Profile -> Edit Profile -> select "INR (₹)".
+2. Save changes -> numbers revert to ₹ cleanly.
+
+--------------------------------------------------------------------------------
+STEP 3: HOW TO PUSH TO GITHUB
+--------------------------------------------------------------------------------
+Open terminal in project root and run:
+   git add .
+   git commit -m "feat: implement Multi-Currency converter, email auto-reports & test plan guide"
+   git push origin main
+================================================================================

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Trackify – Add Expense</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/styles.css"/>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body class="app-body">
+
+<nav class="app-nav">
+  <div class="app-nav-brand">
+    <img src="assets/logo1.jpeg" alt="Trackify" class="app-logo"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+    <div class="app-logo-fallback" style="display:none;">T</div>
+    <span class="app-brand-name">Trackify</span>
+  </div>
+  <ul class="app-nav-links">
+    <li><a href="dashboard.html">Dashboard</a></li>
+    <li><a href="add-expense.html" class="app-nav-active">Add Expense</a></li>
+    <li><a href="transactions.html">Transactions</a></li>
+    <li><a href="reports.html">Reports</a></li>
+    <li><a href="#">Budget</a></li>
+  </ul>
+  <div class="app-nav-right">
+    <button type="button" class="notif-btn">
+      <i data-lucide="bell"></i>
+      <span class="notif-badge">2</span>
+    </button>
+    <div class="app-user-chip">
+      <div class="app-avatar">JD</div>
+      <span class="app-username">John<br>Doe</span>
+      <i data-lucide="chevron-down" class="app-chevron"></i>
+    </div>
+  </div>
+</nav>
+
+<main class="dash-main">
+
+  <!-- input method selector -->
+  <div class="dash-card">
+    <h2 class="addexp-title">Add New Transaction</h2>
+    <p class="addexp-sub">Choose your preferred input method:</p>
+    <div class="input-methods" style="margin-top:20px;">
+      <div class="input-method input-blue active-method" onclick="selectMethod(this)">
+        <div class="input-method-icon im-dark"><i data-lucide="mic"></i></div>
+        <p class="im-label">Voice Input</p>
+        <p class="im-sub">Speak to add transaction</p>
+      </div>
+      <div class="input-method input-green" onclick="selectMethod(this)">
+        <div class="input-method-icon im-teal"><i data-lucide="file-text"></i></div>
+        <p class="im-label">Text Input</p>
+        <p class="im-sub">Type transaction details</p>
+      </div>
+      <div class="input-method input-yellow" onclick="selectMethod(this)">
+        <div class="input-method-icon im-orange"><i data-lucide="scan"></i></div>
+        <p class="im-label">Scan Receipt</p>
+        <p class="im-sub">Upload or scan receipt</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- expense form -->
+  <div class="dash-card">
+    <h3 class="addexp-form-title">Expense Details</h3>
+
+    <div class="addexp-form">
+
+      <div class="addexp-field">
+        <label class="addexp-label">Amount <span class="req">*</span></label>
+        <div class="amount-input-wrap">
+          <span class="amount-prefix">$</span>
+          <input type="number" placeholder="0.00" class="addexp-input amount-input"/>
+        </div>
+      </div>
+
+      <div class="addexp-row">
+        <div class="addexp-field">
+          <label class="addexp-label">Category <span class="req">*</span></label>
+          <div class="select-wrap">
+            <select class="addexp-select">
+              <option>Food</option>
+              <option>Transportation</option>
+              <option>Shopping</option>
+              <option>Entertainment</option>
+              <option>Bills &amp; Utilities</option>
+              <option>Healthcare</option>
+              <option>Other</option>
+            </select>
+            <i data-lucide="chevron-down" class="select-chevron"></i>
+          </div>
+        </div>
+        <div class="addexp-field">
+          <label class="addexp-label">Payment Method</label>
+          <div class="select-wrap">
+            <select class="addexp-select">
+              <option>Cash</option>
+              <option>Credit Card</option>
+              <option>Debit Card</option>
+              <option>Bank Transfer</option>
+              <option>UPI</option>
+            </select>
+            <i data-lucide="chevron-down" class="select-chevron"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="addexp-row">
+        <div class="addexp-field">
+          <label class="addexp-label">Date</label>
+          <input type="date" class="addexp-input"/>
+        </div>
+        <div class="addexp-field">
+          <label class="addexp-label">Time</label>
+          <input type="time" class="addexp-input"/>
+        </div>
+      </div>
+
+      <div class="addexp-field">
+        <label class="addexp-label">Description</label>
+        <input type="text" placeholder="What was this transaction for?" class="addexp-input"/>
+      </div>
+
+      <div class="addexp-field">
+        <label class="addexp-label">Merchant / Vendor</label>
+        <input type="text" placeholder="e.g. Amazon, Starbucks" class="addexp-input"/>
+      </div>
+
+      <div class="addexp-field">
+        <label class="addexp-label">Transaction Type</label>
+        <div class="type-toggle">
+          <button type="button" class="type-btn type-expense active-type" onclick="setType(this,'expense')">Expense</button>
+          <button type="button" class="type-btn type-income" onclick="setType(this,'income')">Income</button>
+        </div>
+      </div>
+
+      <div class="addexp-actions">
+        <button type="button" class="addexp-cancel">Cancel</button>
+        <button type="button" class="addexp-submit">Add Transaction</button>
+      </div>
+
+    </div>
+  </div>
+
+</main>
+
+<script>
+lucide.createIcons();
+
+function selectMethod(el) {
+  document.querySelectorAll('.input-method').forEach(m => m.classList.remove('active-method'));
+  el.classList.add('active-method');
+}
+
+function setType(el, type) {
+  document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active-type'));
+  el.classList.add('active-type');
+}
+</script>
+</body>
+</html>

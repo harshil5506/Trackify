@@ -1,0 +1,183 @@
+<!DOCTYPE html> 
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Trackify – Vision & Mission</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/styles.css"/>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body>
+
+<nav class="app-nav">
+  <div class="app-nav-brand">
+    <img src="assets/logo1.jpeg" alt="Trackify" class="app-logo"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+    <div class="app-logo-fallback" style="display:none;">T</div>
+    <span class="app-brand-name">Trackify</span>
+  </div>
+  <ul class="app-nav-links">
+    <li><a href="dashboard.html" class="app-nav-active">Dashboard</a></li>
+    <li><a href="add-expense.html">Add Expense</a></li>
+    <li><a href="transactions.html">Transactions</a></li>
+    <li><a href="reports.html">Reports</a></li>
+    <li><a href="budget.html">Budget</a></li>
+  </ul>
+  <div class="app-nav-right">
+    <button class="notif-btn"><i data-lucide="bell"></i><span class="notif-badge">2</span></button>
+    <div class="app-user-chip">
+      <div class="app-avatar">JD</div>
+      <span class="app-username">John<br>Doe</span>
+      <i data-lucide="chevron-down" class="app-chevron"></i>
+    </div>
+  </div>
+</nav>
+
+<div class="vm-page">
+  <div class="vm-container">
+
+    <!-- top: heading left, tabs right -->
+    <div class="vm-top">
+      <div class="vm-hero">
+        <h1 class="vm-title" id="vm-title">Our<br>Vision</h1>
+        <p class="vm-subtitle" id="vm-subtitle">Empowering individuals to take control of their financial future through simple, transparent, and accessible expense tracking.</p>
+      </div>
+      <div class="vm-tabs">
+        <button class="vm-tab active" id="tab-vision" onclick="switchTab('vision')">Our Vision</button>
+        <button class="vm-tab" id="tab-mission" onclick="switchTab('mission')">Our Mission</button>
+      </div>
+    </div>
+
+    <!-- VISION content -->
+    <div id="content-vision">
+
+      <div class="vm-main-grid">
+        <!-- left: card -->
+        <div class="vm-card">
+          <h2 class="vm-card-title">A World of Financial Clarity</h2>
+          <p class="vm-card-lead">We envision a world where everyone has the tools and knowledge to make informed financial decisions, free from complexity and confusion.</p>
+
+          <div class="vm-items">
+            <div class="vm-item">
+              <div class="vm-item-icon"><i data-lucide="globe"></i></div>
+              <div class="vm-item-text">
+                <h3>Universal Access</h3>
+                <p>Financial wellness tools should be available to everyone, regardless of income level or financial literacy. We believe in democratizing access to smart money management.</p>
+              </div>
+            </div>
+            <div class="vm-item">
+              <div class="vm-item-icon"><i data-lucide="trending-up"></i></div>
+              <div class="vm-item-text">
+                <h3>Financial Empowerment</h3>
+                <p>We see a future where individuals feel confident and empowered in their financial decisions, equipped with clear insights and actionable data.</p>
+              </div>
+            </div>
+            <div class="vm-item">
+              <div class="vm-item-icon"><i data-lucide="check-circle"></i></div>
+              <div class="vm-item-text">
+                <h3>Simplified Finance</h3>
+                <p>We envision removing the intimidation factor from personal finance, making it as simple as checking your daily weather forecast.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- right: footer card -->
+        <div class="vm-footer-card">
+          <h3>Our Long-Term Vision</h3>
+          <p>By 2030, we aim to be the most trusted personal finance companion for millions of users worldwide, helping them achieve financial peace of mind through transparency, education, and innovative tools that adapt to their unique needs.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- MISSION content (hidden by default) -->
+    <div id="content-mission" style="display:none;">
+
+      <div class="vm-main-grid">
+        <!-- left: card -->
+        <div class="vm-card">
+          <h2 class="vm-card-title">Driving Financial Wellness</h2>
+          <p class="vm-card-lead">Our mission is to transform the way people interact with their finances by providing tools that are both powerful and easy to use, making financial management accessible to everyone.</p>
+
+          <div class="vm-items">
+            <div class="vm-item">
+              <div class="vm-item-icon"><i data-lucide="clock"></i></div>
+              <div class="vm-item-text">
+                <h3>Simplify Daily Tracking</h3>
+                <p>Make expense tracking effortless with intuitive interfaces that require minimal time and effort, allowing users to log expenses in seconds.</p>
+              </div>
+            </div>
+            <div class="vm-item">
+              <div class="vm-item-icon"><i data-lucide="bar-chart-2"></i></div>
+              <div class="vm-item-text">
+                <h3>Provide Clear Insights</h3>
+                <p>Transform raw data into meaningful insights through visual analytics and reports that help users understand their spending patterns and make informed decisions.</p>
+              </div>
+            </div>
+            <div class="vm-item">
+              <div class="vm-item-icon"><i data-lucide="shield"></i></div>
+              <div class="vm-item-text">
+                <h3>Ensure Privacy & Security</h3>
+                <p>Protect user data with industry-leading security measures and transparent privacy policies, ensuring that financial information remains confidential and secure at all times.</p>
+              </div>
+            </div>
+            <div class="vm-item">
+              <div class="vm-item-icon"><i data-lucide="zap"></i></div>
+              <div class="vm-item-text">
+                <h3>Continuous Innovation</h3>
+                <p>Stay ahead of user needs by continuously improving our platform with new features, integrations, and technologies that make financial management even more seamless and effective.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- right: footer card -->
+        <div class="vm-footer-card">
+          <h3>Our Commitment to You</h3>
+          <p>We are committed to being more than just an expense tracking app. We strive to be your trusted financial partner, providing the tools, insights, and support you need to achieve your financial goals.</p>
+          <p style="margin-top: 16px;">Every feature we build, every update we release, and every decision we make is guided by our mission to empower you with financial clarity and confidence.</p>
+          <p style="margin-top: 16px;">Together, we can build a future where financial wellness is not a luxury, but a reality for everyone.</p>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<footer class="footer">
+  <p>&copy; 2024 Trackify. All rights reserved.</p>
+</footer>
+
+<script>
+lucide.createIcons();
+
+function switchTab(tab) {
+  const visionContent  = document.getElementById('content-vision');
+  const missionContent = document.getElementById('content-mission');
+  const tabVision      = document.getElementById('tab-vision');
+  const tabMission     = document.getElementById('tab-mission');
+  const title          = document.getElementById('vm-title');
+  const subtitle       = document.getElementById('vm-subtitle');
+
+  if (tab === 'vision') {
+    visionContent.style.display  = 'block';
+    missionContent.style.display = 'none';
+    tabVision.classList.add('active');
+    tabMission.classList.remove('active');
+    title.innerHTML      = 'Our<br>Vision';
+    subtitle.textContent = 'Empowering individuals to take control of their financial future through simple, transparent, and accessible expense tracking.';
+  } else {
+    visionContent.style.display  = 'none';
+    missionContent.style.display = 'block';
+    tabVision.classList.remove('active');
+    tabMission.classList.add('active');
+    title.innerHTML      = 'Our<br>Mission';
+    subtitle.textContent = 'To provide intuitive, powerful tools that simplify expense tracking and help people build healthier financial habits every day.';
+  }
+}
+</script>
+</body>
+</html>
