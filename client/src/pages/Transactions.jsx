@@ -8,8 +8,9 @@ import { formatCurrency, getBalanceTone } from "../utils/finance";
 
 const Transactions = () => {
   const { user } = useAuth();
-  const { formatMoney } = useCurrency();
+  const { formatMoney, currency: userCurrency, formatNativeAmount } = useCurrency();
   const [transactions, setTransactions] = useState([]);
+  const [recurringIds, setRecurringIds] = useState(new Set());
   const [stats, setStats] = useState({
     totalIncome: 0,
     totalExpense: 0,
@@ -37,16 +38,28 @@ const Transactions = () => {
 
       const totalIncome = list
         .filter((t) => t.type === "income")
-        .reduce((s, t) => s + t.amount, 0);
+        .reduce((s, t) => s + (t.baseAmount != null ? t.baseAmount : t.amount), 0);
       const totalExpense = list
         .filter((t) => t.type === "expense")
-        .reduce((s, t) => s + t.amount, 0);
+        .reduce((s, t) => s + (t.baseAmount != null ? t.baseAmount : t.amount), 0);
 
       setStats({
         totalIncome,
         totalExpense,
         netBalance: totalIncome - totalExpense,
       });
+
+      // Load recurring detections to identify recurring transactions
+      try {
+        const recRes = await API.get("/api/analytics/recurring");
+        const allIds = new Set();
+        (recRes.data.recurring || []).forEach((r) => {
+          (r.transactionIds || []).forEach((id) => allIds.add(id));
+        });
+        setRecurringIds(allIds);
+      } catch (recErr) {
+        // silent fallback
+      }
     } catch (err) {
       toast.error("Failed to load transactions");
     } finally {
@@ -232,7 +245,9 @@ const Transactions = () => {
           new Date(txn.date).toLocaleDateString("en-IN"),
           txn.category,
           txn.type.toUpperCase(),
-          `₹${txn.amount.toFixed(2)}`,
+          txn.currency && txn.currency !== "INR"
+            ? `${txn.currency} ${txn.amount.toFixed(2)} (≈ ₹${(txn.baseAmount != null ? txn.baseAmount : txn.amount).toFixed(2)})`
+            : `₹${txn.amount.toFixed(2)}`,
           txn.title || txn.note || "-",
           txn.paymentMethod || "Cash",
         ]);
@@ -424,7 +439,7 @@ const Transactions = () => {
                     color: c.isBalance ? balanceTone.color : "white",
                   }}
                 >
-                  {formatCurrency(c.value)}
+                  {formatMoney(c.value)}
                 </p>
               </div>
             );
@@ -643,6 +658,21 @@ const Transactions = () => {
                     >
                       {txn.type?.toUpperCase()}
                     </span>
+                    {/* Recurring badge */}
+                    {recurringIds.has(txn._id) && (
+                      <span
+                        style={{
+                          fontSize: "0.64rem",
+                          fontWeight: "700",
+                          padding: "2px 6px",
+                          borderRadius: "4px",
+                          background: "#e0e7ff",
+                          color: "#4338ca",
+                        }}
+                      >
+                        🔁 RECURRING
+                      </span>
+                    )}
                     {/* Source badge */}
                     {txn.source && txn.source !== "personal" && (
                       <span
@@ -680,16 +710,42 @@ const Transactions = () => {
                   }}
                 >
                   <div>
-                    <p
-                      style={{
-                        fontFamily: "'Sora',sans-serif",
-                        fontSize: "0.93rem",
-                        fontWeight: "700",
-                        color: txn.type === "income" ? "#16a34a" : "#dc2626",
-                      }}
-                    >
-                      {txn.type === "income" ? "+" : "-"}{formatMoney(txn.amount)}
-                    </p>
+                    {txn.currency && txn.currency !== userCurrency ? (
+                      <div style={{ textAlign: "right" }}>
+                        <p
+                          style={{
+                            fontFamily: "'Sora',sans-serif",
+                            fontSize: "0.93rem",
+                            fontWeight: "700",
+                            color: txn.type === "income" ? "#16a34a" : "#dc2626",
+                          }}
+                        >
+                          {txn.type === "income" ? "+" : "-"}
+                          {formatNativeAmount(txn.amount, txn.currency)}
+                        </p>
+                        <p
+                          style={{
+                            fontSize: "0.72rem",
+                            color: "#6b7280",
+                            fontWeight: "500",
+                          }}
+                        >
+                          ≈ {formatMoney(txn.baseAmount != null ? txn.baseAmount : txn.amount)}
+                        </p>
+                      </div>
+                    ) : (
+                      <p
+                        style={{
+                          fontFamily: "'Sora',sans-serif",
+                          fontSize: "0.93rem",
+                          fontWeight: "700",
+                          color: txn.type === "income" ? "#16a34a" : "#dc2626",
+                        }}
+                      >
+                        {txn.type === "income" ? "+" : "-"}
+                        {formatMoney(txn.baseAmount != null ? txn.baseAmount : txn.amount)}
+                      </p>
+                    )}
                     <p
                       style={{
                         fontSize: "0.7rem",

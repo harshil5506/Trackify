@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useCurrency } from "../context/CurrencyContext";
 import API from "../api/axios";
 import toast from "react-hot-toast";
 import { formatCurrency } from "../utils/finance";
@@ -19,6 +20,7 @@ const INCOME_CATEGORIES = [
 
 const Income = () => {
   const { user, logout } = useAuth();
+  const { formatMoney, activeSymbol } = useCurrency();
   const navigate = useNavigate();
   const [incomes, setIncomes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -37,7 +39,7 @@ const Income = () => {
   const fetchIncomes = async () => {
     try {
       const { data } = await API.get("/api/expenses?type=income");
-      setIncomes(data.expenses || []);
+      setIncomes(Array.isArray(data) ? data : data.expenses || []);
     } catch (err) {
     } finally {
       setLoading(false);
@@ -76,7 +78,7 @@ const Income = () => {
     }
   };
 
-  const totalIncome = incomes.reduce((s, i) => s + i.amount, 0);
+  const totalIncome = incomes.reduce((s, i) => s + (i.baseAmount != null ? i.baseAmount : i.amount), 0);
 
   return (
     <div style={s.appBody}>
@@ -158,7 +160,7 @@ const Income = () => {
                   fontWeight: "700",
                 }}
               >
-                {c.isCount ? c.value : `₹${c.value.toFixed(2)}`}
+                {c.isCount ? c.value : formatMoney(c.value)}
               </p>
             </div>
           ))}
@@ -200,7 +202,7 @@ const Income = () => {
                       color: "#1a1a2e",
                     }}
                   >
-                    Amount (₹) *
+                    Amount ({activeSymbol}) *
                   </label>
                   <input
                     type="number"
@@ -418,7 +420,7 @@ const Income = () => {
                       color: "#16a34a",
                     }}
                   >
-                    +₹{inc.amount.toFixed(2)}
+                    +{formatMoney(inc.baseAmount != null ? inc.baseAmount : inc.amount)}
                   </p>
                   <button
                     onClick={() => handleDelete(inc._id)}

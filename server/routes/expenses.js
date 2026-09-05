@@ -27,11 +27,34 @@ router.get("/", authMiddleware, async (req, res) => {
 // POST add new expense/income
 router.post("/", authMiddleware, async (req, res) => {
   try {
-    const { title, amount, category, type, date, note } = req.body;
+    const {
+      title,
+      amount,
+      category,
+      type,
+      date,
+      note,
+      merchant,
+      paymentMethod,
+      currency,
+      exchangeRate,
+      baseAmount,
+    } = req.body;
     const normalizedAmount = Number(amount);
 
     if (!Number.isFinite(normalizedAmount) || normalizedAmount <= 0) {
       return res.status(400).json({ message: "Amount must be greater than 0" });
+    }
+
+    const txnCurrency = (currency || "INR").toUpperCase();
+    const rate = Number(exchangeRate) > 0 ? Number(exchangeRate) : 1.0;
+
+    // Calculate baseAmount (in INR)
+    let calculatedBaseAmount = normalizedAmount;
+    if (baseAmount != null && Number.isFinite(Number(baseAmount)) && Number(baseAmount) > 0) {
+      calculatedBaseAmount = Number(baseAmount);
+    } else if (txnCurrency !== "INR") {
+      calculatedBaseAmount = rate > 0 ? normalizedAmount / rate : normalizedAmount;
     }
 
     const expense = await Expense.create({
@@ -42,6 +65,11 @@ router.post("/", authMiddleware, async (req, res) => {
       type,
       date,
       note,
+      merchant: merchant || "",
+      paymentMethod: paymentMethod || "Cash",
+      currency: txnCurrency,
+      exchangeRate: rate,
+      baseAmount: Math.round(calculatedBaseAmount * 100) / 100,
     });
 
     res.status(201).json(expense);
@@ -59,17 +87,47 @@ router.put("/:id", authMiddleware, async (req, res) => {
     if (expense.user.toString() !== req.user.id)
       return res.status(403).json({ message: "Not authorized" });
 
-    if (Object.prototype.hasOwnProperty.call(req.body, "amount")) {
-      const normalizedAmount = Number(req.body.amount);
+    const payload = { ...req.body };
+
+    if (Object.prototype.hasOwnProperty.call(payload, "amount")) {
+      const normalizedAmount = Number(payload.amount);
       if (!Number.isFinite(normalizedAmount) || normalizedAmount <= 0) {
         return res
           .status(400)
           .json({ message: "Amount must be greater than 0" });
       }
-      req.body.amount = normalizedAmount;
+      payload.amount = normalizedAmount;
     }
 
-    const updated = await Expense.findByIdAndUpdate(req.params.id, req.body, {
+    const effectiveAmount =
+      payload.amount !== undefined ? payload.amount : expense.amount;
+    const effectiveCurrency = (
+      payload.currency ||
+      expense.currency ||
+      "INR"
+    ).toUpperCase();
+    const effectiveRate = Number(
+      payload.exchangeRate || expense.exchangeRate || 1.0,
+    );
+
+    if (payload.baseAmount != null && Number.isFinite(Number(payload.baseAmount))) {
+      payload.baseAmount = Number(payload.baseAmount);
+    } else if (
+      payload.amount !== undefined ||
+      payload.currency !== undefined ||
+      payload.exchangeRate !== undefined
+    ) {
+      if (effectiveCurrency === "INR") {
+        payload.baseAmount = effectiveAmount;
+      } else {
+        payload.baseAmount =
+          effectiveRate > 0
+            ? Math.round((effectiveAmount / effectiveRate) * 100) / 100
+            : effectiveAmount;
+      }
+    }
+
+    const updated = await Expense.findByIdAndUpdate(req.params.id, payload, {
       new: true,
     });
 

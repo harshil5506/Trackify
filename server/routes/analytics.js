@@ -2,7 +2,9 @@ const mongoose = require("mongoose");
 const express = require("express");
 const router = express.Router();
 const Expense = require("../models/Expense");
+const User = require("../models/User");
 const authMiddleware = require("../middleware/authMiddleware");
+const { detectRecurringPayments } = require("../services/recurringDetector");
 
 // GET overall summary
 router.get("/summary", authMiddleware, async (req, res) => {
@@ -16,8 +18,15 @@ router.get("/summary", authMiddleware, async (req, res) => {
       type: "income",
     });
 
-    const totalExpense = expenses.reduce((s, e) => s + e.amount, 0);
-    const totalIncome = incomes.reduce((s, e) => s + e.amount, 0);
+    // Multi-currency safe aggregation using baseAmount (INR)
+    const totalExpense = expenses.reduce(
+      (s, e) => s + (e.baseAmount != null ? e.baseAmount : e.amount),
+      0,
+    );
+    const totalIncome = incomes.reduce(
+      (s, e) => s + (e.baseAmount != null ? e.baseAmount : e.amount),
+      0,
+    );
 
     res.json({
       totalExpense,
@@ -66,8 +75,14 @@ router.get("/monthly", authMiddleware, async (req, res) => {
 
       results.push({
         month: label,
-        expense: expenses.reduce((s, e) => s + e.amount, 0),
-        income: incomes.reduce((s, e) => s + e.amount, 0),
+        expense: expenses.reduce(
+          (s, e) => s + (e.baseAmount != null ? e.baseAmount : e.amount),
+          0,
+        ),
+        income: incomes.reduce(
+          (s, e) => s + (e.baseAmount != null ? e.baseAmount : e.amount),
+          0,
+        ),
       });
     }
 
@@ -90,13 +105,25 @@ router.get("/by-category", authMiddleware, async (req, res) => {
       {
         $group: {
           _id: "$category",
-          total: { $sum: "$amount" },
+          total: { $sum: { $ifNull: ["$baseAmount", "$amount"] } },
         },
       },
       { $sort: { total: -1 } },
     ]);
 
     res.json(data.map((d) => ({ category: d._id, total: d.total })));
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// GET recurring payments and upcoming alerts
+router.get("/recurring", authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    const reminderDays = user?.reminderPreferences?.reminderDaysBefore || 3;
+    const data = await detectRecurringPayments(req.user.id, reminderDays);
+    res.json(data);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

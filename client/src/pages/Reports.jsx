@@ -97,10 +97,10 @@ const Reports = () => {
   const filteredSummary = useMemo(() => {
     const income = filteredTransactions
       .filter((item) => item.type === "income")
-      .reduce((sum, item) => sum + item.amount, 0);
+      .reduce((sum, item) => sum + (item.baseAmount != null ? item.baseAmount : item.amount), 0);
     const expense = filteredTransactions
       .filter((item) => item.type === "expense")
-      .reduce((sum, item) => sum + item.amount, 0);
+      .reduce((sum, item) => sum + (item.baseAmount != null ? item.baseAmount : item.amount), 0);
 
     return {
       totalIncome: income,
@@ -114,7 +114,7 @@ const Reports = () => {
     const totalExpense = filteredSummary.totalExpense || 1;
     return categories.map((item, index) => ({
       name: item.category,
-      amount: formatCurrency(item.total),
+      amount: formatMoney(item.total),
       pct: Number(((item.total / totalExpense) * 100).toFixed(1)),
       color: CATEGORY_COLORS[index % CATEGORY_COLORS.length],
     }));
@@ -152,9 +152,9 @@ const Reports = () => {
         theme: "grid",
         head: [["Metric", "Value"]],
         body: [
-          ["Total Income", formatCurrency(filteredSummary.totalIncome)],
-          ["Total Expenses", formatCurrency(filteredSummary.totalExpense)],
-          ["Net Balance", formatCurrency(filteredSummary.balance)],
+          ["Total Income", formatMoney(filteredSummary.totalIncome)],
+          ["Total Expenses", formatMoney(filteredSummary.totalExpense)],
+          ["Net Balance", formatMoney(filteredSummary.balance)],
           ["Total Transactions", String(filteredSummary.totalTransactions)],
         ],
       });
@@ -179,7 +179,9 @@ const Reports = () => {
           new Date(txn.date).toLocaleDateString("en-IN"),
           txn.category,
           txn.type,
-          formatCurrency(txn.amount),
+          txn.currency && txn.currency !== "INR"
+            ? `${txn.currency} ${txn.amount.toFixed(2)} (≈ ₹${(txn.baseAmount != null ? txn.baseAmount : txn.amount).toFixed(2)})`
+            : formatMoney(txn.baseAmount != null ? txn.baseAmount : txn.amount),
           txn.note || txn.title || "-",
         ]);
 

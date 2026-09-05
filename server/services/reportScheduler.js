@@ -85,16 +85,111 @@ async function generateAndSendUserReport(userId, reportType = "Monthly", customD
   };
 }
 
-// Background Cron Scheduler (Runs every 1st day of month at midnight or on call)
+const PaymentAlert = require("../models/PaymentAlert");
+const { detectRecurringPayments } = require("./recurringDetector");
+const { sendUpcomingPaymentAlertEmail } = require("../utils/emailTemplates");
+
+// Checks for upcoming recurring payments and dispatches reminders with duplicate prevention
+async function checkAndSendUpcomingPaymentAlerts(targetUserId = null) {
+  try {
+    const userQuery = targetUserId
+      ? { _id: targetUserId }
+      : { "reminderPreferences.upcomingAlertsEmail": { $ne: false } };
+
+    const users = await User.find(userQuery);
+    const results = [];
+
+    for (const user of users) {
+      const reminderDays = user.reminderPreferences?.reminderDaysBefore || 3;
+      const { upcoming } = await detectRecurringPayments(user._id, reminderDays);
+
+      if (!upcoming || upcoming.length === 0) continue;
+
+      const alertsToSend = [];
+
+      for (const item of upcoming) {
+        const dueDateObj = new Date(item.nextExpectedDate);
+        const dueDateString = dueDateObj.toISOString().split("T")[0]; // YYYY-MM-DD
+
+        // Check if an alert was ALREADY sent for this recurring payment and due cycle
+        const existingAlert = await PaymentAlert.findOne({
+          user: user._id,
+          recurringKey: item.recurringKey,
+          dueDateString,
+        });
+
+        if (!existingAlert) {
+          alertsToSend.push({
+            ...item,
+            dueDateString,
+          });
+        }
+      }
+
+      if (alertsToSend.length > 0) {
+        // Dispatch email
+        const emailResult = await sendUpcomingPaymentAlertEmail(user.email, {
+          userName: user.name || "Trackify User",
+          alerts: alertsToSend,
+        });
+
+        // Persist records to prevent duplicate sends
+        for (const alert of alertsToSend) {
+          await PaymentAlert.create({
+            user: user._id,
+            recurringKey: alert.recurringKey,
+            title: alert.title,
+            amount: alert.typicalAmount,
+            currency: alert.currency,
+            dueDate: alert.nextExpectedDate,
+            dueDateString: alert.dueDateString,
+            channel: "email",
+          }).catch((err) => {
+            // In case of race condition unique index catch
+            console.warn("Duplicate PaymentAlert insert prevented:", err.message);
+          });
+        }
+
+        results.push({
+          user: user.email,
+          alertsSent: alertsToSend.length,
+          emailResult,
+        });
+      }
+    }
+
+    return results;
+  } catch (err) {
+    console.error("Error in checkAndSendUpcomingPaymentAlerts:", err.message);
+    return [];
+  }
+}
+
+// Background Cron Scheduler (Runs every 1st day of month for reports and daily for upcoming alerts)
 function initReportScheduler() {
-  console.log("📅 Auto-Report Scheduler Service Initialized ✅");
-  
-  // Set up periodic check interval (e.g. check daily if it's the 1st of the month)
+  console.log("📅 Auto-Report & Alert Scheduler Service Initialized ✅");
+
+  // Check upcoming payment alerts immediately on server start
+  setTimeout(() => {
+    checkAndSendUpcomingPaymentAlerts().catch((err) =>
+      console.error("Initial upcoming payment alert check failed:", err.message)
+    );
+  }, 5000);
+
+  // Set up periodic check interval (every 24 hours)
   const CHECK_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours
-  
+
   setInterval(async () => {
     const today = new Date();
-    // If today is 1st day of the month at midnight run
+
+    // 1. Run daily upcoming payment alerts check
+    try {
+      await checkAndSendUpcomingPaymentAlerts();
+    } catch (alertErr) {
+      console.error("Daily payment alerts check error:", alertErr.message);
+    }
+
+    // 2. If today is 1st day of the month, run monthly report dispatch
     if (today.getDate() === 1) {
       console.log("⏳ Running 1st of month automated email report dispatch...");
       try {
@@ -115,5 +210,7 @@ function initReportScheduler() {
 
 module.exports = {
   generateAndSendUserReport,
+  checkAndSendUpcomingPaymentAlerts,
   initReportScheduler,
 };
+

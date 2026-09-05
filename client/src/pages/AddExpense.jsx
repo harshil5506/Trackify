@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useCurrency } from "../context/CurrencyContext";
 import API from "../api/axios";
 import toast from "react-hot-toast";
 import { formatCurrency, toDateTimeLocalValue } from "../utils/finance";
@@ -29,20 +30,52 @@ const INCOME_CATEGORIES = [
   "Other",
 ];
 
+const MONTHS = [
+  { value: 1, name: "Jan (01)" },
+  { value: 2, name: "Feb (02)" },
+  { value: 3, name: "Mar (03)" },
+  { value: 4, name: "Apr (04)" },
+  { value: 5, name: "May (05)" },
+  { value: 6, name: "Jun (06)" },
+  { value: 7, name: "Jul (07)" },
+  { value: 8, name: "Aug (08)" },
+  { value: 9, name: "Sep (09)" },
+  { value: 10, name: "Oct (10)" },
+  { value: 11, name: "Nov (11)" },
+  { value: 12, name: "Dec (12)" },
+];
+
+const CURRENT_YEAR = new Date().getFullYear();
+const YEARS = Array.from({ length: 8 }, (_, i) => CURRENT_YEAR - i);
+
 const AddExpense = () => {
-  const { user, logout } = useAuth();
+  const {
+    currency: userCurrency,
+    currencies,
+    rates,
+    convertForeignToBase,
+    convertCurrency,
+    formatNativeAmount,
+  } = useCurrency();
   const navigate = useNavigate();
   const [activeMethod, setActiveMethod] = useState("text");
   const [type, setType] = useState("expense");
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     amount: "",
+    currency: userCurrency || "INR",
     category: "Food",
     paymentMethod: "Cash",
     dateTime: toDateTimeLocalValue(new Date()),
     description: "",
     merchant: "",
   });
+
+  useEffect(() => {
+    if (userCurrency && !form.currency) {
+      setForm((prev) => ({ ...prev, currency: userCurrency }));
+    }
+  }, [userCurrency]);
 
   const availableCategories =
     type === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
@@ -59,20 +92,73 @@ const AddExpense = () => {
     }));
   };
 
+  const handleDatePartChange = (part, value) => {
+    const current = new Date(form.dateTime || Date.now());
+    let y = current.getFullYear();
+    let m = current.getMonth(); // 0-indexed
+    let d = current.getDate();
+    let hours = current.getHours();
+    let minutes = current.getMinutes();
+
+    if (part === "year") y = Number(value);
+    if (part === "month") m = Number(value) - 1;
+    if (part === "day") d = Number(value);
+    if (part === "time") {
+      const parts = (value || "12:00").split(":");
+      hours = Number(parts[0]) || 0;
+      minutes = Number(parts[1]) || 0;
+    }
+
+    // Clamp day to max days in the selected month & year
+    const maxDays = new Date(y, m + 1, 0).getDate();
+    d = Math.min(d, maxDays);
+
+    const updatedDate = new Date(y, m, d, hours, minutes);
+    setForm((prev) => ({ ...prev, dateTime: toDateTimeLocalValue(updatedDate) }));
+  };
+
+  const dateObj = new Date(form.dateTime || Date.now());
+  const selectedDay = !Number.isNaN(dateObj.getTime()) ? dateObj.getDate() : new Date().getDate();
+  const selectedMonth = !Number.isNaN(dateObj.getTime()) ? dateObj.getMonth() + 1 : new Date().getMonth() + 1;
+  const selectedYear = !Number.isNaN(dateObj.getTime()) ? dateObj.getFullYear() : CURRENT_YEAR;
+  const padTwo = (n) => String(n).padStart(2, "0");
+  const selectedTime = !Number.isNaN(dateObj.getTime())
+    ? `${padTwo(dateObj.getHours())}:${padTwo(dateObj.getMinutes())}`
+    : "12:00";
+  const daysInCurrentMonth = new Date(selectedYear, selectedMonth, 0).getDate();
+  const daysArray = Array.from({ length: daysInCurrentMonth }, (_, i) => i + 1);
+
   const handleSubmit = async () => {
     if (!form.amount) return toast.error("Amount is required");
     const amount = Number(form.amount);
     if (!Number.isFinite(amount) || amount <= 0) {
       return toast.error("Amount must be greater than 0");
     }
+
+    if (!form.dateTime) return toast.error("Transaction date is required");
+    const parsedDate = new Date(form.dateTime);
+    if (Number.isNaN(parsedDate.getTime())) {
+      return toast.error("Please provide a valid transaction date");
+    }
+    if (parsedDate > new Date()) {
+      return toast.error("Transaction date cannot be in the future");
+    }
+
     setLoading(true);
     try {
+      const txnCurrency = form.currency || "INR";
+      const rate = rates[txnCurrency] || 1.0;
+      const baseAmount = Math.round(convertForeignToBase(amount, txnCurrency) * 100) / 100;
+
       await API.post("/api/expenses", {
         title: form.description || form.merchant || "Transaction",
         amount,
+        currency: txnCurrency,
+        exchangeRate: rate,
+        baseAmount,
         category: form.category,
         paymentMethod: form.paymentMethod,
-        date: new Date(form.dateTime).toISOString(),
+        date: parsedDate.toISOString(),
         note: form.description,
         merchant: form.merchant,
         type,
@@ -212,7 +298,7 @@ const AddExpense = () => {
             style={{ display: "flex", flexDirection: "column", gap: "20px" }}
           >
             <div style={s.field}>
-              <label style={s.label}>Amount *</label>
+              <label style={s.label}>Amount & Currency *</label>
               <div
                 style={{
                   display: "flex",
@@ -223,20 +309,29 @@ const AddExpense = () => {
                   overflow: "hidden",
                 }}
               >
-                <span
+                <select
+                  name="currency"
+                  value={form.currency || "INR"}
+                  onChange={handleChange}
                   style={{
-                    padding: "0 14px",
-                    fontSize: "0.9rem",
-                    color: "#6b7280",
+                    padding: "0 10px",
+                    fontSize: "0.88rem",
+                    fontWeight: "600",
+                    color: "#1a1a2e",
+                    border: "none",
                     borderRight: "1.5px solid #d1d5db",
                     height: "44px",
-                    display: "flex",
-                    alignItems: "center",
                     background: "#f3f4f6",
+                    outline: "none",
+                    cursor: "pointer",
                   }}
                 >
-                  ₹
-                </span>
+                  {currencies.map((c) => (
+                    <option key={c.code} value={c.code}>
+                      {c.flag} {c.code} ({c.symbol})
+                    </option>
+                  ))}
+                </select>
                 <input
                   type="number"
                   name="amount"
@@ -250,12 +345,67 @@ const AddExpense = () => {
                     background: "transparent",
                     flex: 1,
                     padding: "10px 14px",
-                    fontSize: "0.9rem",
+                    fontSize: "0.95rem",
+                    fontWeight: "600",
                     outline: "none",
                     color: "#000",
                   }}
                 />
               </div>
+              {(() => {
+                const num = Number(form.amount);
+                if (!Number.isFinite(num) || num <= 0) return null;
+                const txnCur = form.currency || "INR";
+                const prefCur = userCurrency || "INR";
+
+                if (txnCur !== prefCur) {
+                  const prefVal = convertCurrency(num, txnCur, prefCur);
+                  const baseVal = convertForeignToBase(num, txnCur);
+                  return (
+                    <p
+                      style={{
+                        fontSize: "0.78rem",
+                        color: "#4f46e5",
+                        fontWeight: "600",
+                        marginTop: "6px",
+                        background: "#eef2ff",
+                        padding: "5px 10px",
+                        borderRadius: "6px",
+                        display: "inline-block",
+                      }}
+                    >
+                      💱 Approx: {formatNativeAmount(prefVal, prefCur)}
+                      {prefCur !== "INR" && (
+                        <span style={{ color: "#6b7280", fontWeight: "500", marginLeft: "6px" }}>
+                          (Base: ≈ ₹{baseVal.toFixed(2)} INR)
+                        </span>
+                      )}
+                    </p>
+                  );
+                }
+
+                if (txnCur !== "INR") {
+                  const baseVal = convertForeignToBase(num, txnCur);
+                  return (
+                    <p
+                      style={{
+                        fontSize: "0.78rem",
+                        color: "#4f46e5",
+                        fontWeight: "600",
+                        marginTop: "6px",
+                        background: "#eef2ff",
+                        padding: "5px 10px",
+                        borderRadius: "6px",
+                        display: "inline-block",
+                      }}
+                    >
+                      💱 Base: ≈ ₹{baseVal.toFixed(2)} INR
+                    </p>
+                  );
+                }
+
+                return null;
+              })()}
             </div>
             <div
               style={{
@@ -305,26 +455,76 @@ const AddExpense = () => {
               }}
             >
               <div style={s.field}>
-                <label style={s.label}>Date & Time</label>
-                <input
-                  type="datetime-local"
-                  name="dateTime"
-                  value={form.dateTime}
-                  onChange={handleChange}
-                  style={s.input}
-                />
-                <span style={s.helperSmall}>
-                  Pick the exact moment this transaction happened.
-                </span>
+                <label style={s.label}>Date & Time (Day • Month • Year • Time)</label>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1.2fr 1.6fr 1.3fr 1.3fr",
+                    gap: "8px",
+                  }}
+                >
+                  {/* Day Picker */}
+                  <select
+                    value={selectedDay}
+                    onChange={(e) => handleDatePartChange("day", e.target.value)}
+                    style={{ ...s.select, padding: "10px 8px", fontSize: "0.86rem" }}
+                  >
+                    {daysArray.map((d) => (
+                      <option key={d} value={d}>
+                        Day {d}
+                      </option>
+                    ))}
+                  </select>
+
+                  {/* Month Picker */}
+                  <select
+                    value={selectedMonth}
+                    onChange={(e) => handleDatePartChange("month", e.target.value)}
+                    style={{ ...s.select, padding: "10px 8px", fontSize: "0.86rem" }}
+                  >
+                    {MONTHS.map((m) => (
+                      <option key={m.value} value={m.value}>
+                        {m.name}
+                      </option>
+                    ))}
+                  </select>
+
+                  {/* Year Picker */}
+                  <select
+                    value={selectedYear}
+                    onChange={(e) => handleDatePartChange("year", e.target.value)}
+                    style={{ ...s.select, padding: "10px 8px", fontSize: "0.86rem" }}
+                  >
+                    {YEARS.map((y) => (
+                      <option key={y} value={y}>
+                        {y}
+                      </option>
+                    ))}
+                  </select>
+
+                  {/* Time Picker */}
+                  <input
+                    type="time"
+                    value={selectedTime}
+                    onChange={(e) => handleDatePartChange("time", e.target.value)}
+                    style={{ ...s.input, padding: "8px 6px", fontSize: "0.86rem" }}
+                  />
+                </div>
               </div>
               <div style={s.field}>
                 <label style={s.label}>Recorded At</label>
                 <div style={s.readOnlyBox}>
                   <span style={{ fontSize: "0.92rem", color: "#475569" }}>
-                    {new Date(form.dateTime).toLocaleString("en-IN", {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                    })}
+                    {(() => {
+                      if (!form.dateTime) return "No date selected";
+                      const d = new Date(form.dateTime);
+                      return Number.isNaN(d.getTime())
+                        ? "Invalid date"
+                        : d.toLocaleString("en-IN", {
+                            dateStyle: "medium",
+                            timeStyle: "short",
+                          });
+                    })()}
                   </span>
                 </div>
               </div>

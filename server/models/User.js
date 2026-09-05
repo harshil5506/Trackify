@@ -22,6 +22,11 @@ const userSchema = new mongoose.Schema({
     annualEmail: { type: Boolean, default: true },
   },
 
+  reminderPreferences: {
+    upcomingAlertsEmail: { type: Boolean, default: true },
+    reminderDaysBefore: { type: Number, default: 3 },
+  },
+
   resetPasswordToken: {
     type: String,
   },

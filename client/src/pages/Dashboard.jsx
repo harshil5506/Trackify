@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useCurrency } from "../context/CurrencyContext";
+import CurrencyConverterCard from "../components/CurrencyConverterCard";
 import API from "../api/axios";
 import toast from "react-hot-toast";
 import { formatCurrency, getBalanceTone } from "../utils/finance";
@@ -31,6 +32,7 @@ const Dashboard = () => {
     netBalance: 0,
   });
   const [budgets, setBudgets] = useState([]);
+  const [recurringData, setRecurringData] = useState({ recurring: [], upcoming: [] });
 
   useEffect(() => {
     fetchDashboardData();
@@ -38,11 +40,12 @@ const Dashboard = () => {
 
   const fetchDashboardData = async () => {
     try {
-      const [expRes, anaRes, catRes, budRes] = await Promise.all([
+      const [expRes, anaRes, catRes, budRes, recRes] = await Promise.all([
         API.get("/api/expenses"),
         API.get("/api/analytics/summary"),
         API.get("/api/analytics/by-category"),
         API.get("/api/budget"),
+        API.get("/api/analytics/recurring").catch(() => ({ data: { recurring: [], upcoming: [] } })),
       ]);
 
       const list = Array.isArray(expRes.data) ? expRes.data : [];
@@ -56,6 +59,7 @@ const Dashboard = () => {
 
       setCategories(Array.isArray(catRes.data) ? catRes.data : []);
       setBudgets(Array.isArray(budRes.data) ? budRes.data : []);
+      setRecurringData(recRes.data || { recurring: [], upcoming: [] });
     } catch (err) {
       toast.error("Failed to load dashboard");
     }
@@ -137,6 +141,57 @@ const Dashboard = () => {
             Welcome back! Here's your financial overview
           </p>
         </div>
+
+        {/* 🔔 Upcoming Payment Alerts Banner */}
+        {recurringData.upcoming && recurringData.upcoming.length > 0 && (
+          <div
+            style={{
+              background: "linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)",
+              border: "1.5px solid #fde68a",
+              borderRadius: "14px",
+              padding: "16px 20px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: "14px",
+              boxShadow: "0 4px 12px rgba(245, 158, 11, 0.12)",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+              <div style={{ fontSize: "26px" }}>🔔</div>
+              <div>
+                <p style={{ fontWeight: "700", color: "#92400e", fontSize: "0.95rem", margin: 0 }}>
+                  Upcoming Payment Alert ({recurringData.upcoming.length})
+                </p>
+                <p style={{ fontSize: "0.82rem", color: "#b45309", margin: "4px 0 0" }}>
+                  {recurringData.upcoming
+                    .map(
+                      (u) =>
+                        `${u.title} (${u.currency} ${u.typicalAmount.toFixed(2)} due in ${
+                          u.daysUntilDue === 0 ? "today" : u.daysUntilDue + "d"
+                        })`
+                    )
+                    .join(" • ")}
+                </p>
+              </div>
+            </div>
+            <Link
+              to="/transactions"
+              style={{
+                background: "#d97706",
+                color: "white",
+                padding: "8px 16px",
+                borderRadius: "8px",
+                textDecoration: "none",
+                fontSize: "0.82rem",
+                fontWeight: "600",
+                flexShrink: 0,
+              }}
+            >
+              View Details
+            </Link>
+          </div>
+        )}
 
         {/* Primary Stats */}
         <div style={s.dashStats}>
@@ -254,7 +309,7 @@ const Dashboard = () => {
                     borderRadius: "8px",
                     color: "white",
                   }}
-                  formatter={(value) => formatCurrency(value)}
+                  formatter={(value) => formatMoney(value)}
                 />
                 <Legend />
                 <Bar dataKey="income" fill="#10b981" radius={[8, 8, 0, 0]} />
@@ -288,7 +343,7 @@ const Dashboard = () => {
                     ))}
                   </Pie>
                   <Tooltip
-                    formatter={(value) => formatCurrency(value)}
+                    formatter={(value) => formatMoney(value)}
                     contentStyle={{
                       background: "#1a2ea8",
                       border: "none",
@@ -305,6 +360,147 @@ const Dashboard = () => {
             )}
           </div>
         </div>
+
+        {/* 🔁 Recurring Subscriptions & Regular Bills Section */}
+        {recurringData.recurring && recurringData.recurring.length > 0 && (
+          <div style={s.dashCard}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: "16px",
+              }}
+            >
+              <div>
+                <h3 style={s.dashCardTitle}>🔁 Detected Subscriptions & Recurring Bills</h3>
+                <p style={{ fontSize: "0.78rem", color: "#666", margin: "3px 0 0" }}>
+                  Automatically recognized from your historical expense cadence
+                </p>
+              </div>
+              <span
+                style={{
+                  fontSize: "0.78rem",
+                  fontWeight: "700",
+                  color: "#4338ca",
+                  background: "#e0e7ff",
+                  padding: "4px 12px",
+                  borderRadius: "12px",
+                }}
+              >
+                {recurringData.recurring.length} Active Subscriptions
+              </span>
+            </div>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                gap: "14px",
+              }}
+            >
+              {recurringData.recurring.map((rec) => {
+                const nextDateStr = new Date(rec.nextExpectedDate).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                });
+                return (
+                  <div
+                    key={rec.recurringKey}
+                    style={{
+                      background: "#f8fafc",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "12px",
+                      padding: "14px 16px",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "8px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
+                      }}
+                    >
+                      <div>
+                        <p
+                          style={{
+                            fontWeight: "700",
+                            color: "#1e293b",
+                            fontSize: "0.92rem",
+                            margin: 0,
+                          }}
+                        >
+                          {rec.title}
+                        </p>
+                        <p
+                          style={{
+                            fontSize: "0.74rem",
+                            color: "#64748b",
+                            margin: "2px 0 0",
+                          }}
+                        >
+                          {rec.category} • {rec.frequency}
+                        </p>
+                      </div>
+                      <span
+                        style={{
+                          fontSize: "0.68rem",
+                          fontWeight: "700",
+                          color: "#047857",
+                          background: "#d1fae5",
+                          padding: "2px 6px",
+                          borderRadius: "4px",
+                        }}
+                      >
+                        {Math.round(rec.confidence * 100)}% Match
+                      </span>
+                    </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "flex-end",
+                        marginTop: "4px",
+                      }}
+                    >
+                      <div>
+                        <p style={{ fontSize: "0.7rem", color: "#94a3b8", margin: 0 }}>
+                          Next Payment
+                        </p>
+                        <p
+                          style={{
+                            fontSize: "0.82rem",
+                            fontWeight: "600",
+                            color: "#334155",
+                            margin: "2px 0 0",
+                          }}
+                        >
+                          📅 {nextDateStr} ({rec.daysUntilDue === 0 ? "today" : rec.daysUntilDue + "d"})
+                        </p>
+                      </div>
+                      <p
+                        style={{
+                          fontFamily: "'Sora',sans-serif",
+                          fontWeight: "700",
+                          color: "#dc2626",
+                          fontSize: "0.95rem",
+                          margin: 0,
+                        }}
+                      >
+                        {rec.currency} {rec.typicalAmount.toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* 💱 Live Interactive Currency Converter */}
+        <CurrencyConverterCard />
 
         {/* Add Transaction */}
         <div style={s.dashCard}>

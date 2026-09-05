@@ -63,6 +63,14 @@ router.put("/profile", async (req, res) => {
       };
     }
 
+    if (req.body.reminderPreferences && typeof req.body.reminderPreferences === "object") {
+      const rp = req.body.reminderPreferences;
+      user.reminderPreferences = {
+        upcomingAlertsEmail: rp.upcomingAlertsEmail !== undefined ? Boolean(rp.upcomingAlertsEmail) : (user.reminderPreferences?.upcomingAlertsEmail ?? true),
+        reminderDaysBefore: Number(rp.reminderDaysBefore) > 0 ? Number(rp.reminderDaysBefore) : (user.reminderPreferences?.reminderDaysBefore ?? 3),
+      };
+    }
+
     await user.save();
 
     const profile = await User.findById(req.user.id).select("-password");
@@ -86,6 +94,21 @@ router.post("/send-summary-report", async (req, res) => {
   } catch (err) {
     console.error("Error sending summary report:", err);
     res.status(500).json({ message: "Failed to send report email", error: err.message });
+  }
+});
+
+// Trigger Instant Upcoming Payment Alert Email Check for Logged in User
+router.post("/trigger-upcoming-alerts", async (req, res) => {
+  try {
+    const { checkAndSendUpcomingPaymentAlerts } = require("../services/reportScheduler");
+    const result = await checkAndSendUpcomingPaymentAlerts(req.user.id);
+    res.json({
+      message: "Upcoming payment alert check completed!",
+      result,
+    });
+  } catch (err) {
+    console.error("Error triggering upcoming alerts:", err);
+    res.status(500).json({ message: "Failed to process upcoming alerts", error: err.message });
   }
 });
 

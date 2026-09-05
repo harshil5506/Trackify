@@ -56,6 +56,29 @@ const expenseSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    merchant: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    paymentMethod: {
+      type: String,
+      trim: true,
+      default: "Cash",
+    },
+    currency: {
+      type: String,
+      trim: true,
+      uppercase: true,
+      default: "INR",
+    },
+    exchangeRate: {
+      type: Number,
+      default: 1.0,
+    },
+    baseAmount: {
+      type: Number,
+    },
   },
   { timestamps: true },
 );

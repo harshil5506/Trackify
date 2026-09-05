@@ -78,3 +78,79 @@ export function formatCurrencyAmount(amount = 0, targetCurrency = "INR", rates =
 
   return `${symbol}${formattedNum}`;
 }
+
+/**
+ * Convert foreign currency amount to base INR
+ * rates[currency] is units of foreign currency per 1 INR (e.g. 0.044 AED = 1 INR)
+ * So baseAmount (INR) = amount / rate
+ */
+export function convertForeignToBase(amount = 0, foreignCurrency = "INR", rates = cachedRates) {
+  const num = Number(amount) || 0;
+  if (foreignCurrency === "INR") return num;
+  const rate = rates[foreignCurrency] || FALLBACK_INR_RATES[foreignCurrency] || 1;
+  return rate > 0 ? num / rate : num;
+}
+
+/**
+ * Convert base INR amount to target display currency
+ */
+export function convertBaseToTarget(baseAmount = 0, targetCurrency = "INR", rates = cachedRates) {
+  const num = Number(baseAmount) || 0;
+  if (targetCurrency === "INR") return num;
+  const rate = rates[targetCurrency] || FALLBACK_INR_RATES[targetCurrency] || 1;
+  return num * rate;
+}
+
+/**
+ * Generic bidirectional and cross-currency conversion
+ * Converts between any two supported currencies using the INR hub architecture.
+ * Supports: INR <-> foreign, foreign <-> foreign, same currency -> same currency
+ */
+export function convertCurrency(
+  amount = 0,
+  fromCurrency = "INR",
+  toCurrency = "INR",
+  rates = cachedRates
+) {
+  const num = Number(amount);
+  if (!Number.isFinite(num) || num === 0) return 0;
+
+  const from = (fromCurrency || "INR").toUpperCase();
+  const to = (toCurrency || "INR").toUpperCase();
+
+  // Same currency -> same currency: return exact amount
+  if (from === to) return num;
+
+  const fromRate = rates[from] || FALLBACK_INR_RATES[from] || 1;
+  const toRate = rates[to] || FALLBACK_INR_RATES[to] || 1;
+
+  if (fromRate <= 0 || toRate <= 0) return num;
+
+  // Step 1: fromCurrency -> Base INR
+  const baseInr = from === "INR" ? num : num / fromRate;
+
+  // Step 2: Base INR -> toCurrency
+  const converted = to === "INR" ? baseInr : baseInr * toRate;
+
+  return Number.isFinite(converted) ? converted : 0;
+}
+
+/**
+ * Format an amount directly in its specified currency
+ * E.g. 456 AED -> "AED 456.00"
+ */
+export function formatNativeAmount(amount = 0, currencyCode = "INR") {
+  const num = Number(amount);
+  const code = (currencyCode || "INR").toUpperCase();
+  const symbol = getCurrencySymbol(code);
+  const decimals = code === "JPY" ? 0 : 2;
+  const safeNum = Number.isFinite(num) ? num : 0;
+  const formatted = safeNum.toLocaleString(undefined, {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  });
+  return `${symbol}${formatted}`;
+}
+
+export { cachedRates, FALLBACK_INR_RATES };
+

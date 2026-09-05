@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useCurrency } from "../context/CurrencyContext";
 import API from "../api/axios";
 import toast from "react-hot-toast";
 import { formatCurrency } from "../utils/finance";
@@ -24,6 +25,7 @@ const getCurrentMonth = () => {
 
 const Budget = () => {
   const { user, logout } = useAuth();
+  const { formatMoney } = useCurrency();
   const navigate = useNavigate();
   const [budgets, setBudgets] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -230,7 +232,7 @@ const Budget = () => {
                       : "white",
                 }}
               >
-                {formatCurrency(c.value)}
+                {formatMoney(c.value)}
               </p>
             </div>
           ))}
@@ -468,10 +470,10 @@ const Budget = () => {
                             color: "#1a1a2e",
                           }}
                         >
-                          {formatCurrency(b.spent || 0)} spent
+                          {formatMoney(b.spent || 0)} spent
                         </span>
                         <span style={{ fontSize: "0.82rem", color: "#666" }}>
-                          of {formatCurrency(b.limit)}
+                          of {formatMoney(b.limit)}
                         </span>
                         <span
                           style={{

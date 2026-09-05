@@ -5,6 +5,10 @@ import {
   fetchExchangeRates,
   formatCurrencyAmount,
   getCurrencySymbol,
+  convertForeignToBase,
+  convertBaseToTarget,
+  convertCurrency,
+  formatNativeAmount,
 } from "../utils/currency";
 
 const CurrencyContext = createContext();
@@ -36,8 +40,8 @@ export const CurrencyProvider = ({ children }) => {
     setCurrencyState(newCode);
   };
 
-  const formatMoney = (amount) => {
-    return formatCurrencyAmount(amount, currency, rates);
+  const formatMoney = (baseAmount) => {
+    return formatCurrencyAmount(baseAmount, currency, rates);
   };
 
   const activeSymbol = getCurrencySymbol(currency);
@@ -52,6 +56,13 @@ export const CurrencyProvider = ({ children }) => {
         rates,
         currencies: CURRENCIES,
         loadingRates: loading,
+        convertCurrency: (amount, fromCurrency, toCurrency) =>
+          convertCurrency(amount, fromCurrency, toCurrency, rates),
+        convertForeignToBase: (amount, foreignCurrency) =>
+          convertForeignToBase(amount, foreignCurrency, rates),
+        convertBaseToTarget: (baseAmount, targetCurrency) =>
+          convertBaseToTarget(baseAmount, targetCurrency || currency, rates),
+        formatNativeAmount,
       }}
     >
       {children}
@@ -69,7 +80,14 @@ export const useCurrency = () => {
       formatMoney: (val) => `₹${Number(val || 0).toFixed(2)}`,
       changeCurrency: () => {},
       currencies: CURRENCIES,
+      rates: {},
+      convertCurrency: (val) => Number(val || 0),
+      convertForeignToBase: (val) => Number(val || 0),
+      convertBaseToTarget: (val) => Number(val || 0),
+      formatNativeAmount: (val, cur = "INR") => `${cur} ${Number(val || 0).toFixed(2)}`,
     };
   }
   return context;
 };
+
+

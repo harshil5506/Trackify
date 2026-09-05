@@ -31,7 +31,12 @@ const Profile = () => {
       monthlyEmail: true,
       annualEmail: true,
     },
+    reminderPreferences: {
+      upcomingAlertsEmail: true,
+      reminderDaysBefore: 3,
+    },
   });
+  const [testingAlert, setTestingAlert] = useState(false);
 
   useEffect(() => {
     fetchProfile();
@@ -45,6 +50,7 @@ const Profile = () => {
         ...prev,
         ...data,
         reportPreferences: data.reportPreferences || { monthlyEmail: true, annualEmail: true },
+        reminderPreferences: data.reminderPreferences || { upcomingAlertsEmail: true, reminderDaysBefore: 3 },
       }));
       if (data.currency) {
         changeCurrency(data.currency);
@@ -97,6 +103,18 @@ const Profile = () => {
       toast.error("Failed to update profile");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleTestAlert = async () => {
+    setTestingAlert(true);
+    try {
+      const { data } = await API.post("/api/user/trigger-upcoming-alerts");
+      toast.success(data.message || "Upcoming payment alerts checked and processed! 🔔");
+    } catch (err) {
+      toast.error("Failed to trigger alert check");
+    } finally {
+      setTestingAlert(false);
     }
   };
 
@@ -485,10 +503,17 @@ const Profile = () => {
                 s: setTwoFA,
               },
               {
-                l: "Email Notifications",
-                d: "Transaction alerts via email",
-                v: emailNotif,
-                s: setEmailNotif,
+                l: "Upcoming Payment Email Alerts",
+                d: "Send email reminders for recurring bills due soon",
+                v: form.reminderPreferences?.upcomingAlertsEmail ?? true,
+                s: (val) =>
+                  setForm((f) => ({
+                    ...f,
+                    reminderPreferences: {
+                      ...f.reminderPreferences,
+                      upcomingAlertsEmail: val,
+                    },
+                  })),
               },
             ].map((item) => (
               <div
@@ -544,6 +569,73 @@ const Profile = () => {
                 </div>
               </div>
             ))}
+
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "12px 0",
+                borderBottom: "1px solid #e4e8f0",
+              }}
+            >
+              <div>
+                <p style={{ fontSize: "0.88rem", fontWeight: "600", color: "#1a1a2e", marginBottom: "2px" }}>
+                  Alert Window
+                </p>
+                <p style={{ fontSize: "0.78rem", color: "#666" }}>Days before due date to alert</p>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <input
+                  type="number"
+                  min="1"
+                  max="14"
+                  value={form.reminderPreferences?.reminderDaysBefore ?? 3}
+                  onChange={(e) =>
+                    setForm((f) => ({
+                      ...f,
+                      reminderPreferences: {
+                        ...f.reminderPreferences,
+                        reminderDaysBefore: Math.max(1, Number(e.target.value)),
+                      },
+                    }))
+                  }
+                  style={{
+                    width: "54px",
+                    padding: "6px 8px",
+                    border: "1.5px solid #d1d5db",
+                    borderRadius: "6px",
+                    fontSize: "0.88rem",
+                    textAlign: "center",
+                    fontWeight: "600",
+                  }}
+                />
+                <span style={{ fontSize: "0.82rem", color: "#666" }}>days</span>
+              </div>
+            </div>
+
+            <button
+              onClick={handleTestAlert}
+              disabled={testingAlert}
+              style={{
+                width: "100%",
+                marginTop: "12px",
+                padding: "10px",
+                borderRadius: "8px",
+                border: "1px solid #fde68a",
+                background: "#fef3c7",
+                color: "#92400e",
+                fontSize: "0.85rem",
+                fontWeight: "600",
+                cursor: testingAlert ? "not-allowed" : "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "8px",
+              }}
+            >
+              {testingAlert ? "⏳ Checking Alerts..." : "🔔 Test Upcoming Payment Alert Email"}
+            </button>
             <div
               style={{
                 display: "flex",
