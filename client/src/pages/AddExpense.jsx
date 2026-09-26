@@ -1,9 +1,11 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import API from "../api/axios";
 import toast from "react-hot-toast";
 import { formatCurrency, toDateTimeLocalValue } from "../utils/finance";
+import { BillScannerModal } from "../components/BillScanner/BillScannerModal";
+import { VoiceEntryModal } from "../components/VoiceExpenseEntry/VoiceEntryModal";
 
 const EXPENSE_CATEGORIES = [
   "Food",
@@ -32,7 +34,10 @@ const INCOME_CATEGORIES = [
 const AddExpense = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [activeMethod, setActiveMethod] = useState("text");
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [isVoiceOpen, setIsVoiceOpen] = useState(false);
   const [type, setType] = useState("expense");
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
@@ -43,6 +48,17 @@ const AddExpense = () => {
     description: "",
     merchant: "",
   });
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    if (searchParams.get("scan") === "true" || location.state?.scan === true) {
+      setActiveMethod("scan");
+      setIsScannerOpen(true);
+    } else if (searchParams.get("voice") === "true" || location.state?.voice === true) {
+      setActiveMethod("voice");
+      setIsVoiceOpen(true);
+    }
+  }, [location]);
 
   const availableCategories =
     type === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
@@ -81,6 +97,48 @@ const AddExpense = () => {
       navigate("/dashboard");
     } catch (err) {
       toast.error("Failed to add transaction");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleScanConfirm = async (scannedData) => {
+    setLoading(true);
+    try {
+      await API.post("/api/expenses", {
+        title: scannedData.title || scannedData.merchant || "Scanned Receipt",
+        amount: Number(scannedData.amount),
+        category: scannedData.category || "Bills & Utilities",
+        paymentMethod: scannedData.paymentMethod || "Cash",
+        date: scannedData.date ? new Date(scannedData.date).toISOString() : new Date().toISOString(),
+        note: scannedData.note || "",
+        type: "expense",
+      });
+      toast.success("Scanned bill saved successfully!");
+      navigate("/dashboard");
+    } catch (err) {
+      toast.error("Failed to save scanned transaction");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVoiceConfirm = async (voiceData) => {
+    setLoading(true);
+    try {
+      await API.post("/api/expenses", {
+        title: voiceData.title || voiceData.merchant || "Voice Expense",
+        amount: Number(voiceData.amount),
+        category: voiceData.category || "Other",
+        paymentMethod: voiceData.paymentMethod || "Cash",
+        date: voiceData.date ? new Date(voiceData.date).toISOString() : new Date().toISOString(),
+        note: voiceData.note || "",
+        type: "expense",
+      });
+      toast.success("Voice expense saved successfully!");
+      navigate("/dashboard");
+    } catch (err) {
+      toast.error("Failed to save voice transaction");
     } finally {
       setLoading(false);
     }
@@ -152,7 +210,14 @@ const AddExpense = () => {
             ].map((m) => (
               <div
                 key={m.key}
-                onClick={() => setActiveMethod(m.key)}
+                onClick={() => {
+                  setActiveMethod(m.key);
+                  if (m.key === "scan") {
+                    setIsScannerOpen(true);
+                  } else if (m.key === "voice") {
+                    setIsVoiceOpen(true);
+                  }
+                }}
                 style={{
                   borderRadius: "12px",
                   padding: "30px 20px",
@@ -442,6 +507,16 @@ const AddExpense = () => {
           </div>
         </div>
       </main>
+      <BillScannerModal
+        isOpen={isScannerOpen}
+        onClose={() => setIsScannerOpen(false)}
+        onConfirmSave={handleScanConfirm}
+      />
+      <VoiceEntryModal
+        isOpen={isVoiceOpen}
+        onClose={() => setIsVoiceOpen(false)}
+        onConfirmSave={handleVoiceConfirm}
+      />
     </div>
   );
 };
