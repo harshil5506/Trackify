@@ -28,12 +28,15 @@ async function seed() {
     // Create password hash
     const hashedPassword = await bcrypt.hash("Password123!", 10);
 
+    const hashedPin = await bcrypt.hash("1234", 10);
+
     // Create Users
     console.log("Creating users...");
     const userHarshil = await User.create({
       name: "Harshil Thakkar",
       email: "harshil123@gmail.com",
       password: hashedPassword,
+      pin: hashedPin,
       currency: "INR",
       language: "English",
       timezone: "IST (UTC+5:30)",
@@ -276,6 +279,7 @@ async function seed() {
     console.log("You can log in with: ");
     console.log("  Email:    harshil123@gmail.com");
     console.log("  Password: Password123!");
+    console.log("  PIN:      1234");
     console.log("==========================================");
 
   } catch (error) {
