@@ -145,9 +145,21 @@ client/.vite/
 **/.gradle/
 *.apk
 *.aab
+local.properties
+**/local.properties
+*.jks
+*.keystore
+.cxx/
+*.iml
+.idea/
 
 # Office lock files
 ~$*
 
 # Tesseract trained data cache
 *.traineddata
+
+# OS files
+.DS_Store
+Thumbs.db
+
