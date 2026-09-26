@@ -138,3 +138,16 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 client/.vite/
+
+# Android & Gradle
+.gradle/
+**/build/
+**/.gradle/
+*.apk
+*.aab
+
+# Office lock files
+~$*
+
+# Tesseract trained data cache
+*.traineddata
