@@ -68,9 +68,11 @@ router.get("/list", authMiddleware, async (req, res) => {
       .populate("sender", "name email")
       .populate("receiver", "name email");
 
-    const list = friends.map((f) =>
-      f.sender._id.toString() === req.user.id ? f.receiver : f.sender,
-    );
+    const list = friends
+      .filter((f) => f.sender && f.receiver)
+      .map((f) =>
+        f.sender._id.toString() === req.user.id.toString() ? f.receiver : f.sender,
+      );
 
     res.json(list);
   } catch (err) {
@@ -86,7 +88,8 @@ router.get("/pending", authMiddleware, async (req, res) => {
       status: "pending",
     }).populate("sender", "name email");
 
-    res.json(pending);
+    const validPending = pending.filter((p) => p.sender != null);
+    res.json(validPending);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -95,7 +98,17 @@ router.get("/pending", authMiddleware, async (req, res) => {
 // DELETE — Remove friend
 router.delete("/:id", authMiddleware, async (req, res) => {
   try {
-    await Friend.findByIdAndDelete(req.params.id);
+    const targetId = req.params.id;
+    const deleted = await Friend.findOneAndDelete({
+      $or: [
+        { _id: targetId, $or: [{ sender: req.user.id }, { receiver: req.user.id }] },
+        { sender: req.user.id, receiver: targetId },
+        { sender: targetId, receiver: req.user.id },
+      ],
+    });
+    if (!deleted) {
+      return res.status(404).json({ message: "Friend relationship not found" });
+    }
     res.json({ message: "Friend removed" });
   } catch (err) {
     res.status(500).json({ message: err.message });

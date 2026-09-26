@@ -37,10 +37,6 @@ const Budget = () => {
     month: getCurrentMonth(),
   });
 
-  useEffect(() => {
-    fetchBudgets(selectedMonth);
-  }, [selectedMonth]);
-
   const fetchBudgets = async (monthValue = selectedMonth) => {
     setLoading(true);
     try {
@@ -54,6 +50,10 @@ const Budget = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchBudgets(selectedMonth);
+  }, [selectedMonth]);
 
   const handleSubmit = async () => {
     const numericLimit = Number(form.limit);

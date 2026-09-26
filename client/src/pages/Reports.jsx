@@ -1,10 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import API from "../api/axios";
 import toast from "react-hot-toast";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 import { formatCurrency, getBalanceTone } from "../utils/finance";
 
 import { downloadCSV, escapeCSVField } from "../utils/csvExport";
@@ -44,8 +42,7 @@ const filterByRange = (list, range) => {
 };
 
 const Reports = () => {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
+  const { user } = useAuth();
   const [reportType, setReportType] = useState("Monthly");
   const [dateRange, setDateRange] = useState("Last 30 Days");
   const [exportFormat, setExportFormat] = useState("PDF");
@@ -59,10 +56,6 @@ const Reports = () => {
   });
   const [categories, setCategories] = useState([]);
   const [transactions, setTransactions] = useState([]);
-
-  useEffect(() => {
-    fetchReportData();
-  }, []);
 
   const fetchReportData = async () => {
     setLoading(true);
@@ -87,6 +80,10 @@ const Reports = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchReportData();
+  }, []);
 
   const filteredTransactions = useMemo(
     () => filterByRange(transactions, dateRange),
@@ -209,6 +206,8 @@ const Reports = () => {
         URL.revokeObjectURL(url);
         toast.success("JSON report exported successfully!");
       } else {
+        const { default: jsPDF } = await import("jspdf");
+        const { default: autoTable } = await import("jspdf-autotable");
         const doc = new jsPDF({ unit: "pt", format: "a4" });
         doc.setFontSize(18);
         doc.text("Trackify Financial Report", 40, 48);

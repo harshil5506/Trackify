@@ -1,7 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import toast from "react-hot-toast";
+import { Link } from "react-router-dom";
 
 const visionItems = [
   {
@@ -45,8 +43,6 @@ const missionItems = [
 ];
 
 const Vision = () => {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("vision");
   const isVision = activeTab === "vision";
   const items = isVision ? visionItems : missionItems;

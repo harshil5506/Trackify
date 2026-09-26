@@ -29,10 +29,6 @@ const Profile = () => {
     timezone: "IST (UTC+5:30)",
   });
 
-  useEffect(() => {
-    fetchProfile();
-  }, []);
-
   const fetchProfile = async () => {
     setProfileLoading(true);
     try {
@@ -57,6 +53,10 @@ const Profile = () => {
       setProfileLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -312,6 +312,12 @@ const Profile = () => {
             </div>
           </div>
         </div>
+
+        {/* 🔥 Activity Heatmap Section */}
+        <div style={{ marginBottom: "24px" }}>
+          <ActivityHeatmap />
+        </div>
+
         <div
           style={{
             display: "grid",
@@ -830,7 +836,6 @@ const Profile = () => {
                   padding: "9px 20px",
                   borderRadius: "8px",
                   textDecoration: "none",
-                  fontSize: "0.85rem",
                   fontWeight: "600",
                   display: "inline-block",
                 }}
@@ -839,11 +844,6 @@ const Profile = () => {
               </Link>
             </div>
           )}
-        </div>
-
-        {/* 🔥 Activity Heatmap Section */}
-        <div style={{ marginTop: "24px" }}>
-          <ActivityHeatmap />
         </div>
       </div>
     </div>

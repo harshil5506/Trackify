@@ -17,10 +17,7 @@ const Activity = () => {
     budgetUsed: 2455,
     budgetTotal: 5000,
   });
-
-  useEffect(() => {
-    fetchActivity();
-  }, []);
+  const [loading, setLoading] = useState(true);
 
   const fetchActivity = async () => {
     try {
@@ -49,11 +46,20 @@ const Activity = () => {
           totalExpense: anaRes.data.totalExpense || 0,
           balance: anaRes.data.balance ?? anaRes.data.netBalance ?? 0,
           budgetUsed: anaRes.data.totalExpense || 0,
-          budgetTotal: 5000,
+          budgetTotal:
+            (anaRes.data.totalExpense || 0) + (anaRes.data.balance || 0),
         });
       }
-    } catch (err) {}
+    } catch (err) {
+      toast.error("Failed to load activity");
+    } finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(() => {
+    fetchActivity();
+  }, []);
 
   const budgetPct = Math.round((stats.budgetUsed / stats.budgetTotal) * 100);
 

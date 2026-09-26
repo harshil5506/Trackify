@@ -114,10 +114,6 @@ const Quiz = () => {
   const [saving, setSaving] = useState(false);
   const [loadingExisting, setLoadingExisting] = useState(true);
 
-  useEffect(() => {
-    fetchExistingResult();
-  }, []);
-
   const fetchExistingResult = async () => {
     try {
       const { data } = await API.get("/api/user/quiz-result");
@@ -129,12 +125,16 @@ const Quiz = () => {
           completedAt: data.completedAt,
         });
       }
-    } catch (err) {
+    } catch {
       console.log("No previous quiz result found");
     } finally {
       setLoadingExisting(false);
     }
   };
+
+  useEffect(() => {
+    fetchExistingResult();
+  }, []);
 
   const handleSelectOption = (option) => {
     const updatedAnswers = { ...answers, [currentStep]: option };

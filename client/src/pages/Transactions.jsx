@@ -24,10 +24,6 @@ const Transactions = () => {
   const [editForm, setEditForm] = useState({});
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    fetchTransactions();
-  }, []);
-
   const fetchTransactions = async () => {
     try {
       const { data } = await API.get("/api/expenses");
@@ -52,6 +48,10 @@ const Transactions = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchTransactions();
+  }, []);
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this transaction?")) return;
@@ -128,15 +128,18 @@ const Transactions = () => {
 
   const sorted = [...transactions]
     .filter((t) => {
+      if (!t) return false;
       if (filterType !== "all" && t.type !== filterType) return false;
       if (filterCategory !== "all" && t.category !== filterCategory)
         return false;
       return true;
     })
     .sort((a, b) => {
-      if (sortBy === "date") return new Date(b.date) - new Date(a.date);
-      if (sortBy === "amount") return b.amount - a.amount;
-      return (a.note || "").localeCompare(b.note || "");
+      if (sortBy === "date") return new Date(b.date || 0) - new Date(a.date || 0);
+      if (sortBy === "amount") return Number(b.amount || 0) - Number(a.amount || 0);
+      const strA = String(a.merchant || a.title || a.note || a.category || "");
+      const strB = String(b.merchant || b.title || b.note || b.category || "");
+      return strA.localeCompare(strB);
     });
 
   const catIcons = {
@@ -306,11 +309,13 @@ const Transactions = () => {
                 }}
                 style={{
                   border: "none",
-                  background: "darkblue",
+                  background: "white",
+                  color: "#1a1a2e",
                   padding: "12px 20px",
                   textAlign: "left",
                   cursor: "pointer",
                   fontSize: "0.9rem",
+                  fontWeight: "600",
                   borderBottom: "1px solid #e2e6f0",
                 }}
               >
@@ -323,11 +328,13 @@ const Transactions = () => {
                 }}
                 style={{
                   border: "none",
-                  background: "darkblue",
+                  background: "white",
+                  color: "#1a1a2e",
                   padding: "12px 20px",
                   textAlign: "left",
                   cursor: "pointer",
                   fontSize: "0.9rem",
+                  fontWeight: "600",
                 }}
               >
                 📄 PDF Export
@@ -673,7 +680,7 @@ const Transactions = () => {
                       }}
                     >
                       {txn.type === "income" ? "+" : "-"}₹
-                      {txn.amount.toFixed(2)}
+                      {Number(txn.amount || 0).toFixed(2)}
                     </p>
                     <p
                       style={{

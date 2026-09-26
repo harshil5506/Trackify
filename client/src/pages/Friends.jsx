@@ -20,15 +20,6 @@ const Friends = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const messagesEndRef = useRef(null);
 
-  useEffect(() => {
-    fetchAll();
-  }, []);
-
-  // Auto scroll to bottom of messages
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [conversation]);
-
   const fetchAll = async () => {
     try {
       const [friendsRes, pendingRes, unreadRes] = await Promise.all([
@@ -45,6 +36,15 @@ const Friends = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchAll();
+  }, []);
+
+  // Auto scroll to bottom of messages
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [conversation]);
 
   const openChat = async (friend) => {
     setMessageModal(friend);

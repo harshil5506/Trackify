@@ -1,11 +1,9 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
 import API from "../api/axios";
 import toast from "react-hot-toast";
 
 const Groups = () => {
-  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [showForm, setShowForm] = useState(false);
   const [groups, setGroups] = useState([]);
@@ -17,11 +15,6 @@ const Groups = () => {
     memberEmails: "",
   });
 
-  // ✅ Fetch groups from backend on load
-  useEffect(() => {
-    fetchGroups();
-  }, []);
-
   const fetchGroups = async () => {
     try {
       const { data } = await API.get("/api/groups");
@@ -32,6 +25,11 @@ const Groups = () => {
       setLoading(false);
     }
   };
+
+  // ✅ Fetch groups from backend on load
+  useEffect(() => {
+    fetchGroups();
+  }, []);
 
   // ✅ Actually create group via API
   const handleCreate = async () => {

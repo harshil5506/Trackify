@@ -1,9 +1,7 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { Link } from "react-router-dom";
 import API from "../api/axios";
 import toast from "react-hot-toast";
-import { formatCurrency } from "../utils/finance";
 import { downloadCSV, formatToCSV } from "../utils/csvExport";
 
 const INCOME_CATEGORIES = [
@@ -19,8 +17,6 @@ const INCOME_CATEGORIES = [
 ];
 
 const Income = () => {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
   const [incomes, setIncomes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -31,20 +27,21 @@ const Income = () => {
     date: new Date().toISOString().split("T")[0],
   });
 
-  useEffect(() => {
-    fetchIncomes();
-  }, []);
-
   const fetchIncomes = async () => {
     try {
       const { data } = await API.get("/api/expenses?type=income");
       const list = Array.isArray(data) ? data : (data.expenses || []);
       setIncomes(list);
-    } catch (err) {
+    } catch {
+      toast.error("Failed to load income records");
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchIncomes();
+  }, []);
 
   const handleSubmit = async () => {
     if (!form.amount) return toast.error("Amount is required");

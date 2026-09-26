@@ -29,18 +29,16 @@ const Dashboard = () => {
     netBalance: 0,
   });
   const [budgets, setBudgets] = useState([]);
-
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
+  const [monthlyData, setMonthlyData] = useState([]);
 
   const fetchDashboardData = async () => {
     try {
-      const [expRes, anaRes, catRes, budRes] = await Promise.all([
+      const [expRes, anaRes, catRes, budRes, monRes] = await Promise.all([
         API.get("/api/expenses"),
         API.get("/api/analytics/summary"),
         API.get("/api/analytics/by-category"),
         API.get("/api/budget"),
+        API.get("/api/analytics/monthly"),
       ]);
 
       const list = Array.isArray(expRes.data) ? expRes.data : [];
@@ -54,10 +52,15 @@ const Dashboard = () => {
 
       setCategories(Array.isArray(catRes.data) ? catRes.data : []);
       setBudgets(Array.isArray(budRes.data) ? budRes.data : []);
+      setMonthlyData(Array.isArray(monRes.data) ? monRes.data : []);
     } catch (err) {
       toast.error("Failed to load dashboard");
     }
   };
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
 
   const handleDelete = async (id) => {
     try {
@@ -93,31 +96,6 @@ const Dashboard = () => {
       ).toFixed(1)
     : 0;
 
-  // Chart data
-  const monthlyData = [];
-  for (let i = 5; i >= 0; i--) {
-    const d = new Date();
-    d.setMonth(d.getMonth() - i);
-    const month = d.toLocaleDateString("en-IN", { month: "short" });
-    const income = transactions
-      .filter(
-        (t) =>
-          t.type === "income" &&
-          new Date(t.date).getMonth() === d.getMonth() &&
-          new Date(t.date).getFullYear() === d.getFullYear(),
-      )
-      .reduce((s, t) => s + t.amount, 0);
-    const expense = transactions
-      .filter(
-        (t) =>
-          t.type === "expense" &&
-          new Date(t.date).getMonth() === d.getMonth() &&
-          new Date(t.date).getFullYear() === d.getFullYear(),
-      )
-      .reduce((s, t) => s + t.amount, 0);
-    monthlyData.push({ month, income, expense });
-  }
-
   const categoryChartData = categories.slice(0, 5).map((c) => ({
     name: c.category,
     value: c.total,
@@ -142,7 +120,7 @@ const Dashboard = () => {
             {
               label: "Total Income",
               value: stats.totalIncome,
-              bg: "linear-gradient(135deg,#1a2ea8,#2d47c9)",
+              bg: "linear-gradient(135deg,#10b981,#059669)",
               icon: "📈",
             },
             {
@@ -154,12 +132,11 @@ const Dashboard = () => {
             {
               label: "Net Balance",
               value: stats.netBalance,
-              bg: "linear-gradient(135deg,#10b981,#14b8a6)",
+              bg: "linear-gradient(135deg,#1a2ea8,#2d47c9)",
               icon: "👛",
               isBalance: true,
             },
           ].map((c) => {
-            const balanceTone = c.isBalance ? getBalanceTone(c.value) : null;
             return (
               <div key={c.label} style={{ ...s.statCard, background: c.bg }}>
                 <div style={s.statIcon}>{c.icon}</div>
@@ -168,7 +145,7 @@ const Dashboard = () => {
                   <p
                     style={{
                       ...s.statAmount,
-                      color: c.isBalance ? balanceTone.color : "white",
+                      color: c.isBalance && c.value < 0 ? "#fca5a5" : "white",
                     }}
                   >
                     {formatCurrency(c.value)}
@@ -317,6 +294,7 @@ const Dashboard = () => {
                 sub: "Speak to add",
                 lc: "#1a2ea8",
                 sc: "#4a6cf7",
+                to: "/add-expense?voice=true",
               },
               {
                 bg: "#d6f5e8",
@@ -326,6 +304,7 @@ const Dashboard = () => {
                 sub: "Type details",
                 lc: "#0d7a68",
                 sc: "#0d9488",
+                to: "/add-expense",
               },
               {
                 bg: "#fdf3d0",
@@ -335,11 +314,12 @@ const Dashboard = () => {
                 sub: "Upload receipt",
                 lc: "#7c3000",
                 sc: "#b45309",
+                to: "/add-expense?scan=true",
               },
             ].map((m) => (
               <Link
                 key={m.label}
-                to="/add-expense"
+                to={m.to || "/add-expense"}
                 style={{
                   ...s.inputMethod,
                   background: m.bg,

@@ -32,7 +32,7 @@ router.get("/", authMiddleware, async (req, res) => {
 // POST add new expense/income
 router.post("/", authMiddleware, async (req, res) => {
   try {
-    const { title, amount, category, type, date, note } = req.body;
+    const { title, amount, category, type, date, note, paymentMethod, merchant } = req.body;
     const normalizedAmount = Number(amount);
 
     if (!Number.isFinite(normalizedAmount) || normalizedAmount <= 0) {
@@ -41,19 +41,23 @@ router.post("/", authMiddleware, async (req, res) => {
 
     const expense = await Expense.create({
       user: req.user.id,
-      title,
+      title: title || note || merchant || category || "Transaction",
       amount: normalizedAmount,
-      category,
-      type,
-      date,
-      note,
+      category: category || "Other",
+      type: type || "expense",
+      date: date || new Date(),
+      note: note || "",
+      paymentMethod: paymentMethod || "Cash",
+      merchant: merchant || "",
     });
 
     res.status(201).json(expense);
   } catch (err) {
+    console.error("Expense creation error:", err);
     res.status(500).json({ message: err.message });
   }
 });
+
 
 // PUT update expense
 router.put("/:id", authMiddleware, async (req, res) => {

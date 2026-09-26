@@ -56,7 +56,8 @@ router.get("/unread", authMiddleware, async (req, res) => {
       read: false,
     }).populate("sender", "name email");
 
-    res.json(messages);
+    const validMessages = messages.filter((msg) => msg.sender != null);
+    res.json(validMessages);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -77,10 +78,12 @@ router.get("/inbox", authMiddleware, async (req, res) => {
     const inbox = [];
     const currentUserId = req.user.id.toString();
     messages.forEach((msg) => {
-      const friendId =
-        msg.sender._id.toString() === currentUserId
-          ? msg.receiver._id.toString()
-          : msg.sender._id.toString();
+      if (!msg.sender || !msg.receiver) return;
+      const senderId = msg.sender._id ? msg.sender._id.toString() : null;
+      const receiverId = msg.receiver._id ? msg.receiver._id.toString() : null;
+      if (!senderId || !receiverId) return;
+
+      const friendId = senderId === currentUserId ? receiverId : senderId;
       if (!seen.has(friendId)) {
         seen.add(friendId);
         inbox.push(msg);

@@ -1457,7 +1457,7 @@ import API from "../api/axios";
 import toast from "react-hot-toast";
 
 const GroupDetail = () => {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const { id } = useParams();
   const [group, setGroup] = useState(null);
@@ -1472,10 +1472,6 @@ const GroupDetail = () => {
     customSplits: [],
   });
   const [addingExpense, setAddingExpense] = useState(false);
-
-  useEffect(() => {
-    fetchGroup();
-  }, [id]);
 
   const fetchGroup = async () => {
     try {
@@ -1497,6 +1493,10 @@ const GroupDetail = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchGroup();
+  }, [id]);
 
   const handleAddMember = async () => {
     if (!memberEmail.trim()) return toast.error("Enter an email address");
