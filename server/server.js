@@ -12,7 +12,7 @@ app.use(
     credentials: true,
   }),
 );
-app.use(express.json());
+app.use(express.json({ limit: "15mb" }));
 
 mongoose
   .connect(process.env.MONGODB_URI)
@@ -22,12 +22,15 @@ mongoose
 // ── Routes ──────────────────────────────
 app.use("/api/auth", authRoutes);
 app.use("/api/expenses", require("./routes/expenses"));
+app.use("/api/ocr", require("./routes/ocr"));
+app.use("/api/voice", require("./routes/parseExpense"));
 app.use("/api/user", require("./routes/user"));
 app.use("/api/analytics", require("./routes/analytics"));
 app.use("/api/budget", require("./routes/budget"));
 app.use("/api/friends", require("./routes/friends"));
 app.use("/api/groups", require("./routes/groups"));
 app.use("/api/messages", require("./routes/messages"));
+app.use("/api/chat", require("./routes/chat"));
 
 app.get("/", (req, res) => res.send("Backend running 🚀"));
 
