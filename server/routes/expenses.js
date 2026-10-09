@@ -32,7 +32,7 @@ router.get("/", authMiddleware, async (req, res) => {
 // POST add new expense/income
 router.post("/", authMiddleware, async (req, res) => {
   try {
-    const { title, amount, category, type, date, note, paymentMethod, merchant } = req.body;
+    const { title, amount, category, type, date, note, paymentMethod, merchant, mood } = req.body;
     const normalizedAmount = Number(amount);
 
     if (!Number.isFinite(normalizedAmount) || normalizedAmount <= 0) {
@@ -49,6 +49,7 @@ router.post("/", authMiddleware, async (req, res) => {
       note: note || "",
       paymentMethod: paymentMethod || "Cash",
       merchant: merchant || "",
+      mood: mood || "Calm",
     });
 
     res.status(201).json(expense);

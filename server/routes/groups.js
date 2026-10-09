@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Group = require("../models/Group");
 const authMiddleware = require("../middleware/authMiddleware");
+const { simplifyGroupDebts } = require("../services/debtSimplifier");
 
 // GET — All groups for current user
 router.get("/", authMiddleware, async (req, res) => {
@@ -42,12 +43,29 @@ router.post("/:id/members", authMiddleware, async (req, res) => {
     if (!group) return res.status(404).json({ message: "Group not found" });
 
     // Only creator can add members
-    if (group.createdBy.toString() !== req.user.id)
+    const creatorId = group.createdBy?._id
+      ? group.createdBy._id.toString()
+      : group.createdBy?.toString();
+    const currentUserId = req.user?._id
+      ? req.user._id.toString()
+      : (req.user?.id ? req.user.id.toString() : "");
+
+    console.log("👉 ADD MEMBER CHECK:", {
+      creatorId,
+      currentUserId,
+      userEmail: req.user?.email,
+      groupName: group.name,
+      match: creatorId === currentUserId,
+    });
+
+    if (creatorId !== currentUserId)
       return res.status(403).json({ message: "Only admin can add members" });
 
     const User = require("../models/User");
-    const newMember = await User.findOne({ email });
-    if (!newMember) return res.status(404).json({ message: "User not found" });
+    const cleanEmail = (email || "").toLowerCase().trim();
+    const newMember = await User.findOne({ email: cleanEmail });
+    if (!newMember)
+      return res.status(404).json({ message: "User not found with this email" });
 
     // Check if already a member
     const alreadyMember = group.members.some(
@@ -218,6 +236,151 @@ router.put(
     }
   },
 );
+
+// GET — Simplified Debts for a Group (Min-Cash Flow Algorithm)
+router.get("/:id/simplified-debts", authMiddleware, async (req, res) => {
+  try {
+    const group = await Group.findById(req.params.id)
+      .populate("members", "name email")
+      .populate("createdBy", "name email")
+      .populate("expenses.paidBy", "name email")
+      .populate("expenses.splitBetween.user", "name email");
+
+    if (!group) return res.status(404).json({ message: "Group not found" });
+
+    const isMember =
+      group.members.some(
+        (m) => m._id.toString() === req.user.id.toString(),
+      ) || group.createdBy?._id.toString() === req.user.id.toString();
+
+    if (!isMember) {
+      return res
+        .status(403)
+        .json({ message: "Not authorized to view this group" });
+    }
+
+    const simplificationResult = simplifyGroupDebts(group);
+
+    res.json({
+      groupId: group._id,
+      groupName: group.name,
+      ...simplificationResult,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// POST — Record a simplified debt settlement
+router.post("/:id/settle-simplified-debt", authMiddleware, async (req, res) => {
+  try {
+    const { fromUserId, toUserId, amount } = req.body;
+    const numericAmount = parseFloat(amount);
+
+    if (!fromUserId || !toUserId || !numericAmount || numericAmount <= 0) {
+      return res
+        .status(400)
+        .json({ message: "Valid payer, recipient, and amount are required" });
+    }
+
+    const group = await Group.findById(req.params.id)
+      .populate("members", "name email")
+      .populate("createdBy", "name email")
+      .populate("expenses.paidBy", "name email")
+      .populate("expenses.splitBetween.user", "name email");
+
+    if (!group) return res.status(404).json({ message: "Group not found" });
+
+    const isAdmin = group.createdBy._id.toString() === req.user.id.toString();
+    const isPayer = fromUserId.toString() === req.user.id.toString();
+    const isRecipient = toUserId.toString() === req.user.id.toString();
+
+    // Only admin, payer, or recipient can record this settlement
+    if (!isAdmin && !isPayer && !isRecipient) {
+      return res
+        .status(403)
+        .json({ message: "Not authorized to settle this debt" });
+    }
+
+    const fromMember = group.members.find(
+      (m) => m._id.toString() === fromUserId.toString(),
+    );
+    const toMember = group.members.find(
+      (m) => m._id.toString() === toUserId.toString(),
+    );
+
+    if (!fromMember || !toMember) {
+      return res.status(400).json({ message: "Members not found in group" });
+    }
+
+    // 1. Mark corresponding direct unsettled splits between fromUser and toUser as settled
+    let remainingToSettle = numericAmount;
+    for (const exp of group.expenses) {
+      if (remainingToSettle <= 0.001) break;
+      const payerId = exp.paidBy?._id
+        ? exp.paidBy._id.toString()
+        : exp.paidBy?.toString();
+      if (payerId === toUserId.toString()) {
+        const split = exp.splitBetween.find(
+          (s) =>
+            (s.user?._id ? s.user._id.toString() : s.user?.toString()) ===
+              fromUserId.toString() && !s.settled,
+        );
+        if (split) {
+          const unpaid = split.share || 0;
+          if (remainingToSettle >= unpaid) {
+            split.settledAmount = (split.settledAmount || 0) + unpaid;
+            split.share = 0;
+            split.settled = true;
+            remainingToSettle -= unpaid;
+          } else {
+            split.settledAmount =
+              (split.settledAmount || 0) + remainingToSettle;
+            split.share = parseFloat((unpaid - remainingToSettle).toFixed(2));
+            remainingToSettle = 0;
+          }
+        }
+      }
+    }
+
+    // 2. Add a settlement expense entry so all members see the payment in activity
+    group.expenses.push({
+      title: `🤝 Settlement: ${fromMember.name} paid ${toMember.name}`,
+      amount: numericAmount,
+      paidBy: fromUserId,
+      splitBetween: [
+        {
+          user: toUserId,
+          share: numericAmount,
+          settledAmount: numericAmount,
+          settled: true,
+        },
+      ],
+      isSettlement: true,
+      date: new Date(),
+    });
+
+    await group.save();
+
+    // Re-populate and compute latest simplified debts
+    const updatedGroup = await Group.findById(req.params.id)
+      .populate("members", "name email")
+      .populate("createdBy", "name email")
+      .populate("expenses.paidBy", "name email")
+      .populate("expenses.splitBetween.user", "name email");
+
+    const simplificationResult = simplifyGroupDebts(updatedGroup);
+
+    res.json({
+      message: `Settlement of ₹${numericAmount.toFixed(2)} between ${fromMember.name} and ${toMember.name} recorded successfully!`,
+      group: updatedGroup,
+      ...simplificationResult,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // DELETE — Delete group (only creator)
 router.delete("/:id", authMiddleware, async (req, res) => {
   try {

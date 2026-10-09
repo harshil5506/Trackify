@@ -62,6 +62,20 @@ export const BillScannerModal = ({ isOpen, onClose, onConfirmSave }) => {
     return "Bills & Utilities";
   };
 
+  const stopWebcam = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+    setIsCameraActive(false);
+  };
+
+  const handleClose = () => {
+    stopWebcam();
+    resetScanner();
+    onClose();
+  };
+
   // Keyboard trap & Escape listener
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -76,8 +90,6 @@ export const BillScannerModal = ({ isOpen, onClose, onConfirmSave }) => {
       stopWebcam();
     };
   }, [isOpen]);
-
-  if (!isOpen) return null;
 
   const startWebcam = async () => {
     try {
@@ -103,14 +115,6 @@ export const BillScannerModal = ({ isOpen, onClose, onConfirmSave }) => {
     }
   };
 
-  const stopWebcam = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
-    }
-    setIsCameraActive(false);
-  };
-
   const captureWebcamSnapshot = () => {
     if (!videoRef.current) return;
     const video = videoRef.current;
@@ -126,12 +130,6 @@ export const BillScannerModal = ({ isOpen, onClose, onConfirmSave }) => {
         processFile(file);
       }
     }, "image/png");
-  };
-
-  const handleClose = () => {
-    stopWebcam();
-    resetScanner();
-    onClose();
   };
 
   const handleDrag = (e) => {
@@ -175,6 +173,8 @@ export const BillScannerModal = ({ isOpen, onClose, onConfirmSave }) => {
     onConfirmSave(payload);
     handleClose();
   };
+
+  if (!isOpen) return null;
 
   return (
     <div style={styles.overlay} onClick={handleClose}>

@@ -36,6 +36,15 @@ export const VoiceEntryModal = ({ isOpen, onClose, onConfirmSave }) => {
   const [parsedData, setParsedData] = useState(null);
   const [manualInput, setManualInput] = useState("");
 
+  const handleClose = () => {
+    if (isListening) stopListening();
+    resetTranscript();
+    setStatus("idle");
+    setParsedData(null);
+    setManualInput("");
+    onClose();
+  };
+
   // Keyboard Escape listener
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -47,17 +56,6 @@ export const VoiceEntryModal = ({ isOpen, onClose, onConfirmSave }) => {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen]);
-
-  if (!isOpen) return null;
-
-  const handleClose = () => {
-    if (isListening) stopListening();
-    resetTranscript();
-    setStatus("idle");
-    setParsedData(null);
-    setManualInput("");
-    onClose();
-  };
 
   const handleStartRecording = () => {
     resetTranscript();
@@ -108,6 +106,8 @@ export const VoiceEntryModal = ({ isOpen, onClose, onConfirmSave }) => {
     onConfirmSave(payload);
     handleClose();
   };
+
+  if (!isOpen) return null;
 
   return (
     <div style={styles.overlay} onClick={handleClose}>

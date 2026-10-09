@@ -4,8 +4,17 @@ import { useAuth } from "../context/AuthContext";
 import API from "../api/axios";
 import toast from "react-hot-toast";
 import { formatCurrency, getBalanceTone } from "../utils/finance";
-
 import { downloadCSV, escapeCSVField } from "../utils/csvExport";
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+} from "recharts";
+import MoodSpendingWidget from "../components/MoodSpendingWidget";
 
 const CATEGORY_COLORS = [
   "#4ade80",
@@ -56,15 +65,18 @@ const Reports = () => {
   });
   const [categories, setCategories] = useState([]);
   const [transactions, setTransactions] = useState([]);
+  const [predictionData, setPredictionData] = useState(null);
 
   const fetchReportData = async () => {
     setLoading(true);
     try {
-      const [summaryRes, categoryRes, expenseRes] = await Promise.all([
-        API.get("/api/analytics/summary"),
-        API.get("/api/analytics/by-category"),
-        API.get("/api/expenses"),
-      ]);
+      const [summaryRes, categoryRes, expenseRes, predictionRes] =
+        await Promise.all([
+          API.get("/api/analytics/summary"),
+          API.get("/api/analytics/by-category"),
+          API.get("/api/expenses"),
+          API.get("/api/analytics/predictions").catch(() => ({ data: null })),
+        ]);
 
       setSummary({
         totalIncome: summaryRes.data.totalIncome || 0,
@@ -74,6 +86,9 @@ const Reports = () => {
       });
       setCategories(Array.isArray(categoryRes.data) ? categoryRes.data : []);
       setTransactions(Array.isArray(expenseRes.data) ? expenseRes.data : []);
+      if (predictionRes?.data) {
+        setPredictionData(predictionRes.data);
+      }
     } catch (err) {
       toast.error("Failed to load report data");
     } finally {
@@ -522,6 +537,334 @@ const Reports = () => {
               ))}
             </div>
           </div>
+
+          {/* ── AI Spending Prediction & Forecast Card ── */}
+          <div style={s.dashCard}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                flexWrap: "wrap",
+                gap: "10px",
+                marginBottom: "16px",
+              }}
+            >
+              <div>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <h3
+                    style={{
+                      fontFamily: "'Sora',sans-serif",
+                      fontSize: "1rem",
+                      fontWeight: "700",
+                      color: "#1a1a2e",
+                      margin: 0,
+                    }}
+                  >
+                    🤖 AI Spending Prediction & Forecast
+                  </h3>
+                </div>
+                <p
+                  style={{
+                    fontSize: "0.8rem",
+                    color: "#666",
+                    marginTop: "4px",
+                  }}
+                >
+                  Smart forecast of your upcoming expenses, category breakdown, and budget health.
+                </p>
+              </div>
+            </div>
+
+            {predictionData ? (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "16px",
+                }}
+              >
+                {/* Prediction Top Banner */}
+                <div
+                  style={{
+                    background:
+                      "linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%)",
+                    border: "1px solid #e9d5ff",
+                    borderRadius: "12px",
+                    padding: "16px 20px",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    flexWrap: "wrap",
+                    gap: "14px",
+                  }}
+                >
+                  <div>
+                    <p
+                      style={{
+                        fontSize: "0.74rem",
+                        color: "#7e22ce",
+                        fontWeight: "700",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      Predicted Next Month Total
+                    </p>
+                    <p
+                      style={{
+                        fontFamily: "'Sora',sans-serif",
+                        fontSize: "1.7rem",
+                        fontWeight: "800",
+                        color: "#581c87",
+                        margin: "2px 0",
+                      }}
+                    >
+                      ₹
+                      {predictionData.predictedNextMonthTotal?.toLocaleString(
+                        "en-IN",
+                        { minimumFractionDigits: 2 },
+                      )}
+                    </p>
+                    <p style={{ fontSize: "0.75rem", color: "#6b21a8" }}>
+                      Confidence Range: ₹
+                      {predictionData.predictedRange?.min?.toLocaleString(
+                        "en-IN",
+                      )}{" "}
+                      – ₹
+                      {predictionData.predictedRange?.max?.toLocaleString(
+                        "en-IN",
+                      )}
+                    </p>
+                  </div>
+                  <div style={{ textAlign: "right" }}>
+                    <span
+                      style={{
+                        padding: "6px 12px",
+                        borderRadius: "20px",
+                        fontSize: "0.78rem",
+                        fontWeight: "700",
+                        background:
+                          predictionData.trendDirection === "decreasing"
+                            ? "#dcfce7"
+                            : predictionData.trendDirection === "increasing"
+                              ? "#fee2e2"
+                              : "#e0f2fe",
+                        color:
+                          predictionData.trendDirection === "decreasing"
+                            ? "#15803d"
+                            : predictionData.trendDirection === "increasing"
+                              ? "#b91c1c"
+                              : "#0369a1",
+                      }}
+                    >
+                      {predictionData.trendLabel}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Budget Overrun Risk Alerts */}
+                {predictionData.budgetOverrunRisks?.length > 0 && (
+                  <div
+                    style={{
+                      background: "#fffbeb",
+                      border: "1px solid #fde68a",
+                      borderRadius: "10px",
+                      padding: "12px 16px",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "8px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                      }}
+                    >
+                      <span style={{ fontSize: "1rem" }}>⚠️</span>
+                      <p
+                        style={{
+                          fontSize: "0.82rem",
+                          fontWeight: "700",
+                          color: "#b45309",
+                          margin: 0,
+                        }}
+                      >
+                        Budget Overrun Warning
+                      </p>
+                    </div>
+                    {predictionData.budgetOverrunRisks.map((risk, idx) => (
+                      <p
+                        key={idx}
+                        style={{
+                          fontSize: "0.78rem",
+                          color: "#92400e",
+                          margin: 0,
+                        }}
+                      >
+                        • {risk.alertMessage}
+                      </p>
+                    ))}
+                  </div>
+                )}
+
+                {/* Forecast Chart */}
+                {predictionData.chartData?.length > 0 && (
+                  <div>
+                    <p
+                      style={{
+                        fontSize: "0.82rem",
+                        fontWeight: "700",
+                        color: "#1a1a2e",
+                        marginBottom: "8px",
+                      }}
+                    >
+                      Monthly Spending Trend & Forecast:
+                    </p>
+                    <div style={{ width: "100%", height: 210 }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart
+                          data={predictionData.chartData}
+                          margin={{ top: 5, right: 20, bottom: 5, left: 0 }}
+                        >
+                          <CartesianGrid
+                            strokeDasharray="3 3"
+                            stroke="#f0f2f8"
+                          />
+                          <XAxis dataKey="period" tick={{ fontSize: 11 }} />
+                          <YAxis
+                            tick={{ fontSize: 11 }}
+                            tickFormatter={(val) => `₹${val}`}
+                          />
+                          <Tooltip
+                            formatter={(value, name) => [
+                              `₹${Number(value).toFixed(2)}`,
+                              name === "actual"
+                                ? "Actual Spend"
+                                : "Projected Spend",
+                            ]}
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="actual"
+                            name="actual"
+                            stroke="#1a2ea8"
+                            strokeWidth={2.5}
+                            dot={{ r: 4 }}
+                            connectNulls
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="predicted"
+                            name="predicted"
+                            stroke="#9333ea"
+                            strokeWidth={2}
+                            strokeDasharray="5 5"
+                            dot={{ r: 5, fill: "#9333ea" }}
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                )}
+
+                {/* Category Forecasts Breakdown */}
+                {predictionData.categoryForecasts?.length > 0 && (
+                  <div>
+                    <p
+                      style={{
+                        fontSize: "0.82rem",
+                        fontWeight: "700",
+                        color: "#1a1a2e",
+                        marginBottom: "8px",
+                      }}
+                    >
+                      Predicted Category Allocation (Next Month):
+                    </p>
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns:
+                          "repeat(auto-fit, minmax(140px, 1fr))",
+                        gap: "10px",
+                      }}
+                    >
+                      {predictionData.categoryForecasts.map((cat) => (
+                        <div
+                          key={cat.category}
+                          style={{
+                            background: "#f8f9fc",
+                            border: "1px solid #e2e6f0",
+                            borderRadius: "8px",
+                            padding: "10px 12px",
+                          }}
+                        >
+                          <p
+                            style={{
+                              fontSize: "0.78rem",
+                              fontWeight: "700",
+                              color: "#1a1a2e",
+                              marginBottom: "2px",
+                            }}
+                          >
+                            {cat.category}
+                          </p>
+                          <p
+                            style={{
+                              fontSize: "0.95rem",
+                              fontWeight: "800",
+                              color: "#1a2ea8",
+                              margin: "2px 0",
+                            }}
+                          >
+                            ₹{cat.predictedNextMonth.toFixed(2)}
+                          </p>
+                          <p
+                            style={{
+                              fontSize: "0.7rem",
+                              color:
+                                cat.changePct > 0
+                                  ? "#dc2626"
+                                  : cat.changePct < 0
+                                    ? "#16a34a"
+                                    : "#666",
+                            }}
+                          >
+                            {cat.changePct > 0
+                              ? `▲ +${cat.changePct}%`
+                              : cat.changePct < 0
+                                ? `▼ ${cat.changePct}%`
+                                : "0.0% change"}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p
+                style={{
+                  textAlign: "center",
+                  color: "#666",
+                  padding: "20px",
+                }}
+              >
+                Generating ML spending prediction...
+              </p>
+            )}
+          </div>
+
+          {/* ── Emotional & Mood-Driven Spending Intelligence ── */}
+          <MoodSpendingWidget />
         </div>
         <div
           style={{

@@ -74,6 +74,11 @@ const expenseSchema = new mongoose.Schema(
       default: "",
       trim: true,
     },
+    mood: {
+      type: String,
+      enum: ["Calm", "Happy", "Stressed", "Impulsive", "Bored", "Social", "Other"],
+      default: "Calm",
+    },
   },
   { timestamps: true }
 );

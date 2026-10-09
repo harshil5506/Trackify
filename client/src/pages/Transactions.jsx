@@ -650,6 +650,53 @@ const Transactions = () => {
                         {txn.source === "group" ? "👥 Group" : "🤝 Friend"}
                       </span>
                     )}
+                    {/* Mood badge */}
+                    {txn.mood && (
+                      <span
+                        style={{
+                          fontSize: "0.64rem",
+                          fontWeight: "700",
+                          padding: "2px 6px",
+                          borderRadius: "4px",
+                          background:
+                            txn.mood === "Impulsive"
+                              ? "#fee2e2"
+                              : txn.mood === "Stressed"
+                              ? "#ffedd5"
+                              : txn.mood === "Bored"
+                              ? "#fef3c7"
+                              : txn.mood === "Happy"
+                              ? "#dbeafe"
+                              : txn.mood === "Social"
+                              ? "#f3e8ff"
+                              : "#dcfce7",
+                          color:
+                            txn.mood === "Impulsive"
+                              ? "#dc2626"
+                              : txn.mood === "Stressed"
+                              ? "#c2410c"
+                              : txn.mood === "Bored"
+                              ? "#b45309"
+                              : txn.mood === "Happy"
+                              ? "#1d4ed8"
+                              : txn.mood === "Social"
+                              ? "#6b21a8"
+                              : "#15803d",
+                        }}
+                      >
+                        {txn.mood === "Impulsive"
+                          ? "⚡ Impulse"
+                          : txn.mood === "Stressed"
+                          ? "😫 Stress"
+                          : txn.mood === "Bored"
+                          ? "🥱 Bored"
+                          : txn.mood === "Happy"
+                          ? "😊 Happy"
+                          : txn.mood === "Social"
+                          ? "🥳 Social"
+                          : "🧘 Mindful"}
+                      </span>
+                    )}
                   </div>
                   <p style={{ fontSize: "0.74rem", color: "#666" }}>
                     {txn.category} •{" "}
@@ -679,8 +726,8 @@ const Transactions = () => {
                         color: txn.type === "income" ? "#16a34a" : "#dc2626",
                       }}
                     >
-                      {txn.type === "income" ? "+" : "-"}₹
-                      {Number(txn.amount || 0).toFixed(2)}
+                      {txn.type === "income" ? "+" : "-"}
+                      {formatCurrency(txn.amount)}
                     </p>
                     <p
                       style={{

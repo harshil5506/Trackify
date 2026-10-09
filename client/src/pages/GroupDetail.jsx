@@ -1472,6 +1472,49 @@ const GroupDetail = () => {
     customSplits: [],
   });
   const [addingExpense, setAddingExpense] = useState(false);
+  const [simplifiedData, setSimplifiedData] = useState(null);
+  const [loadingSimplified, setLoadingSimplified] = useState(false);
+  const [simplificationViewMode, setSimplificationViewMode] =
+    useState("simplified");
+  const [settlingDebtKey, setSettlingDebtKey] = useState(null);
+
+  const fetchSimplifiedDebts = async () => {
+    setLoadingSimplified(true);
+    try {
+      const { data } = await API.get(`/api/groups/${id}/simplified-debts`);
+      setSimplifiedData(data);
+    } catch (err) {
+      toast.error(
+        err.response?.data?.message || "Failed to load simplified debts",
+      );
+    } finally {
+      setLoadingSimplified(false);
+    }
+  };
+
+  const handleSettleSimplified = async (fromUserId, toUserId, amount) => {
+    const key = `${fromUserId}-${toUserId}`;
+    setSettlingDebtKey(key);
+    try {
+      const { data } = await API.post(
+        `/api/groups/${id}/settle-simplified-debt`,
+        {
+          fromUserId,
+          toUserId,
+          amount,
+        },
+      );
+      toast.success(data.message || "Settlement recorded!");
+      fetchGroup();
+      fetchSimplifiedDebts();
+    } catch (err) {
+      toast.error(
+        err.response?.data?.message || "Failed to record settlement",
+      );
+    } finally {
+      setSettlingDebtKey(null);
+    }
+  };
 
   const fetchGroup = async () => {
     try {
@@ -1497,6 +1540,12 @@ const GroupDetail = () => {
   useEffect(() => {
     fetchGroup();
   }, [id]);
+
+  useEffect(() => {
+    if (activeAction === "simplifyDebts") {
+      fetchSimplifiedDebts();
+    }
+  }, [activeAction, id]);
 
   const handleAddMember = async () => {
     if (!memberEmail.trim()) return toast.error("Enter an email address");
@@ -1692,7 +1741,7 @@ const GroupDetail = () => {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(4,1fr)",
+              gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))",
               gap: "12px",
             }}
           >
@@ -1710,6 +1759,13 @@ const GroupDetail = () => {
                 label: "Split Expense",
                 color: "#d6f5e8",
                 tc: "#0d7a68",
+              },
+              {
+                key: "simplifyDebts",
+                icon: "⚡",
+                label: "Simplify Debts",
+                color: "#e0f2fe",
+                tc: "#0284c7",
               },
               {
                 key: "settleUp",
@@ -2400,6 +2456,470 @@ const GroupDetail = () => {
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* ── Simplify Debts Panel ── */}
+          {activeAction === "simplifyDebts" && (
+            <div style={s.actionPanel}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                  flexWrap: "wrap",
+                  gap: "10px",
+                  marginBottom: "16px",
+                }}
+              >
+                <div>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <h4 style={{ ...s.actionTitle, margin: 0 }}>
+                      ⚡ Smart Debt Simplification
+                    </h4>
+                  </div>
+                  <p
+                    style={{
+                      fontSize: "0.8rem",
+                      color: "#666",
+                      marginTop: "4px",
+                    }}
+                  >
+                    Minimizes cash transfers by canceling circular debts and
+                    calculating optimal direct settlements.
+                  </p>
+                </div>
+                <div style={{ display: "flex", gap: "6px" }}>
+                  <button
+                    onClick={() => setSimplificationViewMode("simplified")}
+                    style={{
+                      padding: "6px 12px",
+                      borderRadius: "6px",
+                      fontSize: "0.76rem",
+                      fontWeight: "700",
+                      border: "none",
+                      cursor: "pointer",
+                      background:
+                        simplificationViewMode === "simplified"
+                          ? "#0284c7"
+                          : "#e2e8f0",
+                      color:
+                        simplificationViewMode === "simplified"
+                          ? "white"
+                          : "#475569",
+                    }}
+                  >
+                    ⚡ Simplified (
+                    {simplifiedData?.metrics?.simplifiedCount || 0})
+                  </button>
+                  <button
+                    onClick={() => setSimplificationViewMode("pairwise")}
+                    style={{
+                      padding: "6px 12px",
+                      borderRadius: "6px",
+                      fontSize: "0.76rem",
+                      fontWeight: "700",
+                      border: "none",
+                      cursor: "pointer",
+                      background:
+                        simplificationViewMode === "pairwise"
+                          ? "#0284c7"
+                          : "#e2e8f0",
+                      color:
+                        simplificationViewMode === "pairwise"
+                          ? "white"
+                          : "#475569",
+                    }}
+                  >
+                    📋 Raw Pairwise (
+                    {simplifiedData?.metrics?.originalCount || 0})
+                  </button>
+                </div>
+              </div>
+
+              {/* Optimization Metric Banner */}
+              {simplifiedData?.metrics && (
+                <div
+                  style={{
+                    background:
+                      "linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)",
+                    border: "1px solid #bae6fd",
+                    borderRadius: "10px",
+                    padding: "12px 16px",
+                    marginBottom: "16px",
+                    display: "flex",
+                    justifyContent: "space-around",
+                    alignItems: "center",
+                    flexWrap: "wrap",
+                    gap: "10px",
+                  }}
+                >
+                  <div style={{ textAlign: "center" }}>
+                    <p
+                      style={{
+                        fontSize: "0.72rem",
+                        color: "#0369a1",
+                        fontWeight: "600",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      Original Debts
+                    </p>
+                    <p
+                      style={{
+                        fontSize: "1.1rem",
+                        fontWeight: "800",
+                        color: "#0f172a",
+                      }}
+                    >
+                      {simplifiedData.metrics.originalCount}
+                    </p>
+                  </div>
+                  <div style={{ fontSize: "1.2rem", color: "#0284c7" }}>➔</div>
+                  <div style={{ textAlign: "center" }}>
+                    <p
+                      style={{
+                        fontSize: "0.72rem",
+                        color: "#0369a1",
+                        fontWeight: "600",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      Optimal Settlements
+                    </p>
+                    <p
+                      style={{
+                        fontSize: "1.1rem",
+                        fontWeight: "800",
+                        color: "#0284c7",
+                      }}
+                    >
+                      {simplifiedData.metrics.simplifiedCount}
+                    </p>
+                  </div>
+                  <div
+                    style={{
+                      borderLeft: "1px solid #bae6fd",
+                      height: "28px",
+                    }}
+                  />
+                  <div style={{ textAlign: "center" }}>
+                    <p
+                      style={{
+                        fontSize: "0.72rem",
+                        color: "#0369a1",
+                        fontWeight: "600",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      Transactions Saved
+                    </p>
+                    <p
+                      style={{
+                        fontSize: "1.1rem",
+                        fontWeight: "800",
+                        color: "#16a34a",
+                      }}
+                    >
+                      {simplifiedData.metrics.transactionsSaved} (
+                      {simplifiedData.metrics.reductionPercentage}%)
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Net Balances Summary Bar */}
+              <div style={{ marginBottom: "16px" }}>
+                <p
+                  style={{
+                    fontSize: "0.8rem",
+                    fontWeight: "700",
+                    color: "#475569",
+                    marginBottom: "8px",
+                  }}
+                >
+                  Member Net Balances:
+                </p>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                  {simplifiedData?.netBalances?.map((b) => {
+                    const isPositive = b.netBalance > 0.01;
+                    const isNegative = b.netBalance < -0.01;
+                    return (
+                      <div
+                        key={b.user.id}
+                        style={{
+                          padding: "6px 12px",
+                          borderRadius: "20px",
+                          fontSize: "0.78rem",
+                          fontWeight: "600",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "6px",
+                          background: isPositive
+                            ? "#dcfce7"
+                            : isNegative
+                              ? "#fee2e2"
+                              : "#f1f5f9",
+                          color: isPositive
+                            ? "#15803d"
+                            : isNegative
+                              ? "#b91c1c"
+                              : "#64748b",
+                          border: `1px solid ${
+                            isPositive
+                              ? "#86efac"
+                              : isNegative
+                                ? "#fca5a5"
+                                : "#cbd5e1"
+                          }`,
+                        }}
+                      >
+                        <span>{b.user.name}:</span>
+                        <span>
+                          {isPositive
+                            ? `+₹${b.netBalance.toFixed(2)}`
+                            : isNegative
+                              ? `-₹${Math.abs(b.netBalance).toFixed(2)}`
+                              : "₹0.00 (Settled)"}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Transactions List */}
+              {loadingSimplified ? (
+                <p
+                  style={{
+                    textAlign: "center",
+                    color: "#64748b",
+                    padding: "20px",
+                  }}
+                >
+                  Calculating optimal debt settlements...
+                </p>
+              ) : (
+                  simplificationViewMode === "simplified"
+                    ? simplifiedData?.simplifiedTransactions
+                    : simplifiedData?.pairwiseTransactions
+                )?.length === 0 ? (
+                <div
+                  style={{
+                    textAlign: "center",
+                    padding: "28px 16px",
+                    background: "#f8fafc",
+                    borderRadius: "10px",
+                    border: "1px dashed #cbd5e1",
+                  }}
+                >
+                  <p style={{ fontSize: "1.8rem", marginBottom: "6px" }}>🎉</p>
+                  <p
+                    style={{
+                      fontSize: "0.95rem",
+                      fontWeight: "700",
+                      color: "#0f172a",
+                    }}
+                  >
+                    All Settled Up!
+                  </p>
+                  <p style={{ fontSize: "0.8rem", color: "#64748b" }}>
+                    There are no outstanding debts between group members.
+                  </p>
+                </div>
+              ) : (
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "10px",
+                  }}
+                >
+                  {(simplificationViewMode === "simplified"
+                    ? simplifiedData?.simplifiedTransactions
+                    : simplifiedData?.pairwiseTransactions
+                  )?.map((tx, idx) => {
+                    const key = `${tx.from.id}-${tx.to.id}`;
+                    const currentUid = user?.id || user?._id;
+                    const isMyDebt =
+                      tx.from.id?.toString() === currentUid?.toString();
+                    const isOwedToMe =
+                      tx.to.id?.toString() === currentUid?.toString();
+                    const isAdmin =
+                      group.createdBy?._id?.toString() ===
+                      currentUid?.toString();
+                    const canSettle = isAdmin || isMyDebt || isOwedToMe;
+
+                    return (
+                      <div
+                        key={idx}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          padding: "12px 16px",
+                          background: "white",
+                          borderRadius: "10px",
+                          border: `1px solid ${
+                            isMyDebt
+                              ? "#fca5a5"
+                              : isOwedToMe
+                                ? "#86efac"
+                                : "#e2e8f0"
+                          }`,
+                          flexWrap: "wrap",
+                          gap: "10px",
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "10px",
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: "34px",
+                              height: "34px",
+                              borderRadius: "50%",
+                              background: "#fee2e2",
+                              color: "#dc2626",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              fontWeight: "700",
+                              fontSize: "0.85rem",
+                            }}
+                          >
+                            {tx.from.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <p
+                              style={{
+                                fontSize: "0.86rem",
+                                fontWeight: "700",
+                                color: "#0f172a",
+                              }}
+                            >
+                              {tx.from.name}{" "}
+                              {isMyDebt && (
+                                <span
+                                  style={{
+                                    color: "#dc2626",
+                                    fontSize: "0.74rem",
+                                  }}
+                                >
+                                  (You)
+                                </span>
+                              )}
+                            </p>
+                            <p style={{ fontSize: "0.74rem", color: "#64748b" }}>
+                              pays
+                            </p>
+                          </div>
+                          <div style={{ fontSize: "1.1rem", color: "#94a3b8" }}>
+                            ➔
+                          </div>
+                          <div
+                            style={{
+                              width: "34px",
+                              height: "34px",
+                              borderRadius: "50%",
+                              background: "#dcfce7",
+                              color: "#16a34a",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              fontWeight: "700",
+                              fontSize: "0.85rem",
+                            }}
+                          >
+                            {tx.to.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <p
+                              style={{
+                                fontSize: "0.86rem",
+                                fontWeight: "700",
+                                color: "#0f172a",
+                              }}
+                            >
+                              {tx.to.name}{" "}
+                              {isOwedToMe && (
+                                <span
+                                  style={{
+                                    color: "#16a34a",
+                                    fontSize: "0.74rem",
+                                  }}
+                                >
+                                  (You)
+                                </span>
+                              )}
+                            </p>
+                            <p style={{ fontSize: "0.74rem", color: "#64748b" }}>
+                              receives
+                            </p>
+                          </div>
+                        </div>
+
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "12px",
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontSize: "1.05rem",
+                              fontWeight: "800",
+                              color: "#0f172a",
+                            }}
+                          >
+                            ₹{tx.amount.toFixed(2)}
+                          </span>
+                          {canSettle && (
+                            <button
+                              onClick={() =>
+                                handleSettleSimplified(
+                                  tx.from.id,
+                                  tx.to.id,
+                                  tx.amount,
+                                )
+                              }
+                              disabled={settlingDebtKey === key}
+                              style={{
+                                background: "#16a34a",
+                                color: "white",
+                                border: "none",
+                                borderRadius: "8px",
+                                padding: "7px 14px",
+                                fontSize: "0.78rem",
+                                fontWeight: "700",
+                                cursor: "pointer",
+                                opacity: settlingDebtKey === key ? 0.6 : 1,
+                              }}
+                            >
+                              {settlingDebtKey === key
+                                ? "Settling..."
+                                : "Mark Settled ✓"}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
         </div>

@@ -17,6 +17,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import FinancialHealthWidget from "../components/FinancialHealthWidget";
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
@@ -30,15 +31,19 @@ const Dashboard = () => {
   });
   const [budgets, setBudgets] = useState([]);
   const [monthlyData, setMonthlyData] = useState([]);
+  const [goals, setGoals] = useState([]);
+  const [subsSummary, setSubsSummary] = useState(null);
 
   const fetchDashboardData = async () => {
     try {
-      const [expRes, anaRes, catRes, budRes, monRes] = await Promise.all([
+      const [expRes, anaRes, catRes, budRes, monRes, goalsRes, subsRes] = await Promise.all([
         API.get("/api/expenses"),
         API.get("/api/analytics/summary"),
         API.get("/api/analytics/by-category"),
         API.get("/api/budget"),
         API.get("/api/analytics/monthly"),
+        API.get("/api/goals").catch(() => ({ data: [] })),
+        API.get("/api/subscriptions").catch(() => ({ data: { subscriptions: [], summary: {} } })),
       ]);
 
       const list = Array.isArray(expRes.data) ? expRes.data : [];
@@ -53,6 +58,8 @@ const Dashboard = () => {
       setCategories(Array.isArray(catRes.data) ? catRes.data : []);
       setBudgets(Array.isArray(budRes.data) ? budRes.data : []);
       setMonthlyData(Array.isArray(monRes.data) ? monRes.data : []);
+      setGoals(Array.isArray(goalsRes?.data) ? goalsRes.data : []);
+      setSubsSummary(subsRes?.data?.summary || null);
     } catch (err) {
       toast.error("Failed to load dashboard");
     }
@@ -156,6 +163,9 @@ const Dashboard = () => {
           })}
         </div>
 
+        {/* Financial Health Score & Intelligence Card */}
+        <FinancialHealthWidget />
+
         {/* Analytics Cards */}
         <div
           style={{
@@ -186,6 +196,40 @@ const Dashboard = () => {
             <p style={s.analyticsValue}>{formatCurrency(avgTransaction)}</p>
             <p style={s.analyticsSubtext}>{transactions.length} recent</p>
           </div>
+
+          <Link
+            to="/subscriptions"
+            style={{
+              ...s.analyticsCard,
+              textDecoration: "none",
+              color: "inherit",
+              cursor: "pointer",
+              background: subsSummary?.dueThisWeekCount > 0 ? "#fffbeb" : "white",
+              border: subsSummary?.dueThisWeekCount > 0 ? "1.5px solid #fde68a" : "none",
+            }}
+          >
+            <div
+              style={{
+                ...s.cardIconCircle,
+                background: subsSummary?.dueThisWeekCount > 0 ? "#fef3c7" : "#ede9fe",
+              }}
+            >
+              {subsSummary?.dueThisWeekCount > 0 ? "🔔" : "💳"}
+            </div>
+            <p style={s.analyticsLabel}>Fixed Subscriptions</p>
+            <p style={s.analyticsValue}>
+              {formatCurrency(subsSummary?.totalMonthlyBurn || 0)}
+            </p>
+            <p style={s.analyticsSubtext}>
+              {subsSummary?.dueThisWeekCount > 0 ? (
+                <span style={{ color: "#d97706", fontWeight: "700" }}>
+                  {subsSummary.dueThisWeekCount} due this week!
+                </span>
+              ) : (
+                `${subsSummary?.activeCount || 0} active regular bills`
+              )}
+            </p>
+          </Link>
 
           {overBudgetCount > 0 && (
             <div
@@ -336,6 +380,121 @@ const Dashboard = () => {
           </div>
         </div>
 
+        {/* Savings Goals Spotlight */}
+        <div style={s.dashCard}>
+          <div style={s.cardHeader}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <span style={{ fontSize: "1.4rem" }}>🎯</span>
+              <h3 style={s.dashCardTitle}>
+                Savings Goals{" "}
+                <span style={{ color: "#666", fontWeight: "400" }}>
+                  ({goals.length})
+                </span>
+              </h3>
+            </div>
+            <Link to="/goals" style={s.viewAllBtn}>
+              {goals.length === 0 ? "+ Set a Goal →" : "View All Goals →"}
+            </Link>
+          </div>
+
+          {goals.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "26px 10px", color: "#64748b" }}>
+              <p style={{ margin: "0 0 10px 0", fontSize: "0.95rem" }}>
+                You haven't set any savings milestones yet.
+              </p>
+              <Link
+                to="/goals"
+                style={{
+                  display: "inline-block",
+                  padding: "8px 18px",
+                  background: "#1a2ea8",
+                  color: "white",
+                  borderRadius: "8px",
+                  textDecoration: "none",
+                  fontWeight: "600",
+                  fontSize: "0.85rem",
+                }}
+              >
+                Create Your First Goal 🎯
+              </Link>
+            </div>
+          ) : (
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+                gap: "16px",
+                marginTop: "12px",
+              }}
+            >
+              {goals.slice(0, 3).map((g) => (
+                <div
+                  key={g._id}
+                  style={{
+                    background: "#f8fafc",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: "12px",
+                    padding: "16px",
+                  }}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <span style={{ fontSize: "1.3rem" }}>{g.icon || "🎯"}</span>
+                      <div>
+                        <h4 style={{ margin: 0, fontSize: "0.95rem", color: "#0f172a", fontWeight: "700" }}>
+                          {g.title}
+                        </h4>
+                        <span style={{ fontSize: "0.75rem", color: "#64748b" }}>{g.category}</span>
+                      </div>
+                    </div>
+                    <span
+                      style={{
+                        fontSize: "0.8rem",
+                        fontWeight: "700",
+                        padding: "3px 8px",
+                        borderRadius: "20px",
+                        background: g.progressPercentage >= 100 ? "#dcfce7" : "#e0e7ff",
+                        color: g.progressPercentage >= 100 ? "#16a34a" : "#1a2ea8",
+                      }}
+                    >
+                      {g.progressPercentage}%
+                    </span>
+                  </div>
+
+                  <div
+                    style={{
+                      height: "8px",
+                      background: "#e2e8f0",
+                      borderRadius: "10px",
+                      overflow: "hidden",
+                      margin: "10px 0 8px 0",
+                    }}
+                  >
+                    <div
+                      style={{
+                        height: "100%",
+                        width: `${Math.min(g.progressPercentage || 0, 100)}%`,
+                        background: g.color || "#1a2ea8",
+                        borderRadius: "10px",
+                        transition: "width 0.4s ease",
+                      }}
+                    />
+                  </div>
+
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.8rem", color: "#475569" }}>
+                    <span>
+                      Saved: <strong>{formatCurrency(g.currentAmount)}</strong>
+                    </span>
+                    <span>
+                      Goal: <strong>{formatCurrency(g.targetAmount)}</strong>
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* Recent Transactions */}
         <div style={s.dashCard}>
           <div style={s.cardHeader}>
@@ -379,6 +538,49 @@ const Dashboard = () => {
                         📅 {new Date(txn.date).toLocaleDateString()}
                       </span>
                       <span style={s.txnCat}>{txn.category}</span>
+                      {txn.mood && (
+                        <span
+                          style={{
+                            ...s.txnBadge,
+                            background:
+                              txn.mood === "Impulsive"
+                                ? "#fee2e2"
+                                : txn.mood === "Stressed"
+                                ? "#ffedd5"
+                                : txn.mood === "Bored"
+                                ? "#fef3c7"
+                                : txn.mood === "Happy"
+                                ? "#dbeafe"
+                                : txn.mood === "Social"
+                                ? "#f3e8ff"
+                                : "#dcfce7",
+                            color:
+                              txn.mood === "Impulsive"
+                                ? "#dc2626"
+                                : txn.mood === "Stressed"
+                                ? "#c2410c"
+                                : txn.mood === "Bored"
+                                ? "#b45309"
+                                : txn.mood === "Happy"
+                                ? "#1d4ed8"
+                                : txn.mood === "Social"
+                                ? "#6b21a8"
+                                : "#15803d",
+                          }}
+                        >
+                          {txn.mood === "Impulsive"
+                            ? "⚡ Impulse"
+                            : txn.mood === "Stressed"
+                            ? "😫 Stress"
+                            : txn.mood === "Bored"
+                            ? "🥱 Bored"
+                            : txn.mood === "Happy"
+                            ? "😊 Happy"
+                            : txn.mood === "Social"
+                            ? "🥳 Social"
+                            : "🧘 Mindful"}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div style={s.txnRight}>
@@ -388,8 +590,8 @@ const Dashboard = () => {
                         color: txn.type === "income" ? "#16a34a" : "#dc2626",
                       }}
                     >
-                      {txn.type === "income" ? "+" : "-"}₹
-                      {txn.amount.toFixed(2)}
+                      {txn.type === "income" ? "+" : "-"}
+                      {formatCurrency(txn.amount)}
                     </span>
                     <button
                       style={s.txnDel}

@@ -843,11 +843,11 @@ The following enhancements are planned for upcoming versions of Trackify:
 | Feature | Description |
 |---|---|
 | 📧 **Email Password Reset** | Nodemailer + SendGrid integration for password reset link delivery |
-| 🧮 **Group Settlement Algorithm** | Debt simplification to suggest minimum transactions to settle group expenses |
+| 🧮 **Group Settlement Algorithm** | ✅ **Implemented**: Greedy Min-Cash Flow algorithm to minimize group transactions |
+| 🤖 **AI Spending Prediction** | ✅ **Implemented**: Scikit-Learn time-series regression for next-month spending & budget risks |
 | 🚀 **Production Deployment** | Render (backend) + Vercel (frontend) full production setup |
 | 🔔 **Push Notifications** | Web Push API / Firebase Cloud Messaging for budget alerts |
 | 📱 **React Native App** | Cross-platform mobile app sharing the same Express backend API |
-| 🤖 **AI-Powered Insights** | ML-based spending anomaly detection and personalised savings recommendations |
 | 🔁 **Recurring Transactions** | Auto-create scheduled transactions (monthly salary, rent, subscriptions) |
 | 🏦 **Bank Integration** | Open Banking API links for automatic transaction import |
 

@@ -17,6 +17,7 @@ const groupExpenseSchema = new mongoose.Schema({
     },
   ],
   date: { type: Date, default: Date.now },
+  isSettlement: { type: Boolean, default: false },
 });
 
 const groupSchema = new mongoose.Schema(

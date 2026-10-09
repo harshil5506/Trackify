@@ -47,6 +47,7 @@ const AddExpense = () => {
     dateTime: toDateTimeLocalValue(new Date()),
     description: "",
     merchant: "",
+    mood: "Calm",
   });
 
   useEffect(() => {
@@ -91,6 +92,7 @@ const AddExpense = () => {
         date: new Date(form.dateTime).toISOString(),
         note: form.description,
         merchant: form.merchant,
+        mood: form.mood || "Calm",
         type,
       });
       toast.success("Transaction added!");
@@ -416,6 +418,69 @@ const AddExpense = () => {
                 style={s.input}
               />
             </div>
+            {type === "expense" && (
+              <div style={s.field}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <label style={s.label}>How did you feel making this purchase? 💭</label>
+                  <span style={{ fontSize: "0.78rem", color: "#64748b" }}>
+                    Emotional spending tracker
+                  </span>
+                </div>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))",
+                    gap: "8px",
+                    marginTop: "6px",
+                  }}
+                >
+                  {[
+                    { id: "Calm", emoji: "🧘", label: "Calm & Planned", color: "#10b981", bg: "#ecfdf5" },
+                    { id: "Happy", emoji: "😊", label: "Happy / Reward", color: "#3b82f6", bg: "#eff6ff" },
+                    { id: "Social", emoji: "🥳", label: "Social / Friends", color: "#8b5cf6", bg: "#f5f3ff" },
+                    { id: "Bored", emoji: "🥱", label: "Boredom", color: "#f59e0b", bg: "#fffbeb" },
+                    { id: "Stressed", emoji: "😫", label: "Stressed", color: "#f97316", bg: "#fff7ed" },
+                    { id: "Impulsive", emoji: "⚡", label: "Impulse Buy", color: "#ef4444", bg: "#fef2f2" },
+                  ].map((m) => {
+                    const isSelected = form.mood === m.id;
+                    return (
+                      <button
+                        key={m.id}
+                        type="button"
+                        onClick={() => setForm({ ...form, mood: m.id })}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                          padding: "10px 12px",
+                          borderRadius: "10px",
+                          border: isSelected ? `2px solid ${m.color}` : "1.5px solid #e2e8f0",
+                          background: isSelected ? m.bg : "white",
+                          cursor: "pointer",
+                          transition: "all 0.15s ease",
+                          boxShadow: isSelected ? `0 2px 8px ${m.color}25` : "none",
+                        }}
+                      >
+                        <span style={{ fontSize: "1.2rem" }}>{m.emoji}</span>
+                        <div style={{ textAlign: "left" }}>
+                          <p
+                            style={{
+                              margin: 0,
+                              fontSize: "0.82rem",
+                              fontWeight: isSelected ? "700" : "500",
+                              color: isSelected ? m.color : "#334155",
+                            }}
+                          >
+                            {m.label}
+                          </p>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             <div style={s.field}>
               <label style={s.label}>Transaction Type</label>
               <div

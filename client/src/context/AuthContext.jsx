@@ -111,7 +111,9 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [loading, setLoading] = useState(true);
-  const [pinVerified, setPinVerified] = useState(false);
+  const [pinVerified, setPinVerified] = useState(
+    sessionStorage.getItem("pinVerified") === "true"
+  );
 
   useEffect(() => {
     const savedUser = localStorage.getItem("user");
@@ -140,9 +142,11 @@ export const AuthProvider = ({ children }) => {
 
   // PIN required if NOT within 30 mins and NOT already verified this session
   const isLockRequired = () => {
-    if (pinVerified && isWithin30Mins()) return false; // within 30 mins, verified
-    if (pinVerified) return false; // verified this session
-    return true; // need PIN
+    const isSessionPinVerified =
+      pinVerified || sessionStorage.getItem("pinVerified") === "true";
+    if (isSessionPinVerified && isWithin30Mins()) return false;
+    if (isSessionPinVerified) return false;
+    return true;
   };
 
   const login = (userData, jwtToken) => {
@@ -150,6 +154,8 @@ export const AuthProvider = ({ children }) => {
     setToken(jwtToken);
     localStorage.setItem("token", jwtToken);
     localStorage.setItem("user", JSON.stringify(userData));
+    sessionStorage.setItem("pinVerified", "true");
+    setPinVerified(true);
     updateLastActive();
   };
 
@@ -157,6 +163,7 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     setToken(null);
     setPinVerified(false);
+    sessionStorage.removeItem("pinVerified");
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     localStorage.removeItem("lastActive");
@@ -166,6 +173,7 @@ export const AuthProvider = ({ children }) => {
     const savedUser = localStorage.getItem("user");
     if (savedUser) setUser(JSON.parse(savedUser));
     setPinVerified(true);
+    sessionStorage.setItem("pinVerified", "true");
     updateLastActive();
   };
 

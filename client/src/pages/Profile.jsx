@@ -82,6 +82,9 @@ const Profile = () => {
       };
       const { data } = await API.put("/api/user/profile", payload);
       setForm((prev) => ({ ...prev, ...data }));
+      if (data.currency) {
+        localStorage.setItem("trackify_currency", data.currency.toUpperCase());
+      }
       updateUser({
         ...user,
         ...data,
@@ -376,6 +379,7 @@ const Profile = () => {
                   { l: "State", k: "state" },
                   { l: "ZIP", k: "zip" },
                   { l: "Country", k: "country" },
+                  { l: "Preferred Currency (INR, USD, EUR, GBP, AED, CAD, JPY)", k: "currency" },
                 ].map((f) => (
                   <div
                     key={f.k}
@@ -413,6 +417,7 @@ const Profile = () => {
                   { l: "Address", v: form.address || "—" },
                   { l: "City", v: form.city || "—" },
                   { l: "Country", v: form.country || "—" },
+                  { l: "Preferred Currency", v: form.currency || "INR" },
                 ].map((f) => (
                   <div key={f.l} style={{ marginBottom: "14px" }}>
                     <span
