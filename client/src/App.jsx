@@ -31,6 +31,7 @@ import GroupDetail from "./pages/GroupDetail";
 import Activity from "./pages/Activity";
 import Reports from "./pages/Reports";
 import Quiz from "./pages/Quiz";
+import Investments from "./pages/Investments";
 import Vision from "./pages/Vision";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
@@ -221,6 +222,14 @@ function App() {
                   element={
                     <PrivateRoute>
                       <Reports />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/investments"
+                  element={
+                    <PrivateRoute>
+                      <Investments />
                     </PrivateRoute>
                   }
                 />

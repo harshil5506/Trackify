@@ -23,10 +23,248 @@ def get_days_in_month(year, month):
     return 28
 
 
-def run_prediction_pipeline(expenses, budgets):
+def compute_eom_daily_velocity_forecast(
+    valid_expenses, budgets, monthly_threshold, current_year, current_month, current_day, total_days_in_month
+):
     """
-    Main ML pipeline to predict spending using Random Forest Regression.
-    Eliminates arbitrary heuristic multipliers and trains on actual transaction patterns.
+    Predictive Expense Forecasting Engine based on Real-Time Daily Spend Velocity.
+    Combines:
+    1. Daily aggregation of current month expenditures
+    2. Real-time velocity models: 7-day Simple Moving Average (SMA7) & Exponential Moving Average (EMA, alpha=0.25)
+    3. Safe daily pace calculation against configured threshold or budget total
+    4. Ordinary Least Squares (OLS) Linear Regression on cumulative daily spend
+    5. Moving-Average velocity trajectory extrapolation
+    6. Dynamic expanding confidence envelope (Upper / Lower bounds)
+    """
+    daily_spend = {d: 0.0 for d in range(1, total_days_in_month + 1)}
+
+    for e in valid_expenses:
+        raw_date = e.get("date")
+        if not raw_date:
+            continue
+        try:
+            if isinstance(raw_date, str):
+                dt = datetime.fromisoformat(raw_date.replace("Z", "+00:00"))
+            elif isinstance(raw_date, (int, float)):
+                dt = datetime.fromtimestamp(raw_date / 1000.0)
+            else:
+                dt = datetime.now()
+        except Exception:
+            dt = datetime.now()
+
+        if dt.year == current_year and dt.month == current_month:
+            d = min(total_days_in_month, max(1, dt.day))
+            daily_spend[d] += float(e.get("amount", 0))
+
+    elapsed_days = min(total_days_in_month, max(1, current_day))
+    days_remaining = max(0, total_days_in_month - elapsed_days)
+
+    cumulative_spend = {}
+    running_total = 0.0
+    for d in range(1, elapsed_days + 1):
+        running_total += daily_spend[d]
+        cumulative_spend[d] = running_total
+
+    spent_so_far = cumulative_spend[elapsed_days]
+
+    # Target baseline: user threshold > 0, or sum of active budgets, or intelligent fallback
+    total_budget_limit = (
+        float(monthly_threshold)
+        if monthly_threshold and float(monthly_threshold) > 0
+        else 0.0
+    )
+    if total_budget_limit <= 0 and budgets:
+        total_budget_limit = sum(
+            float(b.get("limit", 0)) for b in budgets if float(b.get("limit", 0)) > 0
+        )
+    if total_budget_limit <= 0:
+        total_budget_limit = max(10000.0, round(spent_so_far * 1.35, 2)) if spent_so_far > 0 else 30000.0
+
+    # 1. Daily spend velocities
+    # A. Current linear run-rate velocity
+    v_current = spent_so_far / max(1, elapsed_days)
+
+    # B. 7-Day Simple Moving Average (SMA7) velocity
+    sma_window = min(7, elapsed_days)
+    recent_spend = [
+        daily_spend[d]
+        for d in range(elapsed_days - sma_window + 1, elapsed_days + 1)
+    ]
+    v_sma7 = sum(recent_spend) / max(1, len(recent_spend))
+
+    # C. Exponential Moving Average (EMA, alpha=0.25 -> 7-day smoothing)
+    alpha = 0.25
+    ema = daily_spend[1]
+    for d in range(2, elapsed_days + 1):
+        ema = alpha * daily_spend[d] + (1.0 - alpha) * ema
+    v_ema = ema
+
+    # D. Safe target velocity to finish on budget
+    remaining_budget = max(0.0, total_budget_limit - spent_so_far)
+    v_safe = (remaining_budget / days_remaining) if days_remaining > 0 else 0.0
+
+    # E. Velocity burn ratio
+    if v_safe > 0:
+        burn_ratio = v_ema / v_safe
+    else:
+        burn_ratio = 2.5 if spent_so_far > total_budget_limit else 1.0
+
+    if burn_ratio <= 0.90:
+        pacing_status = "PACING_SAFE"
+        pacing_label = "Pacing Safe (Under Budget Run-rate)"
+        pacing_color = "#16a34a"
+    elif burn_ratio <= 1.15:
+        pacing_status = "PACING_MODERATE"
+        pacing_label = "Pacing Moderate (Nearing Threshold Pace)"
+        pacing_color = "#d97706"
+    else:
+        pacing_status = "PACING_ACCELERATED"
+        pacing_label = "Accelerated Burn (High Overrun Risk)"
+        pacing_color = "#dc2626"
+
+    # 2. End-of-Month (EOM) Forecast Models
+    # Model A: Ordinary Least Squares (OLS) Linear Regression on cumulative spend
+    X_days = np.array([float(d) for d in range(1, elapsed_days + 1)])
+    Y_cum = np.array([cumulative_spend[d] for d in range(1, elapsed_days + 1)])
+
+    if elapsed_days >= 2:
+        m, c = np.polyfit(X_days, Y_cum, 1)
+        residuals = Y_cum - (m * X_days + c)
+        ss_res = np.sum(residuals ** 2)
+        ss_tot = np.sum((Y_cum - np.mean(Y_cum)) ** 2)
+        r2 = 1.0 - (ss_res / ss_tot) if ss_tot > 0 else 0.85
+        std_err = math.sqrt(ss_res / max(1, elapsed_days - 1))
+        y_reg = max(spent_so_far, float(m * total_days_in_month + c))
+    else:
+        m = v_current
+        c = 0.0
+        r2 = 0.9
+        std_err = 100.0
+        y_reg = spent_so_far + v_current * days_remaining
+
+    # Model B: Moving-Average Extrapolation (EMA velocity momentum)
+    y_ma = spent_so_far + (v_ema * days_remaining)
+
+    # Ensemble Blended Forecast
+    if elapsed_days < 4:
+        y_eom = 0.25 * y_reg + 0.75 * y_ma
+    else:
+        y_eom = 0.50 * y_reg + 0.50 * y_ma
+
+    y_eom = max(spent_so_far, round(float(y_eom), 2))
+
+    # Dynamic expanding confidence interval
+    ci_margin = max(
+        150.0,
+        float(1.96 * std_err * math.sqrt(days_remaining / max(1, total_days_in_month))),
+        float(y_eom * 0.04),
+    )
+    ci_upper = round(y_eom + ci_margin, 2)
+    ci_lower = round(max(spent_so_far, y_eom - ci_margin), 2)
+
+    # 3. Generate daily trajectory time-series
+    trajectory = []
+    daily_target_pace = total_budget_limit / total_days_in_month
+
+    for d in range(1, total_days_in_month + 1):
+        target_pace_cum = round(daily_target_pace * d, 2)
+        if d < elapsed_days:
+            trajectory.append({
+                "day": d,
+                "label": f"Day {d}",
+                "actualCumulative": round(cumulative_spend[d], 2),
+                "dailySpend": round(daily_spend[d], 2),
+                "projectedCumulative": None,
+                "confidenceUpper": None,
+                "confidenceLower": None,
+                "targetPace": target_pace_cum,
+            })
+        elif d == elapsed_days:
+            trajectory.append({
+                "day": d,
+                "label": f"Day {d} (Today)",
+                "actualCumulative": round(spent_so_far, 2),
+                "dailySpend": round(daily_spend[d], 2),
+                "projectedCumulative": round(spent_so_far, 2),
+                "confidenceUpper": round(spent_so_far, 2),
+                "confidenceLower": round(spent_so_far, 2),
+                "targetPace": target_pace_cum,
+            })
+        else:
+            p = (d - elapsed_days) / max(1, days_remaining)
+            proj_val = spent_so_far + p * (y_eom - spent_so_far)
+            step_ci = ci_margin * math.sqrt(p)
+            trajectory.append({
+                "day": d,
+                "label": f"Day {d}",
+                "actualCumulative": None,
+                "dailySpend": None,
+                "projectedCumulative": round(proj_val, 2),
+                "confidenceUpper": round(proj_val + step_ci, 2),
+                "confidenceLower": round(max(spent_so_far, proj_val - step_ci), 2),
+                "targetPace": target_pace_cum,
+            })
+
+    overrun_amt = max(0.0, y_eom - total_budget_limit)
+    if overrun_amt > 0:
+        if days_remaining > 0:
+            advice = (
+                f"Projected to exceed budget by Rs {overrun_amt:.0f}. "
+                f"Reduce daily burn from Rs {v_ema:.0f}/day to Rs {v_safe:.0f}/day "
+                f"for the remaining {days_remaining} days to finish on budget."
+            )
+        else:
+            advice = f"Month completed with Rs {overrun_amt:.0f} above budget target."
+    else:
+        buffer_amt = total_budget_limit - y_eom
+        advice = (
+            f"On track! Projected surplus of Rs {buffer_amt:.0f}. "
+            f"Current daily velocity of Rs {v_ema:.0f}/day is well within the safe pace of Rs {v_safe:.0f}/day."
+        )
+
+    return {
+        "monthName": datetime(current_year, current_month, 1).strftime("%B %Y"),
+        "totalDaysInMonth": total_days_in_month,
+        "elapsedDays": elapsed_days,
+        "daysRemaining": days_remaining,
+        "spentSoFar": round(spent_so_far, 2),
+        "totalBudgetLimit": round(total_budget_limit, 2),
+        "currentDailyVelocity": round(v_current, 2),
+        "sma7DailyVelocity": round(v_sma7, 2),
+        "emaDailyVelocity": round(v_ema, 2),
+        "safeTargetVelocity": round(v_safe, 2),
+        "velocityBurnRatio": round(burn_ratio, 2),
+        "pacingStatus": pacing_status,
+        "pacingLabel": pacing_label,
+        "pacingColor": pacing_color,
+        "projectedEomTotal": y_eom,
+        "confidenceRange": {
+            "upper": ci_upper,
+            "lower": ci_lower,
+            "margin": round(ci_margin, 2),
+        },
+        "projectedOverrunAmount": round(overrun_amt, 2),
+        "projectedSurplusAmount": round(max(0.0, total_budget_limit - y_eom), 2),
+        "projectedUtilizationPct": (
+            round((y_eom / total_budget_limit) * 100, 1)
+            if total_budget_limit > 0
+            else 100.0
+        ),
+        "actionableAdvice": advice,
+        "modelStats": {
+            "regressionSlope": round(float(m), 2),
+            "regressionR2": round(float(r2), 3),
+            "emaAlpha": alpha,
+            "smaWindow": sma_window,
+        },
+        "dailyTrajectory": trajectory,
+    }
+
+
+def run_prediction_pipeline(expenses, budgets, monthly_threshold=None):
+    """
+    Main ML pipeline to predict spending using Random Forest Regression
+    and Real-Time Daily Spend Velocity End-of-Month Forecasting.
     """
     now = datetime.now()
     current_year = now.year
@@ -299,6 +537,16 @@ def run_prediction_pipeline(expenses, budgets):
         "type": "forecast"
     })
 
+    eom_velocity = compute_eom_daily_velocity_forecast(
+        valid_expenses,
+        budgets,
+        monthly_threshold,
+        current_year,
+        current_month,
+        current_day,
+        total_days_in_current_month,
+    )
+
     return {
         "predictedNextMonthTotal": round(predicted_val, 2),
         "predictedRange": {
@@ -315,7 +563,8 @@ def run_prediction_pipeline(expenses, budgets):
         },
         "categoryForecasts": category_forecasts,
         "budgetOverrunRisks": budget_overrun_risks,
-        "chartData": chart_data
+        "chartData": chart_data,
+        "eomVelocityForecast": eom_velocity,
     }
 
 
@@ -337,13 +586,23 @@ def main():
             {"category": "Food", "limit": 8000, "spent": 9000},
             {"category": "Bills & Utilities", "limit": 5000, "spent": 3000}
         ]
-        res = run_prediction_pipeline(sample_expenses, sample_budgets)
+        res = run_prediction_pipeline(sample_expenses, sample_budgets, monthly_threshold=15000)
         print(json.dumps(res, indent=2))
         return
 
-    # Standard IPC mode: read JSON from stdin, output JSON to stdout
+    # Standard IPC mode: read from base64 CLI arg or stdin
     try:
-        raw_input = sys.stdin.read()
+        raw_input = ""
+        if len(sys.argv) > 1 and sys.argv[1] != "--demo":
+            try:
+                import base64
+                raw_input = base64.b64decode(sys.argv[1]).decode("utf-8")
+            except Exception:
+                raw_input = sys.argv[1]
+
+        if not raw_input:
+            raw_input = sys.stdin.read()
+
         if not raw_input.strip():
             print(json.dumps({"error": "Empty input payload"}))
             return
@@ -351,8 +610,9 @@ def main():
         data = json.loads(raw_input)
         expenses = data.get("expenses", [])
         budgets = data.get("budgets", [])
+        monthly_threshold = data.get("monthlyThreshold", None)
 
-        result = run_prediction_pipeline(expenses, budgets)
+        result = run_prediction_pipeline(expenses, budgets, monthly_threshold)
         print(json.dumps(result))
     except Exception as ex:
         print(json.dumps({"error": str(ex)}))

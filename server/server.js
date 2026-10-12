@@ -34,6 +34,8 @@ app.use("/api/chat", require("./routes/chat"));
 app.use("/api/goals", require("./routes/goals"));
 app.use("/api/subscriptions", require("./routes/subscriptions"));
 app.use("/api/currency", require("./routes/currency"));
+app.use("/api/quiz", require("./routes/quiz"));
+app.use("/api/investments", require("./routes/investments"));
 
 app.get("/", (req, res) => res.send("Backend running 🚀"));
 

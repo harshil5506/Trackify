@@ -18,6 +18,9 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import FinancialHealthWidget from "../components/FinancialHealthWidget";
+import SpendingThresholdWidget from "../components/SpendingThresholdWidget";
+import InvestmentPortfolioWidget from "../components/InvestmentPortfolioWidget";
+import PredictiveVelocityForecastWidget from "../components/PredictiveVelocityForecastWidget";
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
@@ -162,6 +165,12 @@ const Dashboard = () => {
             );
           })}
         </div>
+
+        {/* Monthly Spending Threshold & Early Warning Guard */}
+        <SpendingThresholdWidget />
+
+        {/* Predictive Expense Forecasting (Daily Spend Velocity & EOM Trend) */}
+        <PredictiveVelocityForecastWidget />
 
         {/* Financial Health Score & Intelligence Card */}
         <FinancialHealthWidget />
@@ -324,6 +333,9 @@ const Dashboard = () => {
             )}
           </div>
         </div>
+
+        {/* Investment Asset Portfolio Tracking */}
+        <InvestmentPortfolioWidget />
 
         {/* Add Transaction */}
         <div style={s.dashCard}>

@@ -151,6 +151,59 @@ function runTests() {
   } else {
     console.error("FAIL: Expected 0 transactions");
   }
+  // Test Case 4: Complex Uneven Percentage Splits & Fractional Cent/Paise Balances
+  // Alice pays 100 split unevenly by percentage:
+  // Alice: 33.34% (33.34), Bob: 33.33% (33.33), Charlie: 33.33% (33.33)
+  // Plus another expense: Bob pays 100 split 3 ways with fractional remainder:
+  // Bob: 33.33, Alice: 33.33, Charlie: 33.34
+  const mockGroup4 = {
+    members: [u1, u2, u3],
+    expenses: [
+      {
+        title: "Team Lunch (Percentage Split)",
+        amount: 100,
+        paidBy: u1,
+        splitBetween: [
+          { user: u1, share: 33.34, settled: true },
+          { user: u2, share: 33.33, settled: false },
+          { user: u3, share: 33.33, settled: false },
+        ],
+      },
+      {
+        title: "Cab Ride (Fractional Equal Split with Remainder)",
+        amount: 100,
+        paidBy: u2,
+        splitBetween: [
+          { user: u1, share: 33.33, settled: false },
+          { user: u2, share: 33.33, settled: true },
+          { user: u3, share: 33.34, settled: false },
+        ],
+      },
+    ],
+  };
+
+  const res4 = simplifyGroupDebts(mockGroup4);
+  console.log("\n--- Test Case 4: Complex Uneven Percentage Splits & Fractional Balances ---");
+  console.log("Net Balances:", res4.netBalances.map((b) => `${b.user.name}: ${b.netBalance}`));
+  console.log("Simplified Transactions:", res4.simplifiedTransactions.map((t) => `${t.from.name} -> ${t.to.name}: Rs ${t.amount}`));
+  console.log("Metrics:", res4.metrics);
+
+  const sumBalances = res4.netBalances.reduce((acc, b) => acc + b.netBalance, 0);
+  if (Math.abs(sumBalances) < 0.02) {
+    console.log("PASS: Fractional balances sum to 0.00 (Perfect conservation of money)");
+  } else {
+    console.error("FAIL: Fractional balance sum is non-zero:", sumBalances);
+  }
+
+  // Charlie owes 33.33 + 33.34 = 66.67.
+  // Alice paid 100, owes 33.33, net +33.33.
+  // Bob paid 100, owes 33.33, net +33.34.
+  const charlieDebt = res4.netBalances.find((b) => b.user.id === "user3")?.netBalance;
+  if (Math.abs(charlieDebt - (-66.67)) < 0.02) {
+    console.log("PASS: Charlie's net fractional debt is exactly -66.67");
+  } else {
+    console.error("FAIL: Charlie's net debt unexpected:", charlieDebt);
+  }
 
   console.log("\n=== All Algorithm Unit Tests Passed Successfully! ===");
 }

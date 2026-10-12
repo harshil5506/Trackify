@@ -251,9 +251,18 @@ router.post("/scan-bill", authMiddleware, async (req, res) => {
           ? Buffer.from(image.split("base64,")[1], "base64")
           : Buffer.from(image, "base64");
 
+        // Prevent PDF from crashing Tesseract
+        // PDF magic number is %PDF (hex 25 50 44 46)
+        if (imageBuffer.length >= 4 && imageBuffer[0] === 0x25 && imageBuffer[1] === 0x50 && imageBuffer[2] === 0x44 && imageBuffer[3] === 0x46) {
+          throw new Error("PDF reading is not supported directly by Tesseract. Please upload an image.");
+        }
+
         // Run tesseract with timeout wrapper
         const tesseractPromise = tesseract.recognize(imageBuffer, "eng", {
           logger: () => {},
+        }).catch((err) => {
+          // Prevent unhandled promise rejection if timeout wins
+          throw err;
         });
 
         const timeoutPromise = new Promise((_, reject) =>

@@ -75,8 +75,14 @@ const Navbar = () => {
       id: "planning",
       type: "dropdown",
       label: "Planning",
-      matchPaths: ["/goals", "/budget", "/subscriptions"],
+      matchPaths: ["/investments", "/goals", "/budget", "/subscriptions"],
       items: [
+        {
+          to: "/investments",
+          label: "Investments",
+          desc: "Asset tracking, portfolio valuation & allocation",
+          icon: "📈",
+        },
         {
           to: "/goals",
           label: "Savings Goals",

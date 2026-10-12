@@ -790,6 +790,27 @@ const Profile = () => {
                 >
                   Current Archetype Badge: {quizResult.badge || "Financial Planner"}
                 </span>
+                {quizResult.dualityAnalysis && (
+                  <span
+                    style={{
+                      background: "#fef3c7",
+                      color: "#b45309",
+                      fontSize: "11px",
+                      fontWeight: "700",
+                      padding: "3px 10px",
+                      borderRadius: "20px",
+                      display: "inline-block",
+                      marginBottom: "8px",
+                      marginLeft: "8px",
+                    }}
+                  >
+                    ⚖️ {quizResult.dualityAnalysis.status || "Occasion Duality"} (
+                    {quizResult.dualityAnalysis.dualityGap > 0
+                      ? `+${quizResult.dualityAnalysis.dualityGap}%`
+                      : `${quizResult.dualityAnalysis.dualityGap}%`}
+                    )
+                  </span>
+                )}
                 <h3
                   style={{
                     fontSize: "1.2rem",

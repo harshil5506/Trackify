@@ -4,6 +4,7 @@ const router = express.Router();
 const Expense = require("../models/Expense");
 const Budget = require("../models/Budget");
 const Group = require("../models/Group");
+const User = require("../models/User");
 const authMiddleware = require("../middleware/authMiddleware");
 const { predictSpending } = require("../services/spendingPredictor");
 
@@ -147,12 +148,19 @@ router.get("/predictions", authMiddleware, async (req, res) => {
   try {
     const userId = req.user._id ? req.user._id : req.user.id;
 
-    const [expenses, budgets] = await Promise.all([
+    const [expenses, budgets, user] = await Promise.all([
       Expense.find({ user: userId, type: "expense" }).sort({ date: 1 }),
       Budget.find({ user: userId }),
+      User.findById(userId).select("monthlySpendingThreshold"),
     ]);
 
-    const prediction = await predictSpending(expenses, budgets);
+    const threshold =
+      user?.monthlySpendingThreshold?.enabled &&
+      user.monthlySpendingThreshold.limit > 0
+        ? user.monthlySpendingThreshold.limit
+        : 0;
+
+    const prediction = await predictSpending(expenses, budgets, threshold);
     res.json(prediction);
   } catch (err) {
     res.status(500).json({ message: err.message });

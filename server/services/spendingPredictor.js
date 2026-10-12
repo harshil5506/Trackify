@@ -4,67 +4,326 @@
  * Includes a robust Node.js statistical fallback engine for 100% uptime.
  */
 
-const { spawn } = require("child_process");
+const { spawn, execFile } = require("child_process");
 const path = require("path");
+const fs = require("fs");
+
+function getPythonCommand() {
+  const customWinPath = "C:\\Users\\Harshil Thakkar\\AppData\\Local\\Programs\\Python\\Python312\\python.exe";
+  if (fs.existsSync(customWinPath)) {
+    return customWinPath;
+  }
+  return "python";
+}
 
 /**
  * Predicts spending using the Python Scikit-Learn script.
  */
-function predictWithPython(expenses, budgets) {
+function predictWithPython(expenses, budgets, monthlyThreshold) {
   return new Promise((resolve, reject) => {
     const pythonScriptPath = path.join(__dirname, "../ml/predict_spending.py");
-    const py = spawn("python", [pythonScriptPath]);
+    const pyCmd = getPythonCommand();
+    const payload = JSON.stringify({ expenses, budgets, monthlyThreshold });
+    const b64Payload = Buffer.from(payload).toString("base64");
 
-    let stdoutData = "";
-    let stderrData = "";
-
-    const payload = JSON.stringify({ expenses, budgets });
-    py.stdin.write(payload);
-    py.stdin.end();
-
-    py.stdout.on("data", (data) => {
-      stdoutData += data.toString();
-    });
-
-    py.stderr.on("data", (data) => {
-      stderrData += data.toString();
-    });
-
-    const timeout = setTimeout(() => {
-      py.kill();
-      reject(new Error("Python prediction process timed out after 5000ms"));
-    }, 5000);
-
-    py.on("close", (code) => {
-      clearTimeout(timeout);
-      if (code !== 0) {
-        return reject(
-          new Error(`Python process exited with code ${code}: ${stderrData}`)
-        );
-      }
-      try {
-        const result = JSON.parse(stdoutData.trim());
-        if (result.error) {
-          return reject(new Error(result.error));
+    execFile(
+      pyCmd,
+      ["-u", pythonScriptPath, b64Payload],
+      { timeout: 9000, maxBuffer: 1024 * 1024 * 10 },
+      (err, stdout, stderr) => {
+        if (err) {
+          return reject(
+            new Error(
+              err.killed
+                ? "Python prediction process timed out after 9000ms"
+                : `Python prediction process error: ${stderr || err.message}`
+            )
+          );
         }
-        resolve(result);
-      } catch (err) {
-        reject(new Error(`Failed to parse Python ML output: ${stdoutData}`));
-      }
-    });
 
-    py.on("error", (err) => {
-      clearTimeout(timeout);
-      reject(err);
-    });
+        try {
+          const result = JSON.parse(stdout.trim());
+          if (result.error) {
+            return reject(new Error(result.error));
+          }
+          resolve(result);
+        } catch (parseErr) {
+          reject(new Error(`Failed to parse Python ML output: ${stdout}`));
+        }
+      }
+    );
   });
+}
+
+/**
+ * Computes End-of-Month Expenditure Trend & Real-Time Daily Spend Velocity Forecast in Node.js
+ */
+function computeEomVelocityFallback(
+  expenses,
+  budgets,
+  monthlyThreshold,
+  currentYear,
+  currentMonth,
+  currentDay,
+  daysInMonth
+) {
+  const dailySpend = {};
+  for (let d = 1; d <= daysInMonth; d++) {
+    dailySpend[d] = 0;
+  }
+
+  expenses.forEach((e) => {
+    if (e.type !== "expense") return;
+    const amt = parseFloat(e.amount || 0);
+    if (amt <= 0) return;
+    const dt = new Date(e.date || Date.now());
+    if (dt.getFullYear() === currentYear && dt.getMonth() + 1 === currentMonth) {
+      const d = Math.min(daysInMonth, Math.max(1, dt.getDate()));
+      dailySpend[d] = (dailySpend[d] || 0) + amt;
+    }
+  });
+
+  const elapsedDays = Math.min(daysInMonth, Math.max(1, currentDay));
+  const daysRemaining = Math.max(0, daysInMonth - elapsedDays);
+
+  const cumulativeSpend = {};
+  let runningTotal = 0;
+  for (let d = 1; d <= elapsedDays; d++) {
+    runningTotal += dailySpend[d];
+    cumulativeSpend[d] = runningTotal;
+  }
+
+  const spentSoFar = cumulativeSpend[elapsedDays];
+
+  let totalBudgetLimit =
+    Number(monthlyThreshold) > 0 ? Number(monthlyThreshold) : 0;
+  if (totalBudgetLimit <= 0 && budgets?.length > 0) {
+    totalBudgetLimit = budgets.reduce(
+      (acc, b) => acc + Number(b.limit || 0),
+      0
+    );
+  }
+  if (totalBudgetLimit <= 0) {
+    totalBudgetLimit =
+      spentSoFar > 0 ? Math.max(10000, Math.round(spentSoFar * 1.35)) : 30000;
+  }
+
+  // 1. Velocities
+  const vCurrent = spentSoFar / Math.max(1, elapsedDays);
+
+  // 7-day SMA
+  const smaWindow = Math.min(7, elapsedDays);
+  let smaSum = 0;
+  for (let d = elapsedDays - smaWindow + 1; d <= elapsedDays; d++) {
+    smaSum += dailySpend[d] || 0;
+  }
+  const vSma7 = smaSum / Math.max(1, smaWindow);
+
+  // EMA (alpha = 0.25)
+  const alpha = 0.25;
+  let ema = dailySpend[1] || 0;
+  for (let d = 2; d <= elapsedDays; d++) {
+    ema = alpha * (dailySpend[d] || 0) + (1 - alpha) * ema;
+  }
+  const vEma = ema;
+
+  const remainingBudget = Math.max(0, totalBudgetLimit - spentSoFar);
+  const vSafe = daysRemaining > 0 ? remainingBudget / daysRemaining : 0;
+
+  const burnRatio =
+    vSafe > 0 ? vEma / vSafe : spentSoFar > totalBudgetLimit ? 2.5 : 1.0;
+  let pacingStatus = "PACING_SAFE";
+  let pacingLabel = "Pacing Safe (Under Budget Run-rate)";
+  let pacingColor = "#16a34a";
+  if (burnRatio > 1.15) {
+    pacingStatus = "PACING_ACCELERATED";
+    pacingLabel = "Accelerated Burn (High Overrun Risk)";
+    pacingColor = "#dc2626";
+  } else if (burnRatio > 0.9) {
+    pacingStatus = "PACING_MODERATE";
+    pacingLabel = "Pacing Moderate (Nearing Threshold Pace)";
+    pacingColor = "#d97706";
+  }
+
+  // 2. Linear Regression on Cumulative Spend
+  let m = vCurrent;
+  let c = 0;
+  let r2 = 0.9;
+  let stdErr = 100;
+  let yReg = spentSoFar + vCurrent * daysRemaining;
+
+  if (elapsedDays >= 2) {
+    const X = [];
+    const Y = [];
+    for (let d = 1; d <= elapsedDays; d++) {
+      X.push(d);
+      Y.push(cumulativeSpend[d]);
+    }
+    const n = X.length;
+    const sumX = X.reduce((a, b) => a + b, 0);
+    const sumY = Y.reduce((a, b) => a + b, 0);
+    const sumXY = X.reduce((acc, xi, idx) => acc + xi * Y[idx], 0);
+    const sumX2 = X.reduce((acc, xi) => acc + xi * xi, 0);
+    const denom = n * sumX2 - sumX * sumX;
+    m = denom !== 0 ? (n * sumXY - sumX * sumY) / denom : vCurrent;
+    c = (sumY - m * sumX) / n;
+
+    const yPred = X.map((xi) => m * xi + c);
+    const meanY = sumY / n;
+    const ssTot = Y.reduce((acc, yi) => acc + Math.pow(yi - meanY, 2), 0);
+    const ssRes = Y.reduce(
+      (acc, yi, idx) => acc + Math.pow(yi - yPred[idx], 2),
+      0
+    );
+    r2 = ssTot !== 0 ? Math.max(0, Math.min(1, 1 - ssRes / ssTot)) : 0.85;
+    stdErr = Math.sqrt(ssRes / Math.max(1, elapsedDays - 1));
+    yReg = Math.max(spentSoFar, m * daysInMonth + c);
+  }
+
+  // Moving Average Projection
+  const yMa = spentSoFar + vEma * daysRemaining;
+
+  // Blended
+  const blendWeight = elapsedDays < 4 ? 0.25 : 0.5;
+  const yEom = Math.max(
+    spentSoFar,
+    parseFloat((blendWeight * yReg + (1 - blendWeight) * yMa).toFixed(2))
+  );
+
+  const ciMargin = Math.max(
+    150,
+    parseFloat(
+      (
+        1.96 *
+        stdErr *
+        Math.sqrt(daysRemaining / Math.max(1, daysInMonth))
+      ).toFixed(2)
+    ),
+    parseFloat((yEom * 0.04).toFixed(2))
+  );
+  const ciUpper = parseFloat((yEom + ciMargin).toFixed(2));
+  const ciLower = parseFloat(Math.max(spentSoFar, yEom - ciMargin).toFixed(2));
+
+  // Trajectory
+  const trajectory = [];
+  const dailyTargetPace = totalBudgetLimit / daysInMonth;
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const targetPaceCum = parseFloat((dailyTargetPace * d).toFixed(2));
+    if (d < elapsedDays) {
+      trajectory.push({
+        day: d,
+        label: `Day ${d}`,
+        actualCumulative: parseFloat(cumulativeSpend[d].toFixed(2)),
+        dailySpend: parseFloat(dailySpend[d].toFixed(2)),
+        projectedCumulative: null,
+        confidenceUpper: null,
+        confidenceLower: null,
+        targetPace: targetPaceCum,
+      });
+    } else if (d === elapsedDays) {
+      trajectory.push({
+        day: d,
+        label: `Day ${d} (Today)`,
+        actualCumulative: parseFloat(spentSoFar.toFixed(2)),
+        dailySpend: parseFloat(dailySpend[d].toFixed(2)),
+        projectedCumulative: parseFloat(spentSoFar.toFixed(2)),
+        confidenceUpper: parseFloat(spentSoFar.toFixed(2)),
+        confidenceLower: parseFloat(spentSoFar.toFixed(2)),
+        targetPace: targetPaceCum,
+      });
+    } else {
+      const p = (d - elapsedDays) / Math.max(1, daysRemaining);
+      const projVal = spentSoFar + p * (yEom - spentSoFar);
+      const stepCi = ciMargin * Math.sqrt(p);
+      trajectory.push({
+        day: d,
+        label: `Day ${d}`,
+        actualCumulative: null,
+        dailySpend: null,
+        projectedCumulative: parseFloat(projVal.toFixed(2)),
+        confidenceUpper: parseFloat((projVal + stepCi).toFixed(2)),
+        confidenceLower: parseFloat(
+          Math.max(spentSoFar, projVal - stepCi).toFixed(2)
+        ),
+        targetPace: targetPaceCum,
+      });
+    }
+  }
+
+  const overrunAmt = Math.max(0, yEom - totalBudgetLimit);
+  let advice = "";
+  if (overrunAmt > 0) {
+    if (daysRemaining > 0) {
+      advice = `Projected to exceed budget by ₹${overrunAmt.toFixed(0)}. Reduce daily burn from ₹${vEma.toFixed(0)}/day to ₹${vSafe.toFixed(0)}/day for the remaining ${daysRemaining} days to finish on budget.`;
+    } else {
+      advice = `Month completed with ₹${overrunAmt.toFixed(0)} above budget target.`;
+    }
+  } else {
+    const bufferAmt = totalBudgetLimit - yEom;
+    advice = `On track! Projected surplus of ₹${bufferAmt.toFixed(0)}. Current daily velocity of ₹${vEma.toFixed(0)}/day is well below the safe pace of ₹${vSafe.toFixed(0)}/day.`;
+  }
+
+  const monthNames = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+
+  return {
+    monthName: `${monthNames[currentMonth - 1]} ${currentYear}`,
+    totalDaysInMonth: daysInMonth,
+    elapsedDays,
+    daysRemaining,
+    spentSoFar: parseFloat(spentSoFar.toFixed(2)),
+    totalBudgetLimit: parseFloat(totalBudgetLimit.toFixed(2)),
+    currentDailyVelocity: parseFloat(vCurrent.toFixed(2)),
+    sma7DailyVelocity: parseFloat(vSma7.toFixed(2)),
+    emaDailyVelocity: parseFloat(vEma.toFixed(2)),
+    safeTargetVelocity: parseFloat(vSafe.toFixed(2)),
+    velocityBurnRatio: parseFloat(burnRatio.toFixed(2)),
+    pacingStatus,
+    pacingLabel,
+    pacingColor,
+    projectedEomTotal: yEom,
+    confidenceRange: {
+      upper: ciUpper,
+      lower: ciLower,
+      margin: ciMargin,
+    },
+    projectedOverrunAmount: parseFloat(overrunAmt.toFixed(2)),
+    projectedSurplusAmount: parseFloat(
+      Math.max(0, totalBudgetLimit - yEom).toFixed(2)
+    ),
+    projectedUtilizationPct:
+      totalBudgetLimit > 0
+        ? parseFloat(((yEom / totalBudgetLimit) * 100).toFixed(1))
+        : 100.0,
+    actionableAdvice: advice,
+    modelStats: {
+      regressionSlope: parseFloat(m.toFixed(2)),
+      regressionR2: parseFloat(r2.toFixed(3)),
+      emaAlpha: alpha,
+      smaWindow,
+    },
+    dailyTrajectory: trajectory,
+  };
 }
 
 /**
  * Pure JavaScript Statistical ML Fallback Engine
  * Uses Ordinary Least Squares (OLS) Linear Regression & Category Trend Decomposition.
  */
-function predictWithNodeFallback(expenses, budgets) {
+function predictWithNodeFallback(expenses, budgets, monthlyThreshold) {
   const now = new Date();
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth() + 1; // 1-indexed
@@ -235,6 +494,16 @@ function predictWithNodeFallback(expenses, budgets) {
     type: "forecast",
   });
 
+  const eomVelocity = computeEomVelocityFallback(
+    expenses,
+    budgets,
+    monthlyThreshold,
+    currentYear,
+    currentMonth,
+    currentDay,
+    daysInMonth
+  );
+
   return {
     predictedNextMonthTotal: parseFloat(predictedVal.toFixed(2)),
     predictedRange: {
@@ -259,6 +528,7 @@ function predictWithNodeFallback(expenses, budgets) {
     categoryForecasts,
     budgetOverrunRisks,
     chartData,
+    eomVelocityForecast: eomVelocity,
   };
 }
 
@@ -266,13 +536,13 @@ function predictWithNodeFallback(expenses, budgets) {
  * Main prediction executor: Tries Python Scikit-Learn first,
  * seamlessly falls back to Node.js OLS regression if Python isn't available.
  */
-async function predictSpending(expenses, budgets) {
+async function predictSpending(expenses, budgets, monthlyThreshold = null) {
   try {
-    const pythonResult = await predictWithPython(expenses, budgets);
+    const pythonResult = await predictWithPython(expenses, budgets, monthlyThreshold);
     return pythonResult;
   } catch (err) {
     console.warn("⚠️ Python ML invocation failed, using Node.js statistical ML engine:", err.message);
-    return predictWithNodeFallback(expenses, budgets);
+    return predictWithNodeFallback(expenses, budgets, monthlyThreshold);
   }
 }
 

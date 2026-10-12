@@ -161,6 +161,21 @@ router.post("/:id/expenses", authMiddleware, async (req, res) => {
       }));
     }
 
+    // Exact fractional remainder reconciliation (Penny Rounding Adjustment)
+    // Ensures sum of all individual shares strictly matches the total amount down to 0.01
+    const totalAllocated = splitBetween.reduce((acc, curr) => acc + curr.share, 0);
+    const roundingDiscrepancy = parseFloat((amount - totalAllocated).toFixed(2));
+    if (
+      Math.abs(roundingDiscrepancy) > 0.001 &&
+      Math.abs(roundingDiscrepancy) <= 0.05 &&
+      splitBetween.length > 0
+    ) {
+      const lastIndex = splitBetween.length - 1;
+      splitBetween[lastIndex].share = parseFloat(
+        (splitBetween[lastIndex].share + roundingDiscrepancy).toFixed(2)
+      );
+    }
+
     group.expenses.push({
       title,
       amount,

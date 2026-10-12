@@ -15,6 +15,7 @@ import {
   CartesianGrid,
 } from "recharts";
 import MoodSpendingWidget from "../components/MoodSpendingWidget";
+import PredictiveVelocityForecastWidget from "../components/PredictiveVelocityForecastWidget";
 
 const CATEGORY_COLORS = [
   "#4ade80",
@@ -591,6 +592,9 @@ const Reports = () => {
                   gap: "16px",
                 }}
               >
+                {/* Real-time Spend Velocity & EOM Trend Forecast */}
+                <PredictiveVelocityForecastWidget initialData={predictionData} />
+
                 {/* Prediction Top Banner */}
                 <div
                   style={{

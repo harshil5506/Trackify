@@ -162,10 +162,10 @@ router.post("/reset-password/:token", async (req, res) => {
 
 const authMiddleware = require("../middleware/authMiddleware");
 
-router.post("/set-pin", async (req, res) => {
+router.post("/set-pin", authMiddleware, async (req, res) => {
   try {
-    const { userId, pin } = req.body;
-    const targetUserId = userId || (req.headers.authorization ? (jwt.decode(req.headers.authorization.split(" ")[1])?.id) : null);
+    const { pin } = req.body;
+    const targetUserId = req.user.id;
     if (!targetUserId) return res.status(400).json({ message: "User ID is required" });
 
     const hashed = await bcrypt.hash(pin, 10);
@@ -177,10 +177,10 @@ router.post("/set-pin", async (req, res) => {
   }
 });
 
-router.post("/verify-pin", async (req, res) => {
+router.post("/verify-pin", authMiddleware, async (req, res) => {
   try {
-    const { userId, pin } = req.body;
-    const targetUserId = userId || (req.headers.authorization ? (jwt.decode(req.headers.authorization.split(" ")[1])?.id) : null);
+    const { pin } = req.body;
+    const targetUserId = req.user.id;
     if (!targetUserId) return res.status(400).json({ message: "User ID is required" });
 
     const user = await User.findById(targetUserId);

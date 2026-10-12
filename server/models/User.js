@@ -18,11 +18,14 @@ const userSchema = new mongoose.Schema({
   pin: { type: String, default: null },
 
   spendingPersonality: {
-    archetype: { type: String, default: "" },
-    title: { type: String, default: "" },
-    badge: { type: String, default: "" },
-    score: { type: Number, default: 0 },
-    completedAt: { type: Date, default: null },
+    type: mongoose.Schema.Types.Mixed,
+    default: null,
+  },
+
+  monthlySpendingThreshold: {
+    limit: { type: Number, default: 50000 },
+    warningThresholdPct: { type: Number, default: 80 },
+    enabled: { type: Boolean, default: true },
   },
 
   resetPasswordToken: {
